@@ -1,0 +1,104 @@
+\documentclass[../tfm.tex]{subfiles}
+
+\begin{document}
+\info{Puente entre el estudio y la contribución.}
+
+Debe contener:
+\begin{enumerate}
+  \item objetivo general
+  \item objetivo específico
+  \item metodología de trabajo
+\end{enumerate}
+
+Los objetivos deben ser \textit{SMART}
+\begin{itemize}
+  \item Specificl (objetivo claro)
+  \item Measurable (se pueda medir el éxito o fracaso)
+  \item Attainable (viable su conecución con el tiempo y recursos disponibles)
+  \item Relevant (que tenga un impacto demostrable)
+  \item Time-related (que se pueda realizar en un tiempo determinado)
+\end{itemize}
+
+
+\section{Objetivo General}
+
+Un poco la descripción a grandes rasgos de qué se espera explicado al público general.
+
+Ejemplo: Mejorar el servicio de audio gruía de un museo con una guía interactiva por voz valorada positivamente con un 4/5 al menos.
+
+Implementar un sistema de detección de caídas que se ejecute en un smartwatch con una tasa de detección comparable a los sitemas basados en "thresholds" del acelerómetro y mucho menor ratio de falsos positivos.
+
+\section{Objetivos Específicos}
+\begin{itemize}
+  \item Desarrollar un conjunto de datos para el experimento
+  \item Estudiar el comportamiento y características de las señales temporales del acelerómetro.
+  \item Identificar y establecer una magnitud derivada de la lectura del acelerómetro que permita su posterior trabajo
+  \item Desarrollar un sistema predictor basado en los puntos anteriores
+  \item cuantificar el grado de satisfacción con el sistema obtenido y comparar con los sistemas existentes
+\end{itemize}
+
+
+Conjunto de objetivos más específicos alcanzables por separado. suelen sor los diferentes pasos a seguir para conseguir el objetivo general. Han de ser smart, los verbos deberian ser:     • Analizar
+Calcular
+Clasificar
+Comparar
+Conocer
+Cuantificar
+Desarrollar
+Describir
+Descubrir
+Determinar
+Establecer
+Explorar
+Identificar
+Indagar
+Medir
+Sintetizar
+Verificar
+
+\section{Metodología de trabajo}
+
+Debe describir los pasos que se van a dar, el por qué de cada paso, instrumentos a utuilizar y cómo se van a analizar los resultados.
+
+\begin{enumerate}
+  \item Generar un nuevo dataset \footnote{Se implementa una app para ello, y se realiza un procesado de los datos obtenidos}
+  \begin{enumerate}
+    \item Los existentes se basan en detección de actividades
+    \item Los pocos basados en detección de caidas se restringen a un subconjunt de caidas muy específico y muchas veces con posiciones del elemento de detección diferente de la usada en el estudio
+  \end{enumerate}
+
+  2- Estudiar el dataset obtenido
+  a- comprender mejor el comportamiento de las señales capturadas
+  b- buscar parámetros importantes para llevar a cabo la detección
+
+  \item Implementar un sistema basado en LSTM y detección de anomalías usando errores de predicción. Mecanismo atencional basado en potencia de señal de entrada?
+  \begin{itemize}
+    \item Implementar una red LSTM FORWARD, y/o una FORWARD-BACKWARD, Asi como un sistema basado en threshold (usar GRU con RELU para mejorar la eficiencia de cómputo)
+    \item Una vez entrenados los modelos con información de actividad ordinaria:
+    \begin{itemize}
+      \item Implementar una app que o bien en tiempo real o cuando detecte un cierto nivel de actividad lance los modelos de predicción
+      \item Usar un sistema que comparando la señal real y la predicha decida si es una "anomalía" o no, lo más básico un RMS del error de predicción.
+    \end{itemize}
+  \end{itemize}
+
+  \item Comparar los resultados con el estado del arte
+  \begin{itemize}
+    \item Entrenar el sistema usando al menos un dataset que incluya caídas.
+    \item Compararar con al menos métodos de cota fall index y modulo aceleración.
+    \item Comparar con estudios previos que usen el mismo dataset.
+    \item Analizar los resultados con el dataset propio.
+  \end{itemize}
+
+  \item Prueba en uso real. (Si da tiempo)
+  \begin{itemize}
+    \item Entrenar el sistema con dataset creado.
+    \item Usar en interno
+    \item Probar en caídas simuladas
+    \item Si es posible conseguir ejemplos de caídas reales (app debe enviar todos los eventos registrados como caídas e indicar si han sido confirmados, rechazados o ignorados)
+  \end{itemize}
+
+
+\end{enumerate}
+
+
+\end{document}

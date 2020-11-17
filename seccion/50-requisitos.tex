@@ -1,0 +1,56 @@
+\documentclass[../tfm.tex]{subfiles}
+\begin{document}
+\info{Indicar el trabajo previo realizado para guiar el desarrollo del software.
+Debe identificar adecuadamente el problema a tratar, contexto adecuado de uso y funcionamiento de la aplicación. Idealmente se debería realizar con expertos en la materia a tratar.}
+
+
+\section{Preprocesado}
+
+\subsection{Eliminar señal de Gravedad}
+
+En la lectura de los acelerómetros se mezcla la señal inercial a medir con lamedición constante de la gravedad. Dado que su efecto es contínuo, podemos eliminar o al menos mitigar su efecto realizando un filtrado paso alto. Para este caso realizaremos un filtro paso bajo IIR de primer orden.
+
+\[
+  y_n = \alpha x_n + (1-\alpha) y_{n-1}
+\]
+
+%comment = \alpha\times x_n + \(1-\alpha\)\times y_{n-1}
+La señal obtenida equivale a un filtro con función de transferencia
+
+\[
+  H(z) = \frac{\alpha}{1-(1-\alpha)z^{-1}}
+\]
+
+Donde
+\[
+\alpha = \frac{\delta t}{\delta t + RC} \\
+f_c= \frac{1}{2 \pi RC}
+\]
+
+A la hora de elegir la frecuencia de corte $f_c$, debemos tener en cuenta que determinan que a 4Hz hay suficiente información útil como para realizar una predicción de la actividad. Dado que la señal de la Gravedad es contínua, optamos por una valor de frecuencia de corte $f_c=1Hz$.
+
+Despejando las eq. precedentes queda
+\[
+f_m = 50Hz\\
+\delta t= 1/f_m = 0.02s\\
+RC=\frac{1}{2\pi f_c} = \frac{1}{2\pi} = 0.1591\\
+\alpha = \frac{0.02}{0.02 + RC} = 0,1116
+\]
+
+Con este filtrado obtendremos la señal debida a la Gravedad. Si la restamos a la señal original, obtendremos la señal filtrada paso alto.
+\[
+  \vec{A_f}[n] = \vec{A}[n] - \vec{G}[n]
+  \forall i \in [x,y,z], G_i[n] = \alpha A_i[n] + (1-\alpha)G_i[n-1]
+  \vec{A_f}[n] =
+\]
+
+%VER https://electronics.stackexchange.com/questions/498226/calculate-cutoff-frequency-of-a-digital-iir-filter
+
+%https://en.wikipedia.org/wiki/EWMA_chart
+
+%https://en.wikipedia.org/wiki/Low-pass_filter#Simple_infinite_impulse_response_filter
+
+
+
+\end{document}
+

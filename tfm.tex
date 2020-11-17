@@ -1,0 +1,128 @@
+\documentclass[11pt,a4paper,spanish]{book}
+\usepackage{unir}
+%\usepackage{estilo_unir}
+\usepackage[T1]{fontenc}
+
+% USe Helvetica font (similar to arial)
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+
+% Mejorar el rendido de texto: ligaturas, microespacioes, etc
+\usepackage{microtype}
+
+%para gráficos
+\usepackage{standalone}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.16}
+\graphicspath{{img/}{../img/}} % Paths por defecto para las imagenes
+\usepackage{smartdiagram}
+\usepackage{definitions}
+
+%tablas más presentables
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{rotating}
+% Siguientes 3 para imágenes compuestas
+\usepackage{float}
+\usepackage[caption = false]{subfig}
+%\usepackage[export]{adjustbox}
+
+% para usar \currenttime
+\usepackage{datetime}
+
+\usepackage{amsmath}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\softmax}{\textup{softmax}}
+
+
+% Fix warning \headheigt is tochangeso small
+\setlength{\headheight}{14pt}%
+
+% Permitir modularizar el trabajo
+\usepackage{subfiles} % recomiendan cargarlo al final del preambulo
+
+%---------------------------
+%título del trabajo y autor
+%---------------------------
+\title{Detección de caídas con Wearables y GRU}
+\author{Aritz Beraza Garayalde}
+\date{\currenttime}
+\director{Sonia Valladares Rodriguez}
+\nombreciudad{Paris}
+
+%---------------------------
+%margenes
+%---------------------------
+%\usepackage[margin=1.9cm]{geometry}
+%---------------------------
+%---------------------------
+%---------------------------
+%--------------------------
+\begin{document}
+%\selectlanguage{spanish}
+\renewcommand{\listfigurename}{Índice de Ilustraciones}
+\renewcommand{\listtablename}{Índice de Tablas}
+\renewcommand{\contentsname}{Índice de Contenidos}
+\renewcommand{\figurename}{Figura}
+\renewcommand{\tablename}{Tabla}
+
+\maketitle
+\frontmatter
+\tableofcontents
+\listoffigures
+\listoftables
+
+% Posicion original de mainmatter
+\mainmatter
+
+%\chapter{Resumen}
+\section*{Resumen}
+\subfile{seccion/10-abstract.es.tex}
+
+%\chapter{Abstract}
+\section*{Abstract}
+\subfile{seccion/10-abstract.en.tex}
+
+
+% olvidar chapter y usar section/subsection \chapter{Introducción}
+\chapter{Intro}
+\section{Introducción}
+\subfile{seccion/20-introduccion}
+
+\chapter{Contexto y Estado del Arte}
+\subfile{seccion/30-estado-arte}
+
+\chapter{Objetivos}
+\subfile{seccion/40-Objetivos}
+
+\chapter{Identificación de requisitos}
+\subfile{seccion/50-requisitos}
+
+\chapter{Descripción de la herramienta desarrollada}
+\subfile{seccion/60-descripcion-software}
+
+\chapter{Evaluación}
+\subfile{seccion/70-evaluacion}
+
+\chapter{Conclusiones y Trabajo Futuro}
+\subfile{seccion/80-conclusiones}
+
+%\bibliographystyle{unsrt}
+\bibliographystyle{apalike}
+%\bibliographystyle{apacite} % usa apacite y parece no funcionar, pero es el bueno
+\bibliography{tfm}
+
+
+\appendix
+
+\chapter{Captura de datos y construcción del dataset}
+\subfile{seccion/app-accelcapture}
+
+\chapter{Artículo}
+%\includepdf[pages=-]{articulo.pdf} %descomentar cuando esté el artículo terminado.
+
+% TODO: Borrar esta sección
+\newpage
+%\listoftodos[Notes]
+\end{document}

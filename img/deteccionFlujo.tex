@@ -1,0 +1,29 @@
+\documentclass[tikz=true]{standalone}
+\usepackage{definitions}
+\begin{document}
+\begin{tikzpicture}[node distance=2cm]
+  % Nodos
+  \node[startstop] (start) {Inicio};
+  \node[io, below of=start] (accel)  {Acelerómetro};
+  \node[process, right of=accel, xshift=3cm] (readAccel) {Leer Muestra};
+  \node[decision, below of=readAccel, yshift=-1.5cm] (estaLleno) {buffer completo?};
+  \node[process, below of=estaLleno, yshift=-1.5cm] (modeloSimple) {Modelo Analítico};
+  \node (mayorCota)[decision, left of=modeloSimple, xshift=-3cm] {Posible Caida?};
+  \node (modeloRnn) [process, below of=mayorCota, yshift=-1.5cm] {Modelo RNN};
+  \node[decision, below of=modeloRnn, yshift=-1.5cm] (confirmaRNN) {Es una caída?};
+  \node[startstop, right of=confirmaRNN, xshift=3cm] (alertar) {Alertar de caída};
+
+  % Flechas
+  \draw [arrow] (start) -- (accel);
+  \draw [arrow] (accel) -- (readAccel);
+  \draw [arrow] (readAccel) -- (estaLleno);
+  \draw [arrow] (estaLleno) -- node[anchor=north] {no} +(-3,0) -- (accel);
+  \draw [arrow] (estaLleno) -- node[anchor=east] {si} (modeloSimple);
+  \draw [arrow] (modeloSimple) -- (mayorCota);
+  \draw [arrow] (mayorCota) -- node[anchor=east] {no} (accel);
+  \draw [arrow] (mayorCota) -- node[anchor=east] {si} (modeloRnn);
+  \draw [arrow] (modeloRnn) -- (confirmaRNN);
+  \draw [arrow] (confirmaRNN) -- node[anchor=south] {si}(alertar);
+  \draw [arrow] (confirmaRNN) -- node[anchor=south] {no} +(-3,0) |- (accel);
+\end{tikzpicture}
+\end{document}

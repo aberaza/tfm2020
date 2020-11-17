@@ -1,0 +1,40 @@
+\documentclass[tikz=true]{standalone}
+\usepackage{definitions}
+\begin{document}
+\begin{tikzpicture}[node distance=2cm]
+
+\begin{umlpackage}[x=10]{watchface}
+  \umlemptyclass{IFellWatchFace}
+  \umlclass[y=-3]{Engine}{
+    - FallEventsReceiver
+  }{
+    - onTapCommand()
+  }
+
+  \umlunicompo{Engine}{IFellWatchFace}
+\end{umlpackage}
+
+\begin{umlpackage}{app}
+  \umlclass[y=3]{MainWearActivity}{}{}
+  \umlclass[y=0.5]{AccelSensorRead}{}{}
+  \umlassoc{AccelSensorRead}{MainWearActivity}
+  \umlclass[y=-2.5]{CrashDetectService}{
+    - detector : CrashDetector
+  }{}
+  \umlclass[x=5,y=-5.5, type=interface]{CrashDetector}{}{
+    + isFall() : Boolean
+  }
+  \umlemptyclass[x=5, y=-2.5]{TFLiteModelDetector}
+  \umlinherit{CrashDetector}{TFLiteModelDetector}
+  \umlaggreg{CrashDetectService}{TFLiteModelDetector}
+  \umlassoc{CrashDetectService}{AccelSensorRead}
+  \umlclass[x=5]{NetManager}{}{
+    + postJson()
+    + getJson()
+  }
+  \umldep{AccelSensorRead}{NetManager}
+  \umlemptyclass[x=5,y=3]{SettingsConfig}
+\end{umlpackage}
+
+\end{tikzpicture}
+\end{document}

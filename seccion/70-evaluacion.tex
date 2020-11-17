@@ -1,0 +1,25 @@
+\documentclass[../tfm.tex]{subfiles}
+\begin{document}
+
+\info{al menos una mínima evaluación de usabilidad de la herramienta y su aplicabilidad para resolver el problema resuelto.}
+
+\section{Evaluación del modelo}
+
+Un sistema de detección de caídas es en el fondo un clasificador con una única clase. Todos los resultados pueden por tanto agruparse en los que pertenecen o no a dicho conjunto. Con el fin de evaluar y comparar los resultados obtenidos usaremos dos métricas estadísticas:
+\begin{itemize}
+  \item Sensitividad (Capacidad de identificar las caídas)
+  \[
+    Sensitividad = \frac{TP}{TP+FN}
+  \]
+  \item Especificidad (Capacidad de discernir únicamente las caídas)
+  \[
+    Especificidad = \frac{TN}{TP+FP}
+  \]
+\end{itemize}
+
+Estas métricas son usadas habitualmente en otros trabajos similares\cite{Noury2007,Chen2005, Bourke2006}\todo{añadir el resto de citas}.  
+
+
+
+
+\end{document}
