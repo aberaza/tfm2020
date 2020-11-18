@@ -25,6 +25,7 @@
 .pdf
 *-.pdf
 tfm.pdf
+*.pdf
 
 ## Bibliography auxiliary files (bibtex/biblatex/biber):
 *.bbl
