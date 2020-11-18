@@ -106,6 +106,10 @@ Si se sobrepasa el umbral en $t=0$. El sistema envía instantáneamente al sigui
 
 El modelo RNN comporta a su vez dos bloques. Un primer bloque de predicción y un segundo de detección de anomalías.
 
+\paragraph{Limitaciones de la plataforma}
+Al ejecutarse sobre un intérprete de TFLite, el modelo implementado sufre las restricciones que esta plataforma impone. Las de mayor impacto a este proyecto es la del uso de celdas GRU, no soportadas de forma nativa\cite{tfliteGru}, de la misma forma que las redes RNN bidireccionales, que no pueden ser portadas directamente a a TFLite\cite{tfliteBidir} ni se les puede aplicar pruning para reducir su tamaño\cite{tfPruneBidir}. Este último problema tiene sin embargo una alternativa consistente en usar una capa personalizada que implemente la interfaz de pruning y consista en dos redes LSTM, una normal y otra regresiva.
+
+
 \paragraph*{Predicción}
 \info{Detalles del modelo pueden variar fácilmente. Actualmente usando LSTM bidireccional 50 unidades. }
 
