@@ -55,6 +55,29 @@ Qin\cite{Qin2019} estudia el comportamiento de varias redes recurrentes para la 
 
 
 \section{Pruning y técnicas para reducir complejidad de modelos}
-TODO
 
+\subsection{Pruning}
+Un modelo de redes neuronales se puede entender como una matriz de pesos que indican la contribción de cada nodo o neurona al resultado final. Es normal que en esa red haya nodos que aporten más información que otros. Este efecto no es necesariamente negativo, la regularización o normalización L1 busca precisamente este efecto para reducir el sobreajuste de la red a los datos de entrenamiento.
+
+Esta diferencia de aportación nos permite realizar una compresión del modelo. Si aceptamos sufrir unas ciertas pérdidas en la capacidad predictiva del mismo, podemos eliminar los nodos de menor peso reduciendo el tamaño de la red y su consumo de memoria. Esta reducción permite además acelerar el modelo y adaptarlo al uso en sistemas embebidos.\todo{Buscar bibliografía formal para: https://www.machinecurve.com/index.php/2020/09/23/tensorflow-model-optimization-an-introduction-to-pruning/}
+
+\todo{Este artículo cita referencias y es ligeramente más técnico.
+https://www.machinecurve.com/index.php/2020/09/29/tensorflow-pruning-schedules-constantsparsity-and-polynomialdecay/}
+
+Una de las técnicas más sencillas para realizar esta eliminación de nodos consiste en definir una aportación mínima objetivo y comparar la magnitud de la aportación individual al resultado final, eliminando aquellos que no alcanzan el nivel $\lambda$ deseado
+\[
+\hat{w_i} = \left\{ \begin{matrix} w_i & :\mbox{si} |w_i|>\lambda\\
+  0 & :\mbox{si} |w_i|\leq\lambda\end{matrix} \right.
+\]
+
+Esta compresión se puede hacer sobre un modelo ya entrenado (sendo recomendable realizar un nuevo proceso de entrenamiento para balancear los pesos de los nodos existentes y reducir el error introducido) o realizarlo durante el entrenamiento como si de una regularización más se tratara.
+
+En el caso de TensorFlow, el entorno usado para este proyecto, se permite realizar esta regularización durante el entrenamiento de dos formas:
+
+\begin{itemize}
+\item Eliminando nodos de forma lineal, o a tasa constante
+\item Eliminando nodos de forma polinomial, o a tasa creciente
+\end{itemize}
+
+Los estudio
 \end{document}
