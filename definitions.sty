@@ -33,6 +33,7 @@
   \def\scale{#1}
   \def\graphname{#2}
   \def\texfigure{img/#2.tex}
+  \def\pgffigure{img/#2.pgf}
   \def\figid{#3}
   \def\captiontext{#4}
     \begin{figure}[!ht]
@@ -40,7 +41,13 @@
         \IfFileExists{\texfigure}{
           \includestandalone{\graphname}
         }{
-          \includegraphics[scale=\scale]{\graphname}
+            \IfFileExists{\pgffigure}{
+                \input{\pgffigure}
+                %\includestandalone{\pgffigure}
+                %\includegraphics[width=0.9\textwidth]{\pgffigure}
+           }{
+               \includegraphics[scale=\scale]{\graphname}
+           }
         }
         \caption{\label{\figid} \captiontext}
     \end{figure}
