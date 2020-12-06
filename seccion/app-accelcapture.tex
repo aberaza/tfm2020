@@ -8,17 +8,17 @@
 Dos son las principales causas que motivan la tarea de generar un conjunto de datos propios para la realización de este trabajo: su caracter de prototipo experimental y la carestía de conjuntos de datos aplicables al probelma y materiales disponibles públicamente. Como mencionaremos, ambas causas suponen un fuerte peso en la decisión final.
 
 
-Los conjuntos de datos que podemos encontrar disponibles públicamente que puedan asociarse directamente con el proyecto con una calidad y documentación adecuada son escasos. En la mayoría de los casos los datasets disponibles son demasiado específicos al experimento para el que fueron creados o al sistema material utilizado o con información irrelevante para este trabajo. Ejemplos usados son los datasets para el reconocimiento de actividades \cite{UAR2013,UAR2014}, (estadísticas en \url{https://github.com/srvds/Human-Activity-Recognition} ). Casilari \cite{Casilari2020} lista todos los datasets disponibles así como detalles de los mismos (actividades, sensores, captura y posición...), Si no los principales parecen ser SisFall \cite{Sucerquia2017} (dos acelerómetros y giroscopio, caídas simuladas), MobiFall \cite{MobiFall}, MobiAct \cite{MobiAct} (incluye caídas, puede ser buen ejemplo para benchmark), tFall\cite{tfall}, DLR y ProjectGravity \cite{Vilarinho2015}
+Los conjuntos de datos existentes hoy en día son todavía escasos, y la gran mayoría están orientados a las necesidades específicas del estudio para el que fueron creados. Ya sea por las diferencias en los dispositivos de captura, posición de los mismos o incluso actividades registradas, o simplemente por contener información irrelevante al problema, es dificil aplicar o reutilizar estos corpus en otros proyectos. Existen cada vez mas proyectos que pretenden solventar esta situación, muchos orientados al discernimiento y clasificación de actividades humanas, como son \cite{Anguita2013,ReyesOrtiz2014}, (estadísticas en \url{https://github.com/srvds/Human-Activity-Recognition}). En \cite{Casilari2020} se recoge un listado de 21 conjuntos de datos y sus especificaciones entre los que destacan MobiFall\cite{MobiFall}/MobiAct\cite{MobiAct}, SisFall\cite{Sucerquia2017}, UMAFall\cite{EduUMA2017}, tFall\cite{tfall} y ProjectGravity\cite{Vilarinho2015} por ser los más utilizados. Sin embargo estos conjuntos de datos no cumplen todos los requisitos necesarios para entrenar modelos para la plataforma de hardware usada o para el tipo de procesado usado en este proyecto.
 
-En segunda instancia, al ser el objetivo último una implementación funcional de un prototipo, las exigencias sobre el tipo y formato de los datos quedan supeditadas a las disponibles en la plataforma de desarrollo y test. Aunque factores como la frecuencia de muestreo, resolución o valores máximos de los datos pueden ser adaptadas de los conjuntos de datos pre-existentes, prescindiremos en gran medida de estos para evitar el coste de realizar dicho tratamiento así como reducir las posibles fuentes de errores en el experimento entrenando el prototipo final con el dataset generado.
+Estas diferencias, ya sea en el tipo de datos recogidos, el formato de los mismos o la forma de captura de estos cobran especial relevancia dado que el objetivo último de este estudio es realizar una implementación funcional de un prototipo. Las exigencias sobre el tipo y formato de los datos quedan supeditadas a las disponibles en la plataforma de desarrollo y test, y el modo y posición de captura al impuesto por el tipo de dispositivo elegido. Aunque factores como la frecuencia de muestreo, resolución, unidades o valores máximos de los datos pueden ser adaptadas de los conjuntos de datos pre-existentes, no es posible adaptar datos capturados con sensores en diferente posición. Dado que el dispositivo aquí usado es un reloj, la posición de los sensores debería cumplir la limitación de estar posicionados de una forma fija a la muñeca.
 
-Este conjunto de datos será también usado durante la etapa de validación de los resultados con respecto al estado del arte, aunque no pueda ser utilizado para una comparacion directa, si debería servir para obtener una aproximación del rendimiento.
+En un principio la labor de capturar y generar un nuevo conjunto de datos de entrenamiento parece una tarea desorbitada. Sin embargo, por las peculliaridades del sistema de detección usado se ve rápidamente reducida al mero hecho de capturar series temporales de las medidas de la aceleración y filtrar o separar aquellas que se correspondan con caídas. Afortunadamente para los participantes, durante todo el proceso de captura ninguno de los sujetos sufrió una caída, facilitando enormemente la labor de recolección y limpieza de los datos, aunque impidiendo la validación del dispositivo de forma experimental al no disponer de suficientes casos de caídas para obtener métricas de calidad.
 
-\subsection{Captura de datos: AccelCapture}
+\subsection{Captura de datos: AccelCapture}\label{app:accelcapture}
 
 Con el fin de obtener un conjunto de datos para el entrenamiento, test y validación del sistema, se opta por implementar una primera aplicación para la plataforma de desarrollo.
 
-\subsubsection{}
+
 
 \subsubsection{Datos Capturados}
 
@@ -29,26 +29,6 @@ Nombre del Portador del dispositivo
 Si disponibles (y no es nunca) actividad realizada tal y como es automáticamente detecatada por el dispositivo
 
 
-\subsection{Dispositivo de captura}
-
-\subsubsection{Especificiaciones}
-
-\tablas{tab:watch-specs}{Especificaciones del dispositivo de referencia}{|l|c|}{
-  Nombre              & Fossil Gen3 Sport \\ \midrule
-  Tamaño Pantalla     & 1,4" \\ \midrule
-  Formato de Pantalla & Circular \\
-  Tipo de Pantalla    & Táctil color (AMOLED) \\
-  Resolución Pantalla & 454 x 454 px \\
-  Bluetooth           & 4.1 \\
-  Wifi & 802.11 b/g/n \\
-  ROM                 & 4GBytes \\
-  RAM                 & 512MBytes \\
-  CPU                 & Snapdragon 2100 \\
-  OS & WearOS 2 \\
-  Sensor Freq. Cardiaca & Si \\
-  Giroscopio & Si \\
-  Aclerómetro & 3 ejes \\
-}
 
 \subsection{Preprocesado de los datos}
 
@@ -65,6 +45,48 @@ decide que una promediado por ventana flotante de tamaño M es el que mejores re
 
 \figura{capturaFlujo}{fig:capturaFlow}{Flujo de trabajo de la aplicación de captura de datos}
 
+\subsubsection{Preprocesado}
+
+\warn{En la lectura de los acelerómetros se mezcla la señal inercial con la medición constante de la gravedad y una señar parásita de ruido o movimientos de alta frequencia. Para este caso realizaremos un filtro paso bajo IIR de primer orden.}
+
+\[
+  y_n = \alpha x_n + (1-\alpha) y_{n-1}
+\]
+
+%comment = \alpha\times x_n + \(1-\alpha\)\times y_{n-1}
+La señal obtenida equivale a un filtro con función de transferencia
+
+\[
+  H(z) = \frac{\alpha}{1-(1-\alpha)z^{-1}}
+\]
+
+Donde
+\begin{align*}
+\alpha = \frac{\delta t}{\delta t + RC} \\
+f_c= \frac{1}{2 \pi RC}
+\end{align*}
+
+A la hora de elegir la frecuencia de corte $f_c$, debemos tener en cuenta que determinan que a 4Hz hay suficiente información útil como para realizar una predicción de la actividad. Dado que la señal de la Gravedad es contínua, optamos por una valor de frecuencia de corte $f_c=1Hz$.
+
+Despejando las eq. precedentes queda
+\begin{align*}
+  f_m & = 50{Hz}\\
+  \delta t & = 1/f_m = 0.02s\\
+  RC & =\frac{1}{2\pi f_c} = \frac{1}{2\pi} = 0.1591\\
+  \alpha & = \frac{0.02}{0.02 + RC} = 0,1116
+\end{align*}
+
+Con este filtrado obtendremos la señal debida a la Gravedad. Si la restamos a la señal original, obtendremos la señal filtrada paso alto.
+\begin{align*}
+  \vec{A_f}[n] & = \vec{A}[n] - \vec{G}[n]  \\
+  G_i[n] &= \alpha A_i[n] + (1-\alpha)G_i[n-1], \forall i \in [x,y,z]
+\end{align*}
+
+%VER https://electronics.stackexchange.com/questions/498226/calculate-cutoff-frequency-of-a-digital-iir-filter
+
+%https://en.wikipedia.org/wiki/EWMA_chart
+
+%https://en.wikipedia.org/wiki/Low-pass_filter#Simple_infinite_impulse_response_filter
 
 
 
