@@ -38,8 +38,8 @@
 \DeclareMathOperator*{\softmax}{\textup{softmax}}
 
 
-% Fix warning \headheigt is tochangeso small
-\setlength{\headheight}{14pt}%
+% Fix warning \headheigt is to changeso small
+%\setlength{\headheight}{14pt}%
 
 % Permitir modularizar el trabajo
 \usepackage{subfiles} % recomiendan cargarlo al final del preambulo
@@ -63,6 +63,26 @@
 %---------------------------
 %--------------------------
 \begin{document}
+%----------------
+% overfull hbox : hide messages
+%\hbadness=10000
+%\the\tolerance,
+%\the\pretolerance,
+%\the\hbadness,
+%\the\hfuzz,
+%\the\emergencystretch,
+% Second test
+%\pretolerance=150
+\tolerance=530
+%\hbadness=752
+%\hfuzz0pt
+%\emergencystretch=0em
+% underfull vbox fixes::
+%\setlength\parskip{1em plus 2pt}
+%\setlength\parskip{\baselineskip}
+
+
+
 %\selectlanguage{spanish}
 \renewcommand{\listfigurename}{Índice de Ilustraciones}
 \renewcommand{\listtablename}{Índice de Tablas}

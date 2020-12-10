@@ -13,7 +13,6 @@
 \usepackage[utf8]{inputenc} %descomentar esta l�nea si se trabaja en linux
 %\usepackage[latin1]{inputenc} %comentar esta l�nea si se trabaja en linux
 
-
 %simbolos
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -35,7 +34,7 @@
 \usepackage{pdfpages}
 
 %cabeceras y pies de página
-\usepackage{vmargin}
+%\usepackage{vmargin}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhfoffset{20pt}
@@ -49,8 +48,10 @@
 \usepackage{etoolbox}
 \patchcmd{\chapter}{\if@openright\cleardoublepage\else\clearpage\fi}{\if@openright\clearpage\else\clearpage\fi}{}{}
 
+% tamaño A4 (definirlo en documentclass no es suficiente)
+\usepackage[a4paper,heightrounded,headheight=14pt,centering, margin=2.5cm]{geometry}
 %hiper-referencias
-\usepackage{hyperref}
+\usepackage[pdflang=es]{hyperref}
 
 % APA bibliography reference style
 %\usepackage{apacite}
@@ -133,12 +134,10 @@
 \vspace{3cm}
 
 {\color{azulunir}{Ciudad:}}\@nombreciudad\\
-{\color{azulunir}{Fecha:}} \thedate
+{\color{azulunir}{Fecha:}} \today %\thedate
 \newpage
 \thispagestyle{empty}
 \endgroup}
-
-
 
 
 

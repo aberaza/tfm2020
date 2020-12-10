@@ -2,5 +2,8 @@
   "cSpell.language": "es,es-ES,en",
   "cSpell.enableFiletypes": [
     "bibtex-style"
+  ],
+  "cSpell.words": [
+    "softmax"
   ]
 }

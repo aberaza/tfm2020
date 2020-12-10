@@ -36,20 +36,23 @@ En la tabla \ref{tab:MLResults} Destacan los buenos resultados obtenidos por los
 
 \tablas{tab:MLResults}{Resultados de sistemas basados en ML}{l|c|c|c|ccc}{
    & Yo & Musci2020 & Torti2018  & Liu2020  & Liu2020 & Liu2020 \\
-   & GRU & RNN(LSTM) & RNN(LSTM)  & FD-DNN   & LSTM    & CNN     \\
+   & GRU & RNN(LSTM) & RNN(LSTM)  & FD-DNN   & LSTM    & CNN     \\ \midrule
 Sensitividad (\%) &  &   & 98,73  & 94,09  & 81,47   & 87,50   \\
 Especificidad (\%)&   &   & 97,93  & 99,94  & 99,57   & 99,88   \\
 Accuracy (\%)     & 91,1 &   & 98,33  & 99,17  & 96,88   & 98,13   \\
+Tiempo(s)         &     &     &     &     &     &     \\
 }
 
+\figura{CompositeFallNormalRMSHistogram_t-25}{fig:GRU_predictionRMS_Histogram}{Histograma de los errores de predicción del modelo GRU\todo{Se han mezclado muestras de caidas en el entrenamiento y el modelo. Repitiendo el entrenamiento.}}
 
 En la tabla\ref{tab:analiticResults} se muestran los resultados de los modelos basados en métodos analíticos. Su importancia para este estudio proviene del hecho de que son los métodos más extendidos en los sistemas disponibles hoy en día y establecen por tanto el nivel a superar. Se muestra también los resultados obtenidos para el clasificador bourke utilizado a modo comparativo y de validación del resultado obtenido.
 \tablas{tab:analiticResults}{Resultados de sistemas basados en métodos analíticos}{l|c|c|c|c}{
               & Yo        & Yo      & SisFALL & SisFALL \\
-              & Bourke    & Hibrido & Cotas(SumVect)  & Cotas(SV) 100\%Sens \\
-Sensitividad (\%) & 99,4  &    91,13   & 94,28\% & 100\% \\
-Especificidad (\%) & 29,7 &   42,88    & 96,13\% & 32,9\% \\
-Accuracy (\%)     & 64,55 &     67  & 95,21\% & 66,43\% \\
+              & Bourke    & Hibrido & Cotas(SumVect)  & Cotas(SV) 100\%Sens \\ \midrule
+Sensitividad (\%) & 99,4  &    91,13   & 94,28 & 100  \\
+Especificidad (\%) & 29,7 &   42,88    & 96,13 & 32,9 \\
+Accuracy (\%) & 64,55 &     67  & 95,21 & 66,43 \\
+Tiempo (s)    & 0     & 2,5     & 0       & \\
 }
 \warn{Falta extraer Lim2014 con sisfall y comparar}
 
