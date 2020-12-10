@@ -44,7 +44,7 @@ Para el dispositivo móvil usamos un reloj inteligente Fossil Sport con sistema 
 
 El la generación, entrenamiento, análisis y evaluación de modelos se realiza usando Keras/Tensorflow corriendo en la plataforma Google Colab.
 
-\section{Arquitectura}
+\section{Arquitectura}\label{desc_archi}
 
 \subsection{Arquitectura del sistema}
 
@@ -76,9 +76,12 @@ El proceso que contiene la lógica principal, descrita en la figura\ref{fig:dete
 
 El proceso de detección o filtrado usando el modelo implementado basado en redes recurrentes es el único que se exporta a una clase propia: \textit{CrashDetectService}. Toma de nuevo la forma de un servicio asíncrono que es invocado únicamente cuando el modelo analítico ha detectado un positivo. De esta forma se pretende reducir drásticamente las necesidades de cómputo. Este servicio a su vez se subdivide en unos módulos que son los modelos de detección propiamente dichos. Como se aprecia en el diagrama UML de la arquitectura\ref{fig:clasesUml}, es la clase \textit{TFLiteModelDetector} la que provee la cumunicación con el modelo de TFLite previamente generado y entrenado en Colab.
 
-\section{Implementación}
+\figura{SignalvsIIRFilter}{fig:signalIIRFilter}{Señal original y filtrada}
+\figura{SignalvsIIRFilter25Hz}{fig:signalIIRFilter25}{Señal subsampleada a 25Hz y filtrada}
 
-\subsection{Algoritmo}
+\section{Implementación}\label{desc_impl}
+
+\subsection{Algoritmo}\label{desc_modelo}
 
 El algoritmo de detección consta de dos fases consecutivas, tal y como se muestra en el diagrama \ref{fig:deteccionFlow}. Un primer bloque usando un algoritmo analítico basado en la variación del vector suma de la acceleración y una posterior etapa de depuración o filtrado basado en un modelo de detección de anomalías usando RNN.
 
@@ -92,7 +95,7 @@ Los modelos analíticos aplicados a la detección de caídas tienen la gran vent
 
 En nuestro algoritmo general, el modelo analítico es similar a una capa de gestión de la atención del modelo RNN. Es por esta razón que la baja especificidad  no resulta un problema ya que lo que nos interesa es que esta etapa tenga una sensibilidad del 100\%. El dispositivo captura información de la aceleración en 3 ejes con una medida máxima de $9G$ y a una frecuencia de muestreo $f_m=50Hz$.
 
-Como primera etapa se utiliza un algoritmo basado el el vecotor total de la aceleración ($SVTot = |\sqrt{a_{x}^2+a_{y}^2+a_{z}^2}|$) por su simplicidad de cálculo. En concreto, comparamos el valor absoluto de la diferencia de dos mediciones consecutivas de la aceleración y comparamos con un umbral de referencia.
+Como primera etapa se utiliza un algoritmo basado el el vector total de la aceleración ($SVTot = |\sqrt{a_{x}^2+a_{y}^2+a_{z}^2}|$) por su simplicidad de cálculo. En concreto, comparamos el valor absoluto de la diferencia de dos mediciones consecutivas de la aceleración y comparamos con un umbral de referencia.
 \[
 ModeloAnalitico\rightarrow |SVTot_n - SVTot_{n-1}|\geq A_{umbral}
 \]
@@ -121,7 +124,13 @@ La arquitectura el modelo usa una red LSTM bidireccional con 50 unidades de memo
 
 Para conseguir la predicción de las 49 muestras restantes, debemos convertir dicho modelo en \textit{many2many} (del inglés \textit{de muchas a muchas}, por las muestras recibidas y las predichas). Tal manipulación se consigue alimentando iterativamente el modelo en cada paso con la predicción calculada en el paso previo $x_{t} = \hat{y}_t$ tal y como se muestra en \ref{fig:rnnModelMany}
 
+\figura{evolucionLR}{fig:LRvariable}{Evolución del valor LR exponencial}
+
+\figura{trainingModeloRNN}{fig:rnnTrainAlt}{Evolución de RMSE durante el entrenamiento}
+
 \figura{modeloRNNmany2many}{fig:rnnModelMany}{Conversión del modelo en \textit{Many2Many}}
+
+\figura{prediction.png}{fig:prediccionAceleracion}{Predicción de la aceleración}
 
 \paragraph*{Detección}
 
@@ -134,10 +143,10 @@ Comparando el resultado del error obtenido con un nuevo umbral al que denominare
 En este caso el valor utilizado se calcula mediante el análisis del RECM usado durante la validación del modelo durante el entrenamiento.
 
 
-\subsection{Optimización del modelo RNN}
+\subsection{Optimización del modelo RNN}\label{desc_optim}
 
 Quantización y prune
-\warn{Dado que Tensorflow no permite realizar quantización ni prune sobre las capas LSTM/Gru bidireccionales estoy usando una versión propia de estas redes que implementa la interfaz prunable y por tanto debería permitirlo. Desgraciadamente todavía no he conseguido que funcione...}
+\warn{Dado que Tensorflow no permite realizar cuantificación ni prune sobre las capas LSTM/Gru bidireccionales estoy usando una versión propia de estas redes que implementa la interfaz prunable y por tanto debería permitirlo. Desgraciadamente todavía no he conseguido que funcione...}
 
 
 \subsection{Interfaz}

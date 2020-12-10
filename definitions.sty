@@ -20,15 +20,6 @@
 % \usepackage{subcaption} % conflicto con subfig
 % mirar paquete subfig
 
-%%% ToDo notes
-\usepackage{xargs}                      % Use more than one optional parameter in a new commands
-%\usepackage[pdftex,dvipsnames]{xcolor}  % Coloured text etc.
-
-\usepackage[spanish,colorinlistoftodos,textsize=tiny]{todonotes}
-%\newcommandx{\info}[2][1=]{\todo[linecolor=OliveGreen,backgroundcolor=OliveGreen!25,bordercolor=OliveGreen,#1]{#2}}
-\newcommand{\info}[1]{\todo[inline,linecolor=OliveGreen,backgroundcolor=OliveGreen!25,bordercolor=OliveGreen]{#1}}
-\newcommandx{\warn}[2][1=]{\todo[inline, size=large, linecolor=Plum,backgroundcolor=Plum!25,bordercolor=Plum,#1]{#2}}
-%\newcommandx{\thiswillnotshow}[2][1=]{\todo[disable,#1]{#2}}
 
 %\digura{scale}{image}{fig:id}{Titulo}
 
@@ -100,3 +91,25 @@
     \caption{\label{#1} #2}
 \end{sidewaystable*}
 }
+
+
+%%% ToDo notes
+\usepackage{xargs}                      % Use more than one optional parameter in a new commands
+%\usepackage[pdftex,dvipsnames]{xcolor}  % Coloured text etc.
+
+\usepackage[spanish,colorinlistoftodos,obeyDraft,textsize=tiny]{todonotes}
+%\newcommandx{\info}[2][1=]{\todo[linecolor=OliveGreen,backgroundcolor=OliveGreen!25,bordercolor=OliveGreen,#1]{#2}}
+\newcommand{\info}[1]{\todo[inline,linecolor=OliveGreen,backgroundcolor=OliveGreen!25,bordercolor=OliveGreen]{#1}}
+\newcommandx{\warn}[2][1=]{\todo[inline, size=large, linecolor=Plum,backgroundcolor=Plum!25,bordercolor=Plum,#1]{#2}}
+\newcommand{\todofig}[5][1]{
+  \def\scale{#1}
+  \def\graphname{#2}
+  \def\figid{#3}
+  \def\captiontext{#4}
+    \begin{figure}[!ht]
+        \centering
+        \missingfigure{TODO}
+        \caption{\label{\figid} \captiontext}
+    \end{figure}
+}
+\newcommandx{\todohide}[2][1=]{\todo[disable,#1]{#2}}

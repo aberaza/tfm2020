@@ -89,6 +89,9 @@
   pages     = {4192},
   volume    = {20},
   abstract  = {A fall detection module is an important component of community-based care for the elderly to reduce their health risk. It requires the accuracy of detections as well as maintains energy saving. In order to meet the above requirements, a sensing module-integrated energy-efficient sensor was developed which can sense and cache the data of human activity in sleep mode, and an interrupt-driven algorithm is proposed to transmit the data to a server integrated with ZigBee. Secondly, a deep neural network for fall detection (FD-DNN) running on the server is carefully designed to detect falls accurately. FD-DNN, which combines the convolutional neural networks (CNN) with long short-term memory (LSTM) algorithms, was tested on both with online and offline datasets. The experimental result shows that it takes advantage of CNN and LSTM, and achieved 99.17 fall detection accuracy, while its specificity and sensitivity are 99.94 and 94.09, respectively. Meanwhile, it has the characteristics of low power consumption.},
+  comment   = {Sisfall y mobiact
+Redes convolucionales CNN
+Aumentar el número de capas convolucionales mejora la accuracy hasta las 4 capas, más allá no tiene impacto alguno},
   doi       = {10.3390/s20154192},
   file      = {:Liu2020 - An Energy-Efficient Fall Detection Method Based on
 FD-DNN for Elderly People.pdf:PDF},
@@ -188,8 +191,9 @@ FD-DNN for Elderly People.pdf:PDF},
   number    = {12},
   pages     = {198},
   volume    = {17},
+  comment   = {11Hz es suficiente para realizar detección},
   doi       = {10.3390/s17010198},
-  file      = {:sensors-17-00198.pdf:PDF},
+  file      = {:sensors-17-00198.pdf:PDF;:SisFall_A_Fall_and_Movement_Dataset.pdf:PDF},
   publisher = {MDPI AG},
   source    = {Crossref},
   url       = {https://doi.org/10.3390/s17010198},
@@ -271,7 +275,11 @@ FD-DNN for Elderly People.pdf:PDF},
   volume    = {2020},
   abstract  = {With advances in medicine and healthcare systems, the average life expectancy of human beings has increased to more than 80 yrs. As a result, the demographic old-age dependency ratio (people aged 65 or above relative to those aged 15--64) is expected to increase, by 2060, from $\sim$28},
   comment   = {Sistemas de detección de caídas han de ser no obtrusivos. tener baja latencia,
-Comparación de métodos que usan wearables tato threshod com ml.Indica datasets, método, posición etc.},
+Comparación de métodos que usan wearables tato threshod com ml.Indica datasets, método, posición etc.
+
+Introducción a sistemas de detección de cáidas, clasificación y tipos. Sistemas de cotas, thresholds, tablas de resultados. Sistemas de ML, aprendizaje automático, KNN, LSM, SVM, Bayes, DTW, ANN.
+
+Posición del sensor tiene impacto en precisión.},
   doi       = {10.1155/2020/2167160},
   file      = {:/home/aritz/Documents/Master_IA/DOCS/Anita2020 - A Survey on Recent Advances in Wearable Fall Detection Systems.pdf:PDF},
   isbn      = {23146133},
@@ -509,7 +517,86 @@ Networks to Fall Detection Evaluated with Multiple Public Datasets.pdf:PDF},
   publisher = {Hindawi Limited},
 }
 
-@Article{,
+@Conference{Edu/UMA/2017,
+  author    = {Casilari P{\'e}rez, Eduardo and Jose-Antonio Santoyo-Ram{\'o}n and Cano Garc{\'i}a, Jos{\'e} Manuel},
+  booktitle = {Proceedings of 14th International Conference on Mobile Systems and Pervasive Computing (MobiSPC’2017) (Procedia Computer Science, 110)},
+  title     = {{UMAF}all: {A} {M}ultisensor {D}ataset for the {R}esearch on {A}utomatic {F}all {D}etection},
+  year      = {2017},
+  address   = {Leuven (Belgium)},
+  pages     = {32-39},
+  url       = {https://www.sciencedirect.com/science/article/pii/S1877050917312899},
+}
+
+@Article{Musci2020,
+  author    = {Musci, Mirto and De Martini, Daniele and Blago, Nicola and Facchinetti, Tullio and Piastra, Marco},
+  journal   = {IEEE Transactions on Emerging Topics in Computing},
+  title     = {Online Fall Detection using Recurrent Neural Networks on Smart Wearable Devices},
+  year      = {2020},
+  issn      = {2376-4562},
+  pages     = {1–1},
+  comment   = {Clasificación de sistemas detección de caídas en wearables y de entorno enviromental.
+Habla sobre datasets (tfall, project gravity, mobifall, sisfall, umafall
+
+Introduce sistema basado en LSTM para detectar 3 estados(normal, alerta, caida). Usa SisFALL para comparar.},
+  doi       = {10.1109/tetc.2020.3027454},
+  file      = {:1804.04976.pdf:PDF},
+  publisher = {Institute of Electrical and Electronics Engineers (IEEE)},
+  url       = {http://dx.doi.org/10.1109/TETC.2020.3027454},
+}
+
+@Article{Ozdemir2014,
+  author  = {Ozdemir, Ahmet and Barshan, Billur},
+  journal = {Sensors (Basel, Switzerland)},
+  title   = {Detecting Falls with Wearable Sensors Using Machine Learning Techniques},
+  year    = {2014},
+  month   = {06},
+  pages   = {10691-10708},
+  volume  = {14},
+  comment = {Caidas deben tratarse como parte de detección de actividad humana
+Ventajas de los wearables, sencillos y sin necesidad de estructura
+Sistemas comerciales no son satisfactorios por la alta tasa de falsos positivos (bourke2008)
+Captura triaxial + magnetómetro, usan módulo del vector aceleración. Detectan pico y capturan dos segundos antes y dos después. a 25Hz. Extraen muchas features (mean varianza, kurtosis, skew, DTF, autocorrelación).
+Usan sensibilidad, especificidad y accuracy
+Describe métodos KNN, LSM (Least square method), SVM,  Bayer, DTW, ANN (Densa 3 capas 30 neuronas each). De mejor a peor: KNN, LSM, SVM, BAYES, DTW, ANN},
+  doi     = {10.3390/s140610691},
+  file    = {:sensors-14-10691.pdf:PDF},
+}
+
+@InProceedings{Torti2018,
+  author = {Torti, Emanuele and Fontanella, Alessandro and Musci, Mirto and Blago, Nicola and Pau, D. and Leporati, Francesco and Piastra, Marco},
+  title  = {Embedded Real-Time Fall Detection with Deep Learning on Wearable Devices},
+  year   = {2018},
+  month  = {08},
+  pages  = {405-412},
+  doi    = {10.1109/DSD.2018.00075},
+  file   = {:Paper_DSD18.pdf:PDF},
+}
+
+@Article{Liu2018,
+  author  = {K. {Liu} and C. {Hsieh} and S. J. {Hsu} and C. {Chan}},
+  journal = {IEEE Sensors Journal},
+  title   = {Impact of Sampling Rate on Wearable-Based Fall Detection Systems Based on Machine Learning Models},
+  year    = {2018},
+  number  = {23},
+  pages   = {9882-9890},
+  volume  = {18},
+  comment = {Descripción de los parámetros de una caída:
+Duración 0,4 a 0,8 segundos. 5Hz serían suficientes, 50Hz parece mejor opcion.
+Sisfall
+Calcula mnima frecuencia necesaria para obtener varios modelos. 5Hz es efectivamente posible.},
+  doi     = {10.1109/JSEN.2018.2872835},
+  file    = {:JSEN.2018.2872835.pdf:PDF},
+}
+
+@Article{Putra2017,
+  author  = {Putra, I Putu and Brusey, James and Gaura, Elena and Vesilo, Rein},
+  journal = {Sensors},
+  title   = {An Event-Triggered Machine Learning Approach for Accelerometer-Based Fall Detection},
+  year    = {2017},
+  month   = {12},
+  pages   = {20},
+  volume  = {18},
+  doi     = {10.3390/s18010020},
 }
 
 @Comment{jabref-meta: databaseType:bibtex;}

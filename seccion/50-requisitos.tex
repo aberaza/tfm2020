@@ -10,7 +10,7 @@ Para la realización de este trabajo es necesario conseguir aunar y definir tres
   \item Modelo de detección de caídas
 \end{itemize}
 
-\section{Dispositivo}
+\section{Dispositivo}\label{req_hardware}
 
 La evolución en sensores y microprocesadores han conseuido popularizar en los últimos años infinidad de sistemas embebidos para capturar y medir nuestros niveles de actividad. Publicitados como sistemas para controlar nuestra actividad física, han ido evolucionando de simples podómetros a complejos sistemas de captura inercial, constantes vitales y posición con acceso a internet. Debemos distinguir entre dos familias de dipsotivos \textit{wearables}, o \textit{llevables}: Aquellos que simplemente realizan la captura de datos y delegan el cómputo en otro dispositivo (siendo los más conocidos miembros de esta familia las pulseras de actividad), y las plataformas que aunan captura y tratamiento en el mismo sistema, aunque puedan a su vez transmitir los datos a un tercer actor (como por ejemplo los \textit{smartwatches}). Estos últimos dispositivos son efectivamente micromoputadoras miniaturizadas al extremo.
 
@@ -28,26 +28,28 @@ De todas estas familias, podemos descartar rápidamente Huawei, por no ofrecer u
 Tanto WearOS como TizenOS ofrecen potentes herramientas de desarrollo así como detallada documentación. Soportan ambas modelos de inteligencia artificial desarrollados con TensorFlow Lite y los dispositivos que los usan equipan microprocesadores con capacidades siimilares. Optamos por desarrollar en prototipo para la plataforma WearOS por tener un concepto abierto de implementacion del hardware y poder disponer por tanto de mayor variedad de dispositivos. Sin embargo dado que ambos pueden trabajar con los modelos que generaremos, portar la funcionalidad de una plataforma a otra debería ser trivial. El dispositivo elegido es un Fossil Sport Gen3 del que podemos encontrar más información en la sección \ref{app:fossil}.
 
 
-\section{Corpus de datos}
+\section{Corpus de datos}\label{req_corpus}
 Tras un análisis de los diferentes conjuntos de datos disponibles y estudiar cuan bien se adaptaban a los requisitos del sistema, concluimos que ninguno cubre el 100\% de los requisitos. Así pues decidimos optar por un enfoque modular y dividir el estudio en dos bloques: Validación e Implementación.
 
-Como validación entendemos el estudio del modelo propuesto y su viabilidad y eficacia para la tarea. Así pues buscaremos un corpus etiquetado con un rango de valores que puedan ser adaptados a los límites impuestos por la plataforma elegida o sean de magnitud comparable sin enfocarnos en si los dispositivos de captura eran similares o su localización es la misma que en este trabajo. Así mismo nos interesa que sea un corpus extendido entre la comunidad investigadora para poder comparar los resultados del pesentado en este trabajo y su validez para la tarea.
+Como validación entendemos el estudio del modelo propuesto y su viabilidad y eficacia para la tarea. Así pues buscaremos un corpus etiquetado con un rango de valores que puedan ser adaptados a los límites impuestos por la plataforma elegida o sean de magnitud comparable sin enfocarnos en si los dispositivos de captura eran similares o su localización es la misma que en este trabajo. Así mismo nos interesa que sea un corpus extendido entre la comunidad investigadora para poder comparar los resultados con los obtenidos en este trabajo y poder determinar si el modelo es válido para la tarea.
 
 En la etapa de implementación usaremos un corpus específico para nuestro sistema y que se desarrolló durante la ejecución del trabajo. Este corpus es el utilizado para entrenar el modelo final.
 
 \subsection{Corpus para la validación}
 \todo{redacción y citas}
-SisFALL (Tras considerar otros muchos, umafall): mayor cantidad de caídas y muchas de las actividades son consideradas \textit{quasi-caidas} y por tanto son casos límite. Si el modelo es capaz de dar buenos resultados en estas condiciones, es un buen modelo.
+SisFALL (Tras considerar otros muchos como umafall, mobiact/mobifall, etc): mayor cantidad de caídas y muchas de las actividades son consideradas \textit{quasi-caidas} y por tanto son casos límite. Si el modelo es capaz de dar buenos resultados en estas condiciones, es un buen modelo. ADemás, es usado por \cite{Musci2020} y varios de los estudios presentes en \cite{Anita2020} por lo que resulta ideal para comparar los resultados.
 
 \subsection{Corpus para la implementación}
 
-Para poder generar un modelo con el mismo tipo de datos que deberá procesar posteriormente, optamos por realizar un corpus de datos propio usando el mismo dispositivo sobre el que se ejecutará el prototipo como plataforma de captura.
+Para poder generar un modelo con el mismo tipo de datos y capturado de la misma forma a los que deberá procesar posteriormente, optamos por realizar un corpus de datos propio usando el mismo dispositivo sobre el que se ejecutará el prototipo como plataforma de captura.
 
 Este corpus se realiza usando únicamente información del sensor de aceleración triaxial del reloj Fossil Sport Gen3 \ref{app:fossil} a una frecuencia de muestreo de 50Hz. Los valores de aceleración medidos están expresados en $m/s^2$ dentro de los límites de la plataforma. Este es un corpus no etiquetado dado que el objetivo es entrenar un modelo de predicción de series temporales y no un clasificador como suele ser habitual.
 
 Para generar las capturas de los acelerómetros se implementa la aplicación \textit{AccelCapture} \ref{app:accelcapture}. En el apéndice \ref{app:dataset} se encuentra una descripción del proceso de generación y especificaciones detalladas del corpus generado.
 
-\section{Modelo}
+A la hora de parametrizar el sistema de captura de datos, optamos por mantener los 50Hz de frecuencia de muestreo. \cite{Liu2018} demuestra que se pueden conseguir buenos modelos basados en aprendizaje automático con tan solo 5,8Hz, aunque generaliza en 21,3Hz la frecuencia de muestreo mínima necesaria. Nos mantenemos por encima de este límite para eliminar una posible fuente de errores en el modelo.
+
+\section{Modelo}\label{req_modelos}
 
 Estudios similares han mostrado la mayor capacidad de los sistemas basados en aprendizaje automático. Sin embargo estos algoritmos no han conseguido desplazar en los sistemas comerciales a los métodos analíticos por la gran capacidad de cálculo que requieren. Algunos trabajos han demostrado la eficacia de hibridar los modelos usando un modelo computacionalmente simple para raealizar una tarea de detección de candidatos a caídas de fondo y un modelo complejo que actúe únicamente sobre este subconjunto de episodios. Este es el acercamiento que toma este trabajo.
 
@@ -68,6 +70,9 @@ Efectivamente en la figura \ref{fig:bourke_cfmatrix} se aprecia como usando úni
 
 \subsection{Modelos Híbridos}
 \warn{este es el trabajo a realizar. Introducir los trabajos de ..... y poco más}
+
+\section{TensorFlow Lite} \label{req_tflite}
+Opciones y limitaciones que impone el framework a introducir aquí
 
 \end{document}
 

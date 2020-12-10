@@ -3,7 +3,7 @@
 
 \info{al menos una mínima evaluación de usabilidad de la herramienta y su aplicabilidad para resolver el problema resuelto.}
 
-\section{Evaluación del modelo}
+\section{Evaluación del modelo}\label{eval_modelo}
 textwidth in pt: \the\textwidth
 
 
@@ -15,7 +15,7 @@ Un sistema de detección de caídas es en el fondo un clasificador con una únic
   \]
   \item Especificidad o Selectividad (Capacidad de discernir únicamente las caídas).
   \[
-    Especificidad = \frac{TN}{TP+FP}
+    Especificidad = \frac{TN}{TN+FP}
   \]
 \end{itemize}
 
@@ -25,9 +25,37 @@ Estas métricas son usadas habitualmente en otros trabajos similares\cite{Noury2
 
 
 \subsection{Modelos basados en Machine Learning}
-\warn{de los trabajos Anita2020, Lim2014 extraer tabla de resultados con sisfall y comparar}
+\info{De Anita 2020 sabemos que
+Putra2017: An Event-triggered machine learning approach for accelerometer based fall detection (sistema híbrido: Eventos + ML)
+
+Hussain2019 "Activity Aware falldetection and recognition based on wearable sensors" IEEE sensors 19 vol 12, solo suscripción :(
+
+}
+
+En la tabla \ref{tab:MLResults} Destacan los buenos resultados obtenidos por los modelos que usan técnicas de aprendizaje automático. Si bien en lo referente a la latencia, \cite{Liu2020} obtiene tiempos que superan el segundo en la mayoría de modelos, llegando incluso a los 8,87s obtenidos con un clasificador de Bayes. Tanto en los trabajos de \cite{Liu2020} como \cite{Musci2020} y \cite{Torti2018} se subraya el hecho de la no uniformidad de los resultados. Los mejores resultados se obtienen con población joven mientras que con población adulta las métricas pueden perder hasta 5 puntos, en parte debido a la falta de datos de entrenamiento.
+
+\tablas{tab:MLResults}{Resultados de sistemas basados en ML}{l|c|c|c|ccc}{
+   & Yo & Musci2020 & Torti2018  & Liu2020  & Liu2020 & Liu2020 \\
+   & GRU & RNN(LSTM) & RNN(LSTM)  & FD-DNN   & LSTM    & CNN     \\
+Sensitividad (\%) &  &   & 98,73  & 94,09  & 81,47   & 87,50   \\
+Especificidad (\%)&   &   & 97,93  & 99,94  & 99,57   & 99,88   \\
+Accuracy (\%)     & 91,1 &   & 98,33  & 99,17  & 96,88   & 98,13   \\
+}
+
+
+En la tabla\ref{tab:analiticResults} se muestran los resultados de los modelos basados en métodos analíticos. Su importancia para este estudio proviene del hecho de que son los métodos más extendidos en los sistemas disponibles hoy en día y establecen por tanto el nivel a superar. Se muestra también los resultados obtenidos para el clasificador bourke utilizado a modo comparativo y de validación del resultado obtenido.
+\tablas{tab:analiticResults}{Resultados de sistemas basados en métodos analíticos}{l|c|c|c|c}{
+              & Yo        & Yo      & SisFALL & SisFALL \\
+              & Bourke    & Hibrido & Cotas(SumVect)  & Cotas(SV) 100\%Sens \\
+Sensitividad (\%) & 99,4  &    91,13   & 94,28\% & 100\% \\
+Especificidad (\%) & 29,7 &   42,88    & 96,13\% & 32,9\% \\
+Accuracy (\%)     & 64,55 &     67  & 95,21\% & 66,43\% \\
+}
+\warn{Falta extraer Lim2014 con sisfall y comparar}
 
 \subsection{Mixto Bourke + GRU}
+
+
 \todo{Validar la mejora del acercamiento en cuanto a especificidad respecto a Bourke simple. Comparar con los resultados de la tabla anterior}
 
 
