@@ -16,7 +16,7 @@ En \cite[p.2]{Anita2020} se recopilan y definen los principios básicos que debe
   \item Ser capaz de diferenciar caídas de otras actividades humanas
 \end{itemize}
 
-En \cite{Musci2020,Anita2020}, se introducen varias clasificaciones de estos sistemas. En el contexto del presente trabajo, resultan de especial interés la rama de los sistemas \textit{llevables}: "Aquellos en los que los sensores usados para la detección se encuentran embebidos en un dispositivo que debe llevar pueto el sujeto, como por ejemplo en una pulsera" \cite[p.3]{Anita2020}. A su vez podemos dividir estos según el tipo de modelo utilizado para analizar los datos \cite{Anita2020,Lim2014}, en "dos acercamientos principales, los basados en cotas o límites y los basados en aprendizaje automático"\cite[p.1]{Lim2014}
+En \cite{Musci2020,Anita2020}, se introducen varias clasificaciones de estos sistemas. En el contexto del presente trabajo, resultan de especial interés la rama de los sistemas \textit{vestibles}: "Aquellos en los que los sensores usados para la detección se encuentran embebidos en un dispositivo que debe llevar pueto el sujeto, como por ejemplo en una pulsera" \cite[p.3]{Anita2020}. A su vez podemos dividir estos según el tipo de modelo utilizado para analizar los datos \cite{Anita2020,Lim2014}, en "dos acercamientos principales, los basados en cotas o límites y los basados en aprendizaje automático"\cite[p.1]{Lim2014}
 
 \subsection{Modelos Analíticos: cálculos basados en cotas}\label{sa_modelos_analiticos}
 
@@ -71,7 +71,7 @@ Para la predicción \textit{many-to-many} de señales temporales, Cho \cite{cho2
 
 \section{Pruning y técnicas para reducir complejidad de modelos}\label{sa_optimizacion}
 
-A pesar de la creciente capacidad de cálculo de los dispositivos llevables, será necesario optimizar el rendimiento del modelo con el fin de conseguir la mayor capacidad de predicción por Hz del sistema. Para ello dispondremos de dos técnicas: \textit{Pruning} y \textit{Cuantificación}.
+A pesar de la creciente capacidad de cálculo de los dispositivos vestibles, será necesario optimizar el rendimiento del modelo con el fin de conseguir la mayor capacidad de predicción por Hz del sistema. Para ello dispondremos de dos técnicas: \textit{Pruning} y \textit{Cuantificación}.
 
 \subsection{Pruning}
 Un modelo de redes neuronales se puede entender como una matriz de pesos que indican la contribción de cada nodo o neurona al resultado final. Es normal que en esa red haya nodos que aporten más información que otros. Este efecto no es necesariamente negativo, la regularización o normalización L1 busca precisamente este efecto para reducir el sobreajuste de la red a los datos de entrenamiento.
