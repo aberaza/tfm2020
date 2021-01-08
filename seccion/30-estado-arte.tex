@@ -67,6 +67,8 @@ in\cite{Qin2019} estudia el comportamiento de varias redes recurrentes para la p
 
 Alicado al problema de la predicción de la actividad humana, Li\cite{Li2019} usa redes con varias capas LSTM bidireccionales usando los datos obtenidos por un acelerómetro y un radar con un dispositivo de captura en la muñeca mientras consigue resultados comparables a las mejores técnicas de clasificación existentes.
 
+Para la predicción \textit{many-to-many} de señales temporales, Cho \cite{cho2014} introduce el concepto de Codficador-Decodificador alpicado a la traducción automática. Esta técnica usa un espacio de representación intermedio, una capa de conversión del espacio original al intermedio y finalmente otra de interpretación desde el espacio intermedio al final. Similar a como funcionan los autoencoders o los embeddings.
+
 \section{Pruning y técnicas para reducir complejidad de modelos}\label{sa_optimizacion}
 
 A pesar de la creciente capacidad de cálculo de los dispositivos llevables, será necesario optimizar el rendimiento del modelo con el fin de conseguir la mayor capacidad de predicción por Hz del sistema. Para ello dispondremos de dos técnicas: \textit{Pruning} y \textit{Cuantificación}.
