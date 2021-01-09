@@ -6,9 +6,9 @@ El desafío de consolidar en un sistema portable una aplicación autónoma de de
 
 \section{Desafíos}
 
-El objetivo de todo modelo de detección de eventos es lograr un sistema que consiga capturar la totalidad de las realizaciones del mismo con el menos número posible de falsos positivos. En otras palabras, buscamos un sistema con una especificidad y sensibilidad de 100\%\cite{Noury2007}. \todo{Añadir referencias a papers, comentarios sobre sensibilidad y especificidad}.
+\todo{esto son requisitos, movel al punto anterior} El objetivo de todo modelo de detección de eventos es lograr un sistema que consiga capturar la totalidad de las realizaciones del mismo con el menos número posible de falsos positivos. En otras palabras, buscamos un sistema con una especificidad y sensibilidad de 100\%\cite{Noury2007}. \todo{Añadir referencias a papers, comentarios sobre sensibilidad y especificidad}.
 
-\subsection{Usabilidad}
+\subsection{Usabilidad}\todo{de nuevo un requisito, al apartado anterior}
 El primer reto de toda aplicación es conseguir una experiencia de usuario adaptada al cliente final. De nada sirve lograr implementar una plataforma que cumpla perfectamente con todos los requisitos y objetivos funcionales si el producto resultante se utiliza.
 
 \subsubsection{Público objetivo}
@@ -16,7 +16,7 @@ Como se ha mencionado en la introducción del trabajo, los daños relacionados c
 
 Las personas de edad avanzada suelen padecer así mismo de otras condiciones que pueden limitar su grado de movilidad, atención o memoria que impidan o reduzcan la posibilidad de adaptarse o incorporar nuevas rutinas. Los problemas motores y de percepción reducen notablemente la capacidad de mostrar información así como de interactuar con el usuario cuando se necesite una acción por su parte.
 
-Se entiende por tanto que si se ha de realizar un producto para esta población, es requisito que sea lo menos obtrusivo posible, siendo recomendable incorporar la funcionalidad a un objeto de uso cotidiano para evitar la modificación de rutinas o la reticencia a incorporar nuevos procesos o elementos en su vida diaría. La interfaz de usuario debe ser mínima, usando un lenguaje visual que resulte familiar alejado de los estándares de las aplicaciones modernas. Así mismo, reducir o eliminar los procesos de configuración y manipulación, con un sistema que funcione al salir de la caja \todo{mala traducción de \textit{out of the box}}.
+Se entiende por tanto que si se ha de realizar un producto para esta población, es requisito que sea lo menos obtrusivo posible \todo{de nuevo un requisito, al punto anterior}, siendo recomendable incorporar la funcionalidad a un objeto de uso cotidiano para evitar la modificación de rutinas o la reticencia a incorporar nuevos procesos o elementos en su vida diaría. La interfaz de usuario debe ser mínima, usando un lenguaje visual que resulte familiar alejado de los estándares de las aplicaciones modernas. Así mismo, reducir o eliminar los procesos de configuración y manipulación, con un sistema que funcione al salir de la caja \todo{mala traducción de \textit{out of the box}}.
 
 \subsubsection{Localización}
 
@@ -37,7 +37,7 @@ El sistema implementado opta por una arquitectura cliente-pesado y servidor lige
 Como en toda imlpementación, el
 
 \section{Plataforma}
-
+\todo{justificar cada una de estas decisiones}
 Para el servidor optamos por una arquitectura de microservicios usando la plataforma de AWS Lambda con almacenamiento en S3
 
 Para el dispositivo móvil usamos un reloj inteligente Fossil Sport con sistema operativo WearOS y por tanto compatible con el ecosistema Android.
@@ -45,6 +45,7 @@ Para el dispositivo móvil usamos un reloj inteligente Fossil Sport con sistema 
 El la generación, entrenamiento, análisis y evaluación de modelos se realiza usando Keras/Tensorflow corriendo en la plataforma Google Colab.
 
 \section{Arquitectura}\label{desc_archi}
+\warn{según la profe punto muy interesante, a pulir }
 
 \subsection{Arquitectura del sistema}
 
@@ -89,7 +90,7 @@ El algoritmo de detección consta de dos fases consecutivas, tal y como se muest
 
 \subsubsection{Modelo Analítico}
 
-Los modelos analíticos aplicados a la detección de caídas tienen la gran ventaja de ser computacionalmente simples. Su mayor contraprestación es la dificultad de balancear las métricas de Especificidad y Sensibilidad. Al basarse en niveles o cotas, podemos aumentar la sensibilidad situando el nivel de estas de manera que la sensibilidad llegue al 100\%, como requieren los algoritmos de Bourke\cite{Bourke2006}. Sin embargo esto afectará a la especificidad negativamente\cite{Aziz2017}.
+Los modelos analíticos aplicados a la detección de caídas tienen la gran ventaja de ser computacionalmente simples. Su mayor contraprestación es la dificultad de balancear las métricas de Especificidad y Sensibilidad. Al basarse en niveles o cotas, podemos aumentar la sensibilidad situando el nivel de estas de manera que la sensibilidad llegue al 100\%, como requieren los algoritmos de Bourke\cite{Bourke2006} \todo{mover aquí el punto sobre bourke del capítulo 4}. Sin embargo esto afectará a la especificidad negativamente\cite{Aziz2017}.
 
 \warn{Actualmente usa $SVTot_n - SVTot_{n-1} < 2G$ como algoritmo. Bourke en pruebas con 3.5G de límite. Sección a revisar}
 
@@ -100,6 +101,7 @@ Como primera etapa se utiliza un algoritmo basado el el vector total de la acele
 ModeloAnalitico\rightarrow |SVTot_n - SVTot_{n-1}|\geq A_{umbral}
 \]
 
+\todo{show me the data!!! cómo llegamos a 3G?}
 El valor de $A_{umbral}$ se obtiene experimentalmente gracias al análisis de los datos obtenidos. Se fija en $A_{umbral} = 3G$ que resulta un buen equilibrio ya que conseguimos una cantidad reducida de eventos manteniendo un nivel bajo\todo{citar trabajos y medidas. Bourke usa 3,5G, otros usan valores más altos, la mayoría de caídas tienen niveles instantáneos de SVTot superiores a 6G}.\todo{incluir trabajo estadístico de los datos de aceleración del dataset} \todo{incluir gráfica temporal explicativa del algoritmo}
 
 Si se sobrepasa el umbral en $t=0$. El sistema envía instantáneamente al siguiente modelo las muestras entre $t=-225$ y $t=-25$ (4 segudnos previos al evento). En segundo plano sigue capturando muestras hasta $t=25$. Este segundo bloque de 50 muestras (un segundo centrado en el evento) se envía también a la siguiente etapa. La decisión de separar el envío de datos a la siguiente etapa está motivada por la reducción de la latencia del sistema y obtener una clasificación o resultado con la menor dilación posible.
@@ -107,7 +109,7 @@ Si se sobrepasa el umbral en $t=0$. El sistema envía instantáneamente al sigui
 
 \subsubsection{Modelo RNN}
 
-El modelo RNN comporta a su vez dos bloques. Un primer bloque de predicción y un segundo de detección de anomalías.
+El modelo RNN comporta a su vez dos bloques. Un primer bloque de predicción y un segundo de detección de anomalías. \todo{explicar porque de estos dos bloques}
 
 \paragraph{Limitaciones de la plataforma}
 Al ejecutarse sobre un intérprete de TFLite, el modelo implementado sufre las restricciones que esta plataforma impone. Las de mayor impacto a este proyecto es la del uso de celdas GRU, no soportadas de forma nativa\cite{tfliteGru}, de la misma forma que las redes RNN bidireccionales, que no pueden ser portadas directamente a a TFLite\cite{tfliteBidir} ni se les puede aplicar pruning para reducir su tamaño\cite{tfPruneBidir}. Este último problema tiene sin embargo una alternativa consistente en usar una capa personalizada que implemente la interfaz de pruning y consista en dos redes LSTM, una normal y otra regresiva.
@@ -134,13 +136,13 @@ Para conseguir la predicción de las 49 muestras restantes, debemos convertir di
 
 \paragraph*{Detección}
 
-Este segundo bloque recibe por un lado la señal $SVTot(-25:25)$ del acelerómetro y por el segundo la predicción $\hat{SVTot}(-25:25)$. Para clasificar el evento como una caída, usaremos un umbral sobre el error de predicción del modelo recurrente. La métrica de error empleada es la \textit{Raíz del Error Cuadrático Medio} definida como: \[
+Este segundo bloque recibe por un lado la señal $SVTot(-25:25)$\todo{no es un formato aceptable, usar t-25, t-24, .... t+25 o algo que sea aceptable} del acelerómetro y por el segundo la predicción $\hat{SVTot}(-25:25)$ \todo{unificat nomenclatura!!!}. Para clasificar el evento como una caída, usaremos un umbral sobre el error de predicción del modelo recurrente. La métrica de error empleada es la \textit{Raíz del Error Cuadrático Medio} definida como: \[
 RECM=\sqrt{1/T\sum_{t_1}^{t_2}|y-\hat{y}|^2 }
 \]Donde $t_1 = -25$, $t_2 = 25$ y $T=t_2-t_1=50$.
 
 Comparando el resultado del error obtenido con un nuevo umbral al que denominaremos umbral de detección $U_{d}$ obtendremos finalmente la clasificación del evento en \textit{Caída} o \textit{no-Caida}. Dicho umbral se obtiene de nuevo de forma experimental.
 
-En este caso el valor utilizado se calcula mediante el análisis del RECM usado durante la validación del modelo durante el entrenamiento.
+En este caso el valor utilizado se calcula mediante el análisis del RECM usado durante la validación del modelo durante el entrenamiento. \todo{mostrar valores}
 
 
 \subsection{Optimización del modelo RNN}\label{desc_optim}

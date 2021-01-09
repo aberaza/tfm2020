@@ -64,16 +64,21 @@
 \nombreciudad{}
 
 
-%Entornos de teoremas
-\newtheorem{teo}{Teorema}[section]
-\newtheorem{prop}{Proposición}
-\newtheorem{coro}{Corolario}
-\newtheorem{lema}{Lema}
+%Entornos de teoremas con theoremstyle = plain (el default, en itálica)
+%tienen la forma: *Teorema 1.* _texto del teorema_
+\newtheorem{prop}{Proposición} % una aformación
+\newtheorem{teo}{Teorema}[section] % una proposición demostrada mayor
+\newtheorem{lema}[teo]{Lema} % proposición demostrada menor. Usa el mismo contador que teorema
+\newtheorem{coro}{Corolario}[teo] % coroloarios resetean su contador con cada teorema
 \newtheorem{defi}{Definición}
-%aquests entorns no estan en italica
+%Entornos con theoremstyle = definition
+% conf ormato: *Ejemplo 1.* texto del ejemplo
 \theoremstyle{definition}
 \newtheorem{obs}{Observación}
 \newtheorem{ex}{Ejemplo}
+%Entornos con theoremstyle = remark:
+% formato: _Remark 2._ Texto de la remarca
+% Estos entornos se usan con \begin{coro}[título opcional] .... texto ... \end{coro}
 
 %
 %shortcuts

@@ -3,11 +3,12 @@
 \begin{document}
 
 Históricamente, los modelos de predicción de caídas están íntimamente ligados al estudio del reconocimiento de actividades humanas (\textit{HAR} del inglés \textit{Human Activity Recognition}): discernir a partir de los datos de los sensores qué acción (\textit{AVC} por \textit{Actividad Vida Cotidiana}, o \textit{ADL} por sus siglas en inglés) estaba realizando el individuo. Según \cite[p.10692]{Ozdemir2014} una caída o golpe no es más que otra actividad y deben considerarse una parte de este problema ya que "son eventos que suceden de forma involuntaria e inesperada durante la realización de las mismas".
+\warn{Este párrafo parece una introducción únicamente al apartado 2.1 y no a todo el capítulo. mirar de importar aquí el párrafo del capítulo 1 sobre esta sección}
 
 
 \section{Detección de actividad humana y caídas}\label{sect:sa_har}
 
-En \cite[p.2]{Anita2020} se recopilan y definen los principios básicos que debería cumplir un buen sistema de deteción de caídas y que replicamos a continuación:
+En \cite[p.2]{Anita2020} se recopilan y definen los principios básicos que debería cumplir un buen sistema de detección de caídas y que replicamos a continuación:
 
 \begin{itemize}
   \item No ser obtrusivos
@@ -16,7 +17,7 @@ En \cite[p.2]{Anita2020} se recopilan y definen los principios básicos que debe
   \item Ser capaz de diferenciar caídas de otras actividades humanas
 \end{itemize}
 
-En \cite{Musci2020,Anita2020}, se introducen varias clasificaciones de estos sistemas. En el contexto del presente trabajo, resultan de especial interés la rama de los sistemas \textit{vestibles}: "Aquellos en los que los sensores usados para la detección se encuentran embebidos en un dispositivo que debe llevar pueto el sujeto, como por ejemplo en una pulsera" \cite[p.3]{Anita2020}. A su vez podemos dividir estos según el tipo de modelo utilizado para analizar los datos \cite{Anita2020,Lim2014}, en "dos acercamientos principales, los basados en cotas o límites y los basados en aprendizaje automático"\cite[p.1]{Lim2014}
+En \cite{Musci2020,Anita2020}, se introducen varias clasificaciones de estos sistemas. En el contexto del presente trabajo, resultan de especial interés la rama de los sistemas \textit{vestibles}: \cita[{\cite[p.3]{Anita2020}}]{Aquellos sistemas en los que los sensores usados para la detección se encuentran embebidos en un dispositivo que debe llevar puesto el sujeto, como por ejemplo en una pulsera} A su vez podemos dividir estos según el tipo de modelo utilizado para analizar los datos \cite{Anita2020,Lim2014}, en \cita[{\cite[p.1]{Lim2014}}]{dos acercamientos principales, los basados en cotas o límites y los basados en aprendizaje automático}.
 
 \subsection{Modelos Analíticos: cálculos basados en cotas}\label{sa_modelos_analiticos}
 
@@ -49,23 +50,25 @@ Usando inteligencia artificial, Shi \cite{Shi2020} describe un método basado en
 
 Finalmente, en \cite{Anita2020} tenemos un resumen con los últimos avances y resultados. Introduce otras fuentes de información como es el riesgo biológico, o predisposicion a la caída debido a la edad y otros factores de deterioro de la salud.
 
-Varios estudios \cite{Luque2014,Aziz2017,Aziz2017b} llegan a conclusiones similares respecto a la alta variabilidad de los resutlados según el conjunto de datos de entrenamiento usado, especialmente en los métodos basados en cotas. Sin embargo en \cite[p.9]{Aziz2017b} confirma el resultado de \cite[tfall] sobre la mayor capacidad de generalización de los modelos basados en SVM. A la ver que introduce  encuentra que SVM llega a generalizar incluso con tipos de caídas para las que no había sido entrenado. En la segunda obra analiza en más detalle la detección con SVM usando caídas reales y sugiere usar una combinación de métodos basados en cotas junto con técnicas de aprendizaje automático para obtener mejores estimadores.
+Varios estudios \cite{Luque2014,Aziz2017,Aziz2017b} llegan a conclusiones similares respecto a la alta variabilidad de los resutlados según el conjunto de datos de entrenamiento usado, especialmente en los métodos basados en cotas. Sin embargo en \cite[p.9]{Aziz2017b} confirma el resultado de \cite[tfall]\todo{revisar que queda bien} sobre la mayor capacidad de generalización de los modelos basados en SVM que llegan a detectar incluso aquellos tipos de caídas para los que no habían sido entrenados. En la segunda obra analiza en más detalle la detección con SVM usando caídas reales y sugiere usar una combinación de métodos basados en cotas junto con técnicas de aprendizaje automático para obtener mejores estimadores.
 
 \subsection{Modelos basados en eventos o híbridos}\label{sa_modelos_hybridos}
 
-Putra \cite{Putra2017} y Lim \cite{Lim2014} definen modelos híbridos que ofrecen una alternativa a los complejos y computacionalmente costosos modelos de aprendizaje automático y a los simples pero poco precisos modelos analíticos aunando las ventajas de ambos. En sus trabajos usan una etapa de detección basada en las propiedades analíticas de una caída y una posterior etapa de clasificación o decisión basada en modelos más complejos obteniendo "Mejores resultados que con el método de cotas simple (...) y una fuerte reducción del coste computacional respecto al uso del modelo HMM únicamente"\cite[p.5]{Lim2014}.
+Putra \cite{Putra2017} y Lim \cite{Lim2014} definen modelos híbridos que ofrecen una alternativa a los modelos de aprendizaje automático, más complejos complejos y de mayor coste computacional, y a los simples pero poco precisos modelos analíticos aunando las ventajas de ambos. En sus trabajos usan una etapa de detección basada en las propiedades analíticas de una caída y una posterior etapa de clasificación o decisión basada en modelos más complejos obteniendo \cita[{\cite[p.5]{Lim2014}}]̣{Mejores resultados que con el método de cotas simple (...) y una fuerte reducción del coste computacional respecto al uso del modelo HMM únicamente}.
 
 \section{Predicción de series temporales}
+\warn{muy corto}
 
 El uso de redes neuronales recurrentes para la predicción de series temporales es ampliamente respondido hoy en dia \todo{citar estudios}. Basaremos la etapa de clasificación en la capacidad de predecir episodios conocidos de este tipo de redes.
 
 \section{GRU vs LSTM para predicción de series}\label{sa_rnn}
+\warn{corto y título de poco agrado: se esperaría una conclusión}
 
-Respecto al uso de LSTM para detectar anomalías en series temporales, Wang \cite{Wang2020} usa LSTM para identificar anomalías en la señal de un motor (aunque el usa el error de recostrucción de la descomposición y recomposición wavelet de la señal como entrada a una triple red LSTM, nuestro enfoque es el contrario: usar LSTM a modo de transformada wavelet y luego comparar el error de recomposición).
+Respecto al uso de LSTM para detectar anomalías en series temporales, Wang \cite{Wang2020} \todo{sólo un artículo usando LSTM's?} usa LSTM para identificar anomalías en la señal de un motor (aunque el usa el error de recostrucción de la descomposición y recomposición wavelet de la señal como entrada a una triple red LSTM, nuestro enfoque es el contrario: usar LSTM a modo de transformada wavelet y luego comparar el error de recomposición).
 
-in\cite{Qin2019} estudia el comportamiento de varias redes recurrentes para la predicción de la saturación de oxígeno en el agua y obtiene que las GRU son las que mejores predicciones (menos error) obtienen (Sobre LSTM e incluso RNN bidireccional). Kofi \cite{Koffi2020} compara LSTM y GRU para predecir mercado de valores con topologías muy variadas (número de celdas, de capas, stateless o no) y encuentra que GRU tiene mejor tasa de aciertos teniendo en cuenta el coste computacional (y muchas veces sin tenerlo) y que no siempre tener dos capas de RNN da mejores resultados.
+En\cite{Qin2019} estudia el comportamiento de varias redes recurrentes para la predicción de la saturación de oxígeno en el agua y obtiene que las GRU son las que mejores predicciones (menos error) obtienen (Sobre LSTM e incluso RNN bidireccional). Kofi \cite{Koffi2020} compara LSTM y GRU para predecir mercado de valores con topologías muy variadas (número de celdas, de capas, stateless o no) y encuentra que GRU tiene mejor tasa de aciertos teniendo en cuenta el coste computacional (y muchas veces sin tenerlo) y que no siempre tener dos capas de RNN da mejores resultados.
 
-Alicado al problema de la predicción de la actividad humana, Li\cite{Li2019} usa redes con varias capas LSTM bidireccionales usando los datos obtenidos por un acelerómetro y un radar con un dispositivo de captura en la muñeca mientras consigue resultados comparables a las mejores técnicas de clasificación existentes.
+Aplicado al problema de la predicción de la actividad humana, Li\cite{Li2019} \todo{de nuevo... pocas referencias a estudios que usen LSTMs y rnn y grus} usa redes con varias capas LSTM bidireccionales usando los datos obtenidos por un acelerómetro y un radar con un dispositivo de captura en la muñeca mientras consigue resultados comparables a las mejores técnicas de clasificación existentes.
 
 Para la predicción \textit{many-to-many} de señales temporales, Cho \cite{cho2014} introduce el concepto de Codficador-Decodificador alpicado a la traducción automática. Esta técnica usa un espacio de representación intermedio, una capa de conversión del espacio original al intermedio y finalmente otra de interpretación desde el espacio intermedio al final. Similar a como funcionan los autoencoders o los embeddings.
 
@@ -87,14 +90,15 @@ Una de las técnicas más sencillas para realizar esta eliminación de nodos con
   0 & :\mbox{si} |w_i|\leq\lambda\end{matrix} \right.
 \]
 
-Esta compresión se puede hacer sobre un modelo ya entrenado (sendo recomendable realizar un nuevo proceso de entrenamiento para balancear los pesos de los nodos existentes y reducir el error introducido) o realizarlo durante el entrenamiento como si de una regularización más se tratara.
+Esta compresión se puede hacer sobre un modelo ya entrenado (siendo recomendable realizar un nuevo proceso de entrenamiento para balancear los pesos de los nodos existentes y reducir el error introducido) o realizarlo durante el entrenamiento como si de una regularización más se tratara.
 
-En el caso de TensorFlow, el entorno usado para este proyecto, se permite realizar esta regularización durante el entrenamiento de dos formas:
+En el caso de TensorFlow\todo{referencia!!!!}, el entorno usado para este proyecto, se permite realizar esta regularización durante el entrenamiento de dos formas:
 
 \begin{itemize}
 \item Eliminando nodos de forma lineal, o a tasa constante
 \item Eliminando nodos de forma polinomial, o a tasa creciente
 \end{itemize}
+\warn{si lo introduzco y lo uso, debo tratar ventajas e inconvenientes}
 
 \subsection{Cuantificación}
 \warn{citas necesarias}
