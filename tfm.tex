@@ -1,3 +1,4 @@
+% !TeX root = ./tfm.tex
 \documentclass[11pt,a4paper,spanish]{book}
 \usepackage{unir}
 %\usepackage{estilo_unir}
@@ -20,6 +21,8 @@
 \graphicspath{{img/}{../img/}} % Paths por defecto para las imagenes
 \usepackage{smartdiagram}
 \usepackage{definitions}
+\usepackage{verbatim} % to use \begin{comment} for block comments
+
 
 %tablas más presentables
 \usepackage{booktabs}
@@ -107,7 +110,7 @@
 \section*{Abstract}
 \subfile{seccion/10-abstract.en.tex}
 
-
+\begin{comment}
 % olvidar chapter y usar section/subsection \chapter{Introducción}
 \chapter{Intro}\label{chap:intro}
 \section{Introducción}
@@ -130,6 +133,8 @@
 
 \chapter{Conclusiones y Trabajo Futuro}\label{chap:conclusiones}
 \subfile{seccion/80-conclusiones}
+\end{comment}
+
 
 %\bibliographystyle{unsrt}
 \bibliographystyle{apalike}
@@ -148,7 +153,7 @@
 \chapter{Artículo}
 %\includepdf[pages=-]{articulo.pdf} %descomentar cuando esté el artículo terminado.
 
-% TODO: Borrar esta sección
+% ELIMINAR EN VERSIÓN FINAL
 \newpage
-%\listoftodos[Notes]
+\listoftodos
 \end{document}
