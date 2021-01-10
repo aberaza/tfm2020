@@ -13,6 +13,14 @@
 \usepackage[utf8]{inputenc} %descomentar esta l�nea si se trabaja en linux
 %\usepackage[latin1]{inputenc} %comentar esta l�nea si se trabaja en linux
 
+% USe Helvetica font (similar to arial)
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[T1]{fontenc}
+
+% Mejorar el rendido de texto: ligaturas, microespacioes, etc
+\usepackage{microtype}
+
 %simbolos
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -55,7 +63,7 @@
 
 % Estilo APA de cita y referencias
 % \cite<prefijo>[sufijo]{ref} -> cita ente paréntesis: \cite<eg>[p.~5]{Toto2012} genera (eg Toto.et Al 2017 p.5)
-% \citeA[sufijo]{ref}-> cita textual : \citeA[p.~5]{Toto2012} genera Toto.et Al (2017 p.5) 
+% \citeA[sufijo]{ref}-> cita textual : \citeA[p.~5]{Toto2012} genera Toto.et Al (2017 p.5)
 \RequirePackage[apaciteclassic]{apacite} % usar con\bibliographystyle{apacite}
 
 \definecolor{azulunir}{rgb}{0.260,0.460,0.700}
