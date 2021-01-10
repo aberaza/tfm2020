@@ -4,14 +4,6 @@
 
 %\usepackage[apaciteclassic]{apacite} % use with \bibliographystyle{apacite}
 
-\usepackage[T1]{fontenc}
-
-% USe Helvetica font (similar to arial)
-\usepackage{helvet}
-\renewcommand{\familydefault}{\sfdefault}
-
-% Mejorar el rendido de texto: ligaturas, microespacioes, etc
-\usepackage{microtype}
 
 %para gráficos
 \usepackage{standalone}
@@ -106,16 +98,21 @@
 
 %\chapter{Resumen}
 \section*{Resumen}
-\subfile{seccion/10-abstract.es.tex}
+%\subfile{seccion/10-abstract.es.tex}
+\input{seccion/10-abstract.es.tex}
+
 
 %\chapter{Abstract}
 \section*{Abstract}
-\subfile{seccion/10-abstract.en.tex}
+%\subfile{seccion/10-abstract.en.tex}
+\input{seccion/10-abstract.en.tex}
+
 
 
 \chapter{Introducción}\label{chap:intro}
-\subfile{seccion/20-introduccion}
-
+%\subfile{seccion/20-introduccion}
+%\input{seccion/20-introduccion}
+\include{seccion/20-introduccion}
 
 \chapter{Contexto y Estado del Arte}\label{chap:stateofart}
 %\subfile{seccion/30-estado-arte}
