@@ -1,7 +1,9 @@
-% !TeX root = ./tfm.tex
 \documentclass[11pt,a4paper,spanish]{book}
-\usepackage{unir}
-%\usepackage{estilo_unir}
+\usepackage{unir} %\usepackage{estilo_unir}
+% APA bibliography reference style
+
+%\usepackage[apaciteclassic]{apacite} % use with \bibliographystyle{apacite}
+
 \usepackage[T1]{fontenc}
 
 % USe Helvetica font (similar to arial)
@@ -110,35 +112,34 @@
 \section*{Abstract}
 \subfile{seccion/10-abstract.en.tex}
 
-\begin{comment}
-% olvidar chapter y usar section/subsection \chapter{Introducción}
-\chapter{Intro}\label{chap:intro}
-\section{Introducción}
+
+\chapter{Introducción}\label{chap:intro}
 \subfile{seccion/20-introduccion}
 
+
 \chapter{Contexto y Estado del Arte}\label{chap:stateofart}
-\subfile{seccion/30-estado-arte}
+%\subfile{seccion/30-estado-arte}
 
 \chapter{Objetivos}\label{chap:objetivos}
-\subfile{seccion/40-Objetivos}
+%\subfile{seccion/40-Objetivos}
 
 \chapter{Identificación de requisitos}\label{chap:requisitos}
-\subfile{seccion/50-requisitos}
+%\subfile{seccion/50-requisitos}
 
 \chapter{Descripción de la herramienta desarrollada}\label{chap:descripcion}
-\subfile{seccion/60-descripcion-software}
+%\subfile{seccion/60-descripcion-software}
 
 \chapter{Evaluación}\label{chap:eval}
-\subfile{seccion/70-evaluacion}
+%\subfile{seccion/70-evaluacion}
 
 \chapter{Conclusiones y Trabajo Futuro}\label{chap:conclusiones}
-\subfile{seccion/80-conclusiones}
-\end{comment}
+%\subfile{seccion/80-conclusiones}
 
 
 %\bibliographystyle{unsrt}
-\bibliographystyle{apalike}
-%\bibliographystyle{apacite} % usa apacite y parece no funcionar, pero es el bueno
+%\bibliographystyle{apalike}
+\newpage %necesario? parece que con apacite si
+\bibliographystyle{apacite} % usa apacite y parece no funcionar, pero es el bueno
 \bibliography{tfm}
 
 
@@ -154,6 +155,5 @@
 %\includepdf[pages=-]{articulo.pdf} %descomentar cuando esté el artículo terminado.
 
 % ELIMINAR EN VERSIÓN FINAL
-\newpage
 \listoftodos
 \end{document}

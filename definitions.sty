@@ -99,8 +99,8 @@
 %%% ToDo notes
 \usepackage{xargs}                      % Use more than one optional parameter in a new commands
 %\usepackage[pdftex,dvipsnames]{xcolor}  % Coloured text etc.
+\usepackage[spanish,obeyFinal,colorinlistoftodos,textsize=tiny]{todonotes} % para desactivar usar diable
 
-\usepackage[spanish,colorinlistoftodos,obeyDraft,textsize=tiny]{todonotes}
 %\newcommandx{\info}[2][1=]{\todo[linecolor=OliveGreen,backgroundcolor=OliveGreen!25,bordercolor=OliveGreen,#1]{#2}}
 \newcommand{\info}[1]{\todo[inline,linecolor=OliveGreen,backgroundcolor=OliveGreen!25,bordercolor=OliveGreen]{#1}}
 \newcommandx{\warn}[2][1=]{\todo[inline, size=large, linecolor=Plum,backgroundcolor=Plum!25,bordercolor=Plum,#1]{#2}}
@@ -116,3 +116,4 @@
     \end{figure}
 }
 \newcommandx{\todohide}[2][1=]{\todo[disable,#1]{#2}}
+
