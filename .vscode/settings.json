@@ -4,8 +4,20 @@
     "bibtex-style"
   ],
   "cSpell.words": [
+    "Bourke",
+    "Mobi",
+    "computacionales",
+    "dimensionalidad",
+    "llevables",
     "microcomputadoras",
+    "miniaturizaci",
+    "miniaturización",
+    "n",
     "softmax",
     "vestibles"
-  ]
+  ],
+  "latex-workshop.kpsewhich.enabled": true,
+  "cSpell.diagnosticLevel": "Error",
+  "latex-workshop.message.badbox.show": false,
+  "latex-workshop.latex.build.clearLog.everyRecipeStep.enabled": false
 }
