@@ -11,6 +11,8 @@
 \tikzstyle{decision} = [diamond, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=green!30]
 \tikzstyle{arrow} = [thick,->,>=stealth]
 
+% Notas en las tablas
+\usepackage[flushleft]{threeparttable}
 
 %Fancy maths
 %\usepackage{mathpazo}
@@ -45,6 +47,49 @@
         }
         \caption{\label{\figid} \captiontext}
     \end{figure}
+}
+
+% SOME HELPERS
+\newcommand\pTabularContent[2]{
+  \begin{tabular}{@{}#1@{}}
+    \toprule
+    #2
+    \bottomrule
+  \end{tabular}
+}
+
+\newcommand\pTableNotes[1]{
+  \begin{tablenotes}
+    \small
+    #1
+  \end{tablenotes}
+}
+\newcommand\tablan[6][\linewidth]{
+  \def\myscale{#1}
+  \def\mytableid{#2}
+  \def\mycaptiontext{#3}
+  \def\mycolumnstyles{#4}
+  \def\mytablecontent{#5}
+  \def\tablenote{#6}
+
+  \begin{table*}
+    \centering
+    \resizebox{\myscale}{!}{
+      \begin{threeparttable}
+        \begin{tabular}{@{}#4@{}}
+          \toprule
+          #5
+          \bottomrule
+        \end{tabular}
+
+        \begin{tablenotes}
+          \small
+          #6
+        \end{tablenotes}
+      \end{threeparttable}
+    }
+  \caption{\label{\mytableid} \mycaptiontext}
+  \end{table*}
 }
 
 % \tabla{tab:id}{Título tabla}{lcccl}{ la tala propiamente dicha}
@@ -91,7 +136,7 @@
     \caption{\label{#1} #2}
 \end{sidewaystable*}
 }
-
+\newcommand{\tabitem}{~~\llap{\textbullet}~~}
 % Texto citado
 \usepackage[autostyle=true,spanish=spanish]{csquotes}
 \newcommand{\cita}[2][]{\textquote[{#1}]{#2}}

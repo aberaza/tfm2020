@@ -1,7 +1,128 @@
-\documentclass[../tfm.tex]{subfiles}
-\begin{document}
+% !TeX root = ../tfm.tex
+%! TEX root = ../tfm.tex
+% \documentclass[../tfm.tex]{subfiles}
+% \begin{document}
 \info{Indicar el trabajo previo realizado para guiar el desarrollo del software.
 Debe identificar adecuadamente el problema a tratar, contexto adecuado de uso y funcionamiento de la aplicación. Idealmente se debería realizar con expertos en la materia a tratar.}
+
+\todo{referenciar los requisitos de un sistema de detección de caídas, en detalle si es posible}
+
+\section{Plataforma y Entorno de Desarrollo}\label{sec:req:plataforma}
+
+Tras adquirir información de entorno y con el fin de acotar y restringir las opciones disponibles de cara a la elaboración del algoritmo a emplear es necesario determinar sobre qué plataforma o dispositivo va a ejecutarse la aplicación. Esta decisión impondrá nuevas restricciones tales como tipos de fuentes de información/sensores disponibles, frecuencias de muestreo, precisión y magnitud, posición del dispositivo, entorno de programación a utilizar. 
+
+Entre los requisitos que debe cumplir el sistema destacamos principalmente:
+
+\begin{itemize}
+  \item Autónomo: Integrar en una única unidad la capacidad de adquisición, cómputo y alerta.
+  \item No ser obtrusivo: El dispositivo no debe interferir o limitar la actividad cotidiana del usuario final.
+  \item Programable: El dispositivo debe permitir la ejecución de código de terceros, no debe ser una plataforma cerrada.
+  \item Capaz de ejecutar modelos de redes neuronales/aprendizaje automático.
+\end{itemize}
+
+Se tendrán en cuenta además de cara al cribado final otros criterios como el coste y la preferencia del autor sobre los entornos de programación a usar así como la adaptación al público objetivo: personas mayores de 65 años. \todo{explicar mejor qué limitaciones trae}
+
+\subsection{Dispositivo físico}\label{sub:req:hardware}
+
+\subsubsection{Tipos de dispositivos analizados}
+
+\paragraph{Teléfono} o \textit{Smartphone}. Un aparato que se ha vuelto ubicuo en nuestra sociedad. Con gran capacidad de cálculo y multitud de sensores. Según la firma \textit{Kantar}(\url{https://www.kantarworldpanel.com/global/smartphone-os-market-share/}) el 99,99\% de los teléfonos vendidos en españa en los 9 primeros meses de 2020 fueron smartphones con IOS o Android y por ende fácilmente programables y con soporte para ejecutar múltiples entornos de modelado de sistemas de aprendizaje automático. Sin embargo adolecen de una complejidad extra: no es un dispositivo que se lleve vestido, y es fácil que el usuario final no lo lleve siempre consigo. Además, en los grupos de poblaciones de edad muy avanzada donde su uso no está generalizado, se convierte en un elemento ajeno y que puede generar rechazo o olvido en su uso.
+
+\paragraph{Chalecos, cinturones} y otras prendas de vestir han sido usadas con anterioridad \todo{citar} para situar los sensores. La falta de soluciones comerciales disponibles obligaría a desarrollar una plataforma personalizada y por tanto adaptada a los requisitos. Sin embargo este acercamiento se considera altamente intrusivo tanto por limitar al usuario en su vestimenta así como por servir únicamente cuando el usuario lleve puesto el complemento de ropa especificado.
+
+\paragraph{Pulseras de actividad y Relojes inteligentes}. Hace tiempo que las podómetros evolucionaron gracias a la mejora en la miniaturización de sensores, baterías y microprocesadores en sistemas avanzados de medida no ya de la cantidad de pasos sino de otros muchos parámetros como pulso, oxígeno en sangre, temperatura corporal y orientación. Por su parte, el paso de los relojes computadoras interconectadas y programables se ha realizado más recientemente. Actualmente puede resultar dificil distinguir en la oferta disponible entre un \textit{smartwarch} (reloj inteligente) y una pulsera. Muchas veces es la propia definición del fabricante la que especifica su tipo, por criterios tan dispares como la producción tradicional de la empresa (así pues, Fossil llamará a sus productos relojes inteligentes, mientras otro dispositivo de similares características y formato de la marca FitBit será llamado pulsera por la marca). Al existir tal variedad de oferta es fácil encontrar dispositivos que cumplan con los requisitos de sensores, capacidad de cálculo y de ser programado, así como soporte para entornos de aprendizaje automático. Al tener apariencia de un reloj de pulsera, resultan un soporte ideal: son dispositivos de uso cotidiano, con una manipulación sencilla, y que se llevan siempre puestos. Con el interés de buscar un sistema lo más transparente de cara al usuario posible nos decantamos por esta opción. En el punto 
+
+\subsubsection{Relojes Inteligentes WatchOS}
+
+A la hora de definir las familias en las que subdividir este tipo de dispositivos encontramos que por norma general cada fabricante ha decidido crear su plataforma única. Tan solo el sistema operativo WearOS parece ser utilizado por varios fabricantes diferentes. No descartamos la opción de implementar una solución propietaria, por lo que también analizamos algunas de los sistemas de microcontroladores más extendidos.
+
+\tablas{tab:familias_smartband}{Familias de Relojes Inteligentes y Pulseras de Actividad}{p{0.20\textwidth} | p{0.1\textwidth} | p{0.15\textwidth} | p{0.35\textwidth} }{
+  Plataforma & Prog. & AA & Notas \\ \midrule
+  Garmin     & No & No &  \\
+  FitBit     & Si & No & \\
+  Huawei     & No & No & \\
+  TizenOS(Samsung) & Si & \tabitem TensorfFlow-lite & Puede soportar otros entornos como Caffe2, PyTorch pero han de ser portados por el desarrollador \\
+  WatchOS(Apple) & Si & \tabitem CoreML & PyTorch, Tensorflow, Caffe, LibSVM y otros modelos pueden ser importados a CoreML. \\
+  Arduino/ESP32 & Si & \tabitem TensorFlow-lite & Muy baja potencia de cálculo y memoria impiden la ejecución de modelos complejos. \\
+  WearOS(Google)  & Si & \tabitem TensorfFlow-lite\newline\tabitem Caffe2\newline\tabitem NNAPI* & Mediante NNAPI permite realizar cómputos intensivos. \\
+}
+
+Comparando los requisitos con los resultados de la tabla \ref{tab:familias_smartband} descartamos en primera instancia los dispositivos Garmin, FitBit y Huawei por no permitir el desarrollo de aplicaciones que usen modelos aprendizaje automático. Aunque en teoría sí hay soporte para usar modelos entrenados en las plataformas ESP32/Arduino, al disponer de cantidades de memoria y procesadores poco potentes su uso real queda muy limitado, prácticamente restringido a una mera curiosidad. 
+
+De los tres grupos restantes de dispositivos, la familia de dispositivos WatchOS queda relegada a la tercera posición por su alto precio (hasta 5 veces más caros que los dispositivos de la competencia). La decisión final se decanta finalmente por usar dispositivos WearOS por la preferencia y conocimiento de la plataforma del que ya dispone el autor. 
+
+Tras este estudio, adquirimos un reloj Fossil Sport gen3\todo{referencia al apéndice y ese "algo más" de ifnormación} 
+
+\subsection{Entorno de Desarrollo}
+
+Nos referimos por entorno de desarrollo al conjunto de herramientas usadas para implementar el sistema. Tanto para el la generación, entrenamiento y análisis de modelos como para la implementación y adaptación del sistema de detección de caídas.
+
+
+
+\subsection{Soporte en la Nube}
+AWS
+
+
+\section{Bases de datos de actividad}\label{sec:req:bases_datos}
+
+Tras la elección tanto de la plataforma física, entorno de desarrollo así como del algoritmo usado, iniciamos la búsqueda de una base de datos que cumpla con los criterios siguientes:
+
+\begin{enumerate}
+  \item Contenga datos de la aceleración. Idealmente las 3 componentes espaciales por separado.
+  \item Contenga datos tanto de caídas como de otras actividades cotidianas.
+  \item La medida de la aceleración se toma desde un sensor en la muñeca.
+  \item Contenga resultados de varios sujetos
+\end{enumerate}
+
+Tras analizar como se ve en la tabla \ref{tab:bases_datos} varias bases de datos relacionadas con la detección de actividades cotidianas y caídas. Por la localización de los sensores de medida, la única que cumple los requisitos es UMAFall, sin embargo tiene dos problemas:
+\tablan{tab:bases_datos}{Bases de datos de actividad humana}{p{0.2\textwidth}ccccm{0.2\textwidth}m{0.2\textwidth}}{
+  BBDD    & Sujetos & AHC & Caídas & Muestras & Sensores      & Posición \\ \midrule
+  MobiFall\tnote{1}& 24      & 9   & 4      & 630      & \tabitem Acelerómetro \newline\tabitem Giroscopio & Pantalón \\
+  MobiAct\tnote{2}& 57      & 9   & 4      & 2526     & Acelerómetro  & Pantalón \\
+  tFall\tnote{3}  & 10      & *   & 8      & 10909     & Acelerómetro  & \tabitem Bolsillo\newline\tabitem Bolso \\
+  SisFall\tnote{4}& 38      & 19  & 15     & 4505      & \tabitem Acelerómetro\newline\tabitem Giroscopio & Cintura \\
+  UMAFall\tnote{5}& 17      & 8   & 3      & 531       & \tabitem Acelerómetro\newline\tabitem Giroscopio\newline\tabitem Magnetómetro & \tabitem Pecho\newline\tabitem Cintura\newline\tabitem Pantalón\newline\tabitem Tobillo\newline\tabitem Muñeca \\
+}{
+  \item [1]\citeA{MobiFall} 
+  \item [2]\citeA{MobiAct} 
+  \item [3]\citeA{tfall} 
+  \item [4]\citeA{Sucerquia2017} 
+  \item [5]\citeA{Edu/UMA/2017} 
+}
+\begin{itemize}
+  \item Escasez de eventos: tan solo 531 eventos, de 25 categorías reducen el número de instancias por categorías a un promedio de 21. Claramente insuficiente para obtener una cifra significativa.
+  \item Poco extendida entre la comunidad. En parte por ser la compilación más reciente, no hemos encontrado estudios suficientes que utilizasen UMAFall para poder realizar una comparación de resultados.
+\end{itemize}
+Concluimos esta etapa considerando desierta la oferta disponible. Tomamos la decisión de dividir la tarea a realizar en dos ejercicios:
+\begin{enumerate}
+  \item Implementar, validar, y comparar la viabilidad del algoritmo (independientemente de la plataforma elegida).
+  \item Portar el modelo y entrenarlo para la plataforma escogida. 
+\end{enumerate}
+
+Esta separación de objetivos permite reducir los requisitos de las bases de datos necesarios para cada uno tal y como recogemos a continuación.
+
+
+\subsection{Bases de Datos para estudiar el algoritmo}
+
+Al querer únicamente estudiar cómo se comporta el modelo diseñado, no es exigencia la restricción impuesta por el uso de un reloj o pulsera como dispositivo de captura de que los datos sean medidos en la muñeca. Por tanto, estudiando de nuevo la tabla \todo{crear la tabla y poner la referencia} observamos que ahora sí que hay varios candidatos viables.
+
+%SisFALL (Tras considerar otros muchos como umafall, mobiact/mobifall, etc): mayor cantidad de caídas y muchas de las actividades son consideradas \textit{quasi-caidas} y por tanto son casos límite. Si el modelo es capaz de dar buenos resultados en estas condiciones, es un buen modelo. Además, es usado por \cite{Musci2020} y varios de los estudios presentes en \cite{Anita2020} por lo que resulta ideal para comparar los resultados.
+
+\subsection{Base de Datos para la implementación final}
+
+Tras validar el funcionamiento y compararlo con otros modelos en igualdad de condiciones, esta etapa puede realizarse con conjuntos de datos que no dispongan de caídas. Dado que por la naturaleza del modelo propuesto el entrenamiento se realiza únicamente con muestras de actividades cotidianas. A pesar de la existencia de Bases de Datos que cumplen los criterios, se decide finalmente optar por generar un conjunto propio. Al formar parte del desarrollo realizado, trataremos este punto más adelante, en la sección \todo{poner referencia a la sección}. 
+
+
+
+
+
+
+
+% #########################################################
+
+\subsubsection{Sistema desarrollado }
+
+
 
 Para la realización de este trabajo es necesario conseguir aunar y definir tres componentes.
 \begin{itemize}
@@ -10,40 +131,13 @@ Para la realización de este trabajo es necesario conseguir aunar y definir tres
   \item Modelo de detección de caídas
 \end{itemize}
 
-\section{Dispositivo}\label{req_hardware}
-
-La evolución en sensores y microprocesadores han conseguido popularizar en los últimos años infinidad de sistemas embebidos para capturar y medir nuestros niveles de actividad. Publicitados como sistemas para controlar nuestra actividad física, han ido evolucionando de simples podómetros a complejos sistemas de captura inercial, constantes vitales y posición con acceso a internet. Debemos distinguir entre dos familias de dipsotivos \textit{wearables}, o \textit{vestibles}: Aquellos que simplemente realizan la captura de datos y delegan el cómputo en otro dispositivo (siendo los más conocidos miembros de esta familia las pulseras de actividad), y las plataformas que aunan captura y tratamiento en el mismo sistema, aunque puedan a su vez transmitir los datos a un tercer actor (como por ejemplo los \textit{smartwatches}). Estos últimos dispositivos son efectivamente microcomputadoras miniaturizadas al extremo.
-
-Con el fin de obtener un sistema complétamente autónomo y lo menos obtrusivo posible \todo{citar o referenciar el punto posterior de evaluación del sistema donde se explica que los requisitos para un sistema de caidas pensado para gente mayor ha de ser facil de usar y lo más cotidiano posinle, ejemplo un reloj.} optamos por utilizar un reloj inteligente. Existen al menos 4 grandes familias de estos dispositivos:
-
-\warn{Nota de la profe: Indica que deberñia tratar los requisitos para la solución, no para eldispositivo. (quizás compartimerntar diferente esta sección? Indica poner primero los requisitos  luego ir viendo cuales lo cumplen.)
-}
-
-\begin{itemize}
-  \item{Apple Wath}
-  \item{Android Watch o WearOS}
-  \item{Samsung Smartwatch o TizenOS}
-  \item{Huawei Smartwatch}
-\end{itemize}
-
-De todas estas familias, podemos descartar rápidamente Huawei, por no ofrecer un kit de desarrollo de aplicaciones, así como la plataforma Apple por el excesivo precio de esta. Existen en el mercado soluciones específicas que no justificarían el desembolso.
-
-Tanto WearOS como TizenOS ofrecen potentes herramientas de desarrollo así como detallada documentación. Soportan ambas modelos de inteligencia artificial desarrollados con TensorFlow Lite y los dispositivos que los usan equipan microprocesadores con capacidades siimilares. Optamos por desarrollar en prototipo para la plataforma WearOS por tener un concepto abierto de implementacion del hardware y poder disponer por tanto de mayor variedad de dispositivos. Sin embargo dado que ambos pueden trabajar con los modelos que generaremos, portar la funcionalidad de una plataforma a otra debería ser trivial. El dispositivo elegido es un Fossil Sport Gen3 del que podemos encontrar más información en la sección \ref{app:fossil}.
 
 
-\section{Base de datos de actividad}\label{req_base de datos}
-Tras un análisis de los diferentes conjuntos de datos disponibles y estudiar cuan bien se adaptaban a los requisitos del sistema, concluimos que ninguno cubre el 100\% de los requisitos. Así pues decidimos optar por un enfoque modular y dividir el estudio en dos bloques: Validación e Implementación.
-
-Como validación entendemos el estudio del modelo propuesto y su viabilidad y eficacia para la tarea. Así pues buscaremos un base de datos etiquetado con un rango de valores que puedan ser adaptados a los límites impuestos por la plataforma elegida o sean de magnitud comparable sin enfocarnos en si los dispositivos de captura eran similares o su localización es la misma que en este trabajo. Así mismo nos interesa que sea un base de datos extendido entre la comunidad investigadora para poder comparar los resultados con los obtenidos en este trabajo y poder determinar si el modelo es válido para la tarea.
-
-En la etapa de implementación usaremos un base de datos específico para nuestro sistema y que se desarrolló durante la ejecución del trabajo. Este base de datos es el utilizado para entrenar el modelo final.
-
-\subsection{Base de Datos para la validación}
-\todo{redacción y citas y referencias y quitar palabras ambiguas como muchas, otras, etc.}
-SisFALL (Tras considerar otros muchos como umafall, mobiact/mobifall, etc): mayor cantidad de caídas y muchas de las actividades son consideradas \textit{quasi-caidas} y por tanto son casos límite. Si el modelo es capaz de dar buenos resultados en estas condiciones, es un buen modelo. Además, es usado por \cite{Musci2020} y varios de los estudios presentes en \cite{Anita2020} por lo que resulta ideal para comparar los resultados.
 
 \subsection{Base de Datos para la implementación}
 
+
+\section{Base de datos de actividad}\label{req_base de datos}
 Para poder generar un modelo con el mismo tipo de datos y capturado de la misma forma a los que deberá procesar posteriormente, optamos por realizar un base de datos de datos propio usando el mismo dispositivo sobre el que se ejecutará el prototipo como plataforma de captura.
 
 Este base de datos se realiza usando únicamente información del sensor de aceleración triaxial del reloj Fossil Sport Gen3 \ref{app:fossil} a una frecuencia de muestreo de 50Hz. Los valores de aceleración medidos están expresados en $m/s^2$ dentro de los límites de la plataforma. Este es un base de datos no etiquetado dado que el objetivo es entrenar un modelo de predicción de series temporales y no un clasificador como suele ser habitual.
@@ -84,5 +178,56 @@ Opciones y limitaciones que impone el framework a introducir aquí
 
 \warn{RECOMENDACIÓN: ponerlo en su sección (capítulo 4), aunque es únicamente una sugerencia. Podemos quizás dejarlo y poner algo similar en cada capítulo.} Estos conceptos se retoman posteriormente para definir los prerrequisitos: plataforma de desarrollo \ref{req_hardware} como herramientas de software \ref{req_tflite} y conjuntos de datos adecuados para entrenamiento y validación de resultados \ref{req_base de datos}. Trataremos la situación actual y soluciones disponibles así como las limitaciones y sus posibles soluciones. Trataremos de nuevo el problema de los diferentes tipos de modelos de detección de caídas \ref{req_modelos} relacionando sus capacidades con las limitaciones tanto de los conjuntos de datos como del soporte físico y computacional usado y su adecuación a la solución propuesta.
 
-\end{document}
+
+
+\section{Optimización de modelos}\label{sec:req:optimizacion}
+
+Por último, de cara a la creación de un sistema embebido es necesario abordar la optimización del algoritmo y modelo usados. Entendemos por optimización la reducción de complejidad controlada para conseguir un modelo que requiera menor capacidad de cálculo y memoria. Estas técnicas tendrán todas un impacto en la precisión del sistema por lo que el objetivo es conseguir un equilibrio entre la degradación de la capacidad predictiva y la reducción de la latencia debida al menor coste computacional. Establecemos dos criterios previos a cumplir por el sistema final:
+\begin{itemize}
+  \item Arbitrariamente escogemos una latencia máxima de 1 segundo. 
+  \item La elección de la plataforma nos limita tanto en velocidad de cálculo como en tamaño al disponer únicamente de 512MB de memoria RAM.
+\end{itemize}
+
+\subsection{Celdas eficientes: GRU)
+
+\subsection{Simplificación del modelo: Pruning}
+  A pesar de la creciente capacidad de cálculo de los dispositivos vestibles, será necesario optimizar el rendimiento del modelo con el fin de conseguir la mayor capacidad de predicción por Hz del sistema. Para ello dispondremos de dos técnicas: \textit{Pruning} y \textit{Cuantificación}.
+
+
+  \subsubsection{Pruning}
+  Un modelo de redes neuronales se puede entender como una matriz de pesos que indican la contribción de cada nodo o neurona al resultado final. Es normal que en esa red haya nodos que aporten más información que otros. Este efecto no es necesariamente negativo, la regularización o normalización L1 busca precisamente este efecto para reducir el sobreajuste de la red a los datos de entrenamiento.
+
+Esta diferencia de aportación nos permite realizar una compresión del modelo. Si aceptamos sufrir unas ciertas pérdidas en la capacidad predictiva del mismo, podemos eliminar los nodos de menor peso reduciendo el tamaño de la red y su consumo de memoria. Esta reducción permite además acelerar el modelo y adaptarlo al uso en sistemas embebidos.\todo{Buscar bibliografía formal para: https://www.machinecurve.com/index.php/2020/09/23/tensorflow-model-optimization-an-introduction-to-pruning/}
+
+\todo{Este artículo cita referencias y es ligeramente más técnico.
+https://www.machinecurve.com/index.php/2020/09/29/tensorflow-pruning-schedules-constantsparsity-and-polynomialdecay/}
+
+Una de las técnicas más sencillas para realizar esta eliminación de nodos consiste en definir una aportación mínima objetivo y comparar la magnitud de la aportación individual al resultado final, eliminando aquellos que no alcanzan el nivel $\lambda$ deseado
+\[
+\hat{w_i} = \left\{ \begin{matrix} w_i & :\mbox{si} |w_i|>\lambda\\
+  0 & :\mbox{si} |w_i|\leq\lambda\end{matrix} \right.
+\]
+
+Esta compresión se puede hacer sobre un modelo ya entrenado (siendo recomendable realizar un nuevo proceso de entrenamiento para balancear los pesos de los nodos existentes y reducir el error introducido) o realizarlo durante el entrenamiento como si de una regularización más se tratara.
+
+En el caso de TensorFlow\todo{referencia!!!!}, el entorno usado para este proyecto, se permite realizar esta regularización durante el entrenamiento de dos formas:
+
+\begin{itemize}
+\item Eliminando nodos de forma lineal, o a tasa constante
+\item Eliminando nodos de forma polinomial, o a tasa creciente
+\end{itemize}
+\warn{si lo introduzco y lo uso, debo tratar ventajas e inconvenientes}
+
+\subsubsection{Cuantificación}
+\warn{citas necesarias}
+Entendemos por cuantificación al proceso de discretizar un grupo de valores. En este caso hace referencia precisamente al descenso en la precisión numérica usada para representar los pesos de nodos y valores de entrada y salida de una red neuronal.
+
+La cuantificación de los valores de entrada y salida a la red consiste en reducir el peso de estos valores. Normalmente se normaliza la entrada y se convierte en valores de tipo entero. Tras el paso por la red, a la salida se aplicac la operación inversa para escalar la salida al rango de valores esperado.
+
+Por su parte la cuantificación de la red neuronal realiza una operación similar con los pesos de los enlaces de las neuronas. Reduce la precisión de las representaciones de estos valores consiguiendo un ahorro en recursos y una mejora en tiempo de cálculo al eliminar el requisito de usar unidades de coma flotante en sistemas embebidos.
+
+
+
+
+% \end{document}
 

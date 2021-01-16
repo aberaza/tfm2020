@@ -1,50 +1,44 @@
-\documentclass[../tfm.tex]{subfiles}
+% !TeX root = ../tfm.tex
+%! TEX root = ../tfm.tex
+\begin{comment}
+Puente entre el estudio y la contribución. Debe contener:
+ * objetivo general
+ * objetivo específico
+ * metodología de trabajo
+ 
+Los objetivos deben ser \textit{SMART}
 
-\begin{document}
-\info{Puente entre el estudio y la contribución.}
-\warn{
-Debe contener:
- objetivo general
- objetivo específico
- metodología de trabajo
- }
+Specificl (objetivo claro)
+Measurable (se pueda medir el éxito o fracaso)
+Attainable (viable su conecución con el tiempo y recursos disponibles)
+Relevant (que tenga un impacto demostrable)
+Time-related (que se pueda realizar en un tiempo determinado)
+\end{comment}
 
- \info{
-   Los objetivos deben ser \textit{SMART}
+\section{Objetivo General}\label{sec:obj:objetivo_general}
+%\begin{comment}
+%Un poco la descripción a grandes rasgos de qué se espera explicado al público general.
+%Ejemplo: Mejorar el servicio de audio gruía de un museo con una guía interactiva por voz valorada positivamente con un 4/5 al menos.
+%\end{comment}
 
-     Specificl (objetivo claro)
-     Measurable (se pueda medir el éxito o fracaso)
-     Attainable (viable su conecución con el tiempo y recursos disponibles)
-     Relevant (que tenga un impacto demostrable)
-     Time-related (que se pueda realizar en un tiempo determinado)
- }
+Al término de este trabajo se presentará una implementación de un sistema de detección de caídas autónomo sobre un dispositivo vestible del tipo \textit{smartwatch} con una precisión mayor a la disponible en los sistemas vestibles actuales y comparable a la de los sistemas basados en aprendizaje automático.
 
+\section{Objetivos Específicos}\label{sec:obj:objetivos_especificos}
 
-\section{Objetivo General}
-\info{
-Un poco la descripción a grandes rasgos de qué se espera explicado al público general.
+Dividiremos el trabajo a realizar en los siguientes metas con la idea de compartimentar el trabajo y facilitar su posterior evaluación y valoración del cumplimiento de los mismos.
 
-Ejemplo: Mejorar el servicio de audio gruía de un museo con una guía interactiva por voz valorada positivamente con un 4/5 al menos.
-}
+\begin{enumerate}
+  \item Identificar los requisitos funcionales que debe cumplir un sistema de detección de caídas.
+  \item Diseñar o determinar un algoritmo eficiente para la detección de caídas: Debe tener bajo coste de cómputo sin sacrificar la fiabilidad.
+  \item Implementar un modelo basado en el algoritmo anterior.
+  \item Comparar y evaluar el modelo implementado frente a otros algoritmos existentes para analizar su eficiencia y viabilidad.
+  \item Establecer e implementar un sistema de detección de caídas usando el modelo previamente definido y validado.
+  \item Analizar los resultados del sistema y su viabilidad como solución al problema de la detección de caídas.
 
-Se pretende conseguir una implementación de un sistema de detección de caídas autónomo sobre un dispositivo vestible del tipo smartwatch con una precisión mayor a la disponible en los sistemas vestibles actuales comparable a la de los sitemas basados en aprendizaje automático.
+\end{enumerate}
 
-\section{Objetivos Específicos}
-
-Dividiremos el trabajo a realizar en los siguientes subobjetivos con la idea de compartimentar el trabajo y facilitar su porterior evaluación y valoración del cumplimiento de los mismos.
-
-\begin{itemize}
-  \item Desarrollar un conjunto de datos para el entrenamiento y validación del sistema final.
-  \item Estudiar el comportamiento y características de las señales temporales del acelerómetro a partir del conjunto de datos previamente capturado para parametrizar el sistema (tamaño de la ventana de observación y )
-  \item Identificar y establecer un índice o métrica derivada de la lectura del acelerómetro que permita su posterior uso para el reconocimiento de caídas.
-  \item Desarrollar un modelo de predicción de la evolución temporal del índice elegido usando redes neuronales recurrentes y evaluar su rendimiento.
-  \item Implementar un modelo de clasificación de la actividad humana usando el índice basado en la aceleración y el modelo de aprendizaje automático de los puntos anteriores.
-  \item Comparar los resultados del modelo implementado frente a los modelos existentes. Analizar y cuantificar la mejoría aportada sobre los métodos analíticos.
-  \item Analizar la viabilidad e idoneidad de la solución propuesta y posibles mejoras
-\end{itemize}
-
-\todohide{
-Conjunto de objetivos más específicos alcanzables por separado. suelen sor los diferentes pasos a seguir para conseguir el objetivo general. Han de ser smart, los verbos deberian ser:     • Analizar
+\begin{comment}
+Conjunto de objetivos más específicos alcanzables por separado. suelen ser los diferentes pasos a seguir para conseguir el objetivo general. Han de ser smart, los verbos deberían ser:     • Analizar
 Calcular
 Clasificar
 Comparar
@@ -60,53 +54,55 @@ Identificar
 Indagar
 Medir
 Sintetizar
-Verificar}
+Verificar
+\end{comment}
 
 \section{Metodología de trabajo}
-\warn{añadir una introducción, no empezar directamente por una enumeraciń. }
-\todohide{
-Debe describir los pasos que se van a dar, el por qué de cada paso, instrumentos a utuilizar y cómo se van a analizar los resultados.
-}
 
-\begin{enumerate}
-  \item Obtener, y procesar muestras de actividad para la generación de un dataset. Se implementa una aplicación específica para para realizar la captura de datos.
-    \item Los existentes se basan en detección de actividades
-    \item Los pocos basados en detección de caidas se restringen a un subconjunt de caidas muy específico y muchas veces con posiciones del elemento de detección diferente de la usada en el estudio
-  \end{enumerate}
+Se van a abordar muchas y muy variadas tareas, por lo que es fundamental establecer una jerarquía y organización entre estas. Definimos aquí las principales etapas del proceso seguido:
 
-  \todo{cuidado con esto... queda descolgado y en un formato diferente.... qué hacemos?}
-  2- Estudiar el dataset obtenido
-  a- comprender mejor el comportamiento de las señales capturadas
-  b- buscar parámetros importantes para llevar a cabo la detección
+\subsection{Documentación previa}
 
-  \item Implementar un sistema basado en LSTM y detección de anomalías usando errores de predicción. Mecanismo atencional basado en potencia de señal de entrada?
-  \begin{itemize}
-    \item Implementar una red LSTM FORWARD, y/o una FORWARD-BACKWARD, Asi como un sistema basado en threshold (usar GRU con RELU para mejorar la eficiencia de cómputo)
-    \item Una vez entrenados los modelos con información de actividad ordinaria:
-    \begin{itemize}
-      \item Implementar una app que o bien en tiempo real o cuando detecte un cierto nivel de actividad lance los modelos de predicción
-      \item Usar un sistema que comparando la señal real y la predicha decida si es una anomalía o no, lo más básico un RMS del error de predicción.
-    \end{itemize}
-  \end{itemize}
+Una vez definido del objetivo general definido en la sección \ref{sec:obj:objetivo_general} es necesario adquirir un conocimiento del contexto y estado de la tecnología en el área definida. Para ello es necesario recopilar información de diversas fuentes y publicaciones. Validaremos este punto definiendo:
+\begin{itemize}
+  \item Un modelo y algoritmo que a priori permita realizar la tarea propuesta.
+  \item El índice o índices necesarios para alimentar al modelo.
+  \item Dados los puntos anteriores, definir unas especificaciones aproximadas (tipo de sensor, posición del mismo, velocidad de lectura, etc) que debe cumplir la plataforma a usar.
+\end{itemize}
 
-  \item Comparar los resultados con el estado del arte
-  \begin{itemize}
-    \item Entrenar el sistema usando al menos un dataset que incluya caídas.
-    \item Compararar con al menos métodos de cota fall index y modulo aceleración.
-    \item Comparar con estudios previos que usen el mismo dataset.
-    \item Analizar los resultados con el dataset propio.
-  \end{itemize}
-
-  \item Prueba en uso real. (Si da tiempo)
-  \begin{itemize}
-    \item Entrenar el sistema con dataset creado.
-    \item Usar en interno
-    \item Probar en caídas simuladas
-    \item Si es posible conseguir ejemplos de caídas reales (app debe enviar todos los eventos registrados como caídas e indicar si han sido confirmados, rechazados o ignorados)
-  \end{itemize}
+\subsection{Plataforma}
+A partir de los requerimientos impuestos en el punto anterior, analizaremos los dispositivos disponibles y realizaremos la elección de la plataforma sobre la que ejecutaremos la aplicación objeto de este proyecto. Con esta decisión tomada, y una vez adquirido el soporte material, podremos validar que efectivamente cumple los requisitos previos estipulados. Adicionalmente en este punto definiremos el entorno de software para crear el modelo que ha de ser soportado por la plataforma informática usada a la vez que ser capaz de implementar el modelo y/o algoritmo.
 
 
-\end{enumerate}
+\subsection{Bases de datos}
+En paralelo a la elección de plataforma y como si de una prolongación de la fase de documentación se tratara, realizaremos un análisis de las bases de datos disponibles que se adecuen al proyecto. Tendremos en cuenta que tanto el tipo de datos, formato y etiquetado se ajuste o pueda ser adaptado a las especificaciones definidas. Así mismo, es esencial que el conjunto escogido permita:
+\begin{itemize}
+  \item Entrenar un modelo y validar el funcionamiento del algoritmo propuesto de forma experimental.
+  \item Generar un modelo utilizable en la implementación de la aplicación.
+  \item Comparar la precisión del sistema con otros modelos y algoritmos existentes para su validación
+\end{itemize}
+En este punto deberemos definir, validar y/o recolectar una serie de propiedades de las señales o series que se usarán como entrada del algoritmo, como por ejemplo:
+\begin{itemize}
+  \item Estudiar la estacionariedad de la señal.
+  \item Duración de los episodios; fijar unos márgenes para el tamaño de ventana para la señal de entrada.
+  \item Definir un tamaño orientativo de la señal de salida.
+\end{itemize}
 
+\subsection{Implementación de un prototipo del algoritmo}
+Una vez hecha la elección de los puntos anteriores pasaremos a la implementación experimental del sistema. Generaremos un modelo y estudiaremos los resultados de variar diversos parámetros:
+\begin{itemize}
+  \item Fijar las longitudes de las secuencias de entrada y salida, así como la magnitud de la señal de entrada.
+  \item Seleccionar los parámetros del modelo analítico.
+  \item Definir la topología de red y ajustar los hiperparámetros del modelo recurrente.
+  \item Confirmar el funcionamiento del sistema y su ajuste a los requisitos y exigencias previstos.
+  \item Comparar los resultados con otros modelos.
+\end{itemize}
+Una vez todos estos puntos resueltos tendremos las especificaciones y el modelo final que será el punto de partida de la implementación del sistema.
 
-\end{document}
+\subsection{Implementación de la aplicación final}
+Partiendo del modelo anterior, crearemos una aplicación que capture y procese los datos necesarios para alimentarlo, lo ejecute y genere una salida acorde. Es indispensable conseguir que además de ejecutar satisfactoriamente el algoritmo, los resultados se obtengan dentro de un margen de latencias aceptables (esperamos conseguir resultados en menos de un segundo desde el punto de máximo impacto de la caída).
+
+\subsection{Validación en uso real}
+Dada la naturaleza del evento a estudiar es complejo realizar una validación experimental con muestras suficientes. Sin embargo esta etapa debe proveer el punto de vista del usuario final sobre el sistema así, su experiencia de uso, adecuación de la solución al problema y posibles ejes de mejora. Los datos recogidos por la aplicación deben ser analizados para detectar puntos de mejora a proponer para posteriores estudios o evoluciones.
+
+% \end{document}
