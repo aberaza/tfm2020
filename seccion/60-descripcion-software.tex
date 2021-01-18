@@ -1,5 +1,3 @@
-\documentclass[../tfm.tex]{subfiles}
-\begin{document}
 \textit{Aportar detalles del proceso de desarrollo incluyendo fases e hitos del proceso, diagramas representativos de la arquitectura y funcionamiento, capturas de pantalla para ilustrar el funcionamiento, etc.}
 
 El desafío de consolidar en un sistema portable una aplicación autónoma de detección de caídas debe hacer frente a una serie de limitaciones.
@@ -182,5 +180,21 @@ Quantización y prune
 \warn{RECOMENDACIÓN: ponerlo en su sección (capítulo 5), aunque es únicamente una sugerencia. Podemos quizás dejarlo y poner algo similar en cada capítulo.}En las secciones posteriores detallaremos el algoritmo y modelo usado para la detección de caídas \ref{desc_modelo}, estructura \ref{desc_archi}, implementación \ref{desc_impl} e interfaz\todo{añadir referencia} de la aplicación y las optimizaciones implementadas \ref{desc_optim}, para a la postre evaluar tanto la viabilidad del modelo usado respecto a otras implementaciones \ref{eval_modelo}, como la usabilidad de la aplicación y su adecuación al problema a tratar\todo{añadir referencia}.
 
 
-\end{document}
+
+
+\begin{comment}
+  Viene del apartadoanterior a sugerencia de la profe
+\end{comment}
+
+\paragraph{Bourke} Los modelos de Bourke \cite{Bourke2006} se basan en la detección de la estructura típica del vector suma de la aceleración de una caída. Esta estructura está compuesta por un valle seguido de un pico. El valle está asociado al inicio de la caída, momento en el que se contrarresta la aceleración constante de 1G en sentido vertical al que están expuestos los cuerpos con la aceleración en el mismo sentido del cuerpo en caída. El posterior pico es debido a las aceleraciones durante el impacto con el suelo. Así pues Bourke propone establecer dos cotas, una para detectar el valle y otra el pico. Con estas cotas definidas se pueden extraer tres modelos. Uno que observe los picos, otro los valles y un tercero que obseerve valles y picos.
+\figura{BourkeLowThresholdsHistogram}{fig:bourke_low_hist}{Histograma valores \textit{valle} modelo Bourke}
+\figura{BourkeUpperThresholdsHistogram}{fig:bourke_upper_hist}{Histograma valores \textit{pico} modelo Bourke}
+Para establecer las cotas, Bourke propone analizar un base de datos de caídas y establecer los niveles de tal forma que el 100\% de las caídas entren dentro del espacio, consiguiendo una sensibilidad del mismo valor por definición. Este modelo tiene la desventaja de tener una especificidad muy baja. Los resultados con el dataset SisFall nos arrojan un valor para las cotas de 0,971G para el valle y 4,164G para el pico. Con estos valores se consigue una especificidad de tan solo $0,9\%$. Si observamos la distribución de los valores de valle de las caídas y resto de actividades en la figura \ref{fig:bourke_low_hist}, se aprecia el alto grado de solapamiento y como pràcticamente todos los supuestos del dataset entran dentro del conjunto seguregado por el modelo. Por contra, el análisis de los valores de pico (figura \ref{fig:bourke_upper_hist}) arroja una dsitribucion que permite obtener un discriminador de mejor calidad.
+
+\warn{TODOS LOS RESULTADOS QUE CALCULE YO HAN DE IR EN EL APARTADO DESARROLLO!!!}
+
+Efectivamente en la figura \ref{fig:bourke_cfmatrix} se aprecia como usando únicamente la cota superior o del pico el modelo de bourke alcanza una especificidad del 42,84\% que aumenta hasta el 64\% si aceptamos una degradación de la sensibilidad hasta el 87,8\%.
+
+\figura{BourkeCONF_Matrix}{fig:bourke_cfmatrix}{Matrices de confusión para modelos Bourke}
+
 

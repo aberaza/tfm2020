@@ -7,6 +7,8 @@ Debe identificar adecuadamente el problema a tratar, contexto adecuado de uso y 
 
 \todo{referenciar los requisitos de un sistema de detección de caídas, en detalle si es posible}
 
+En este capítulo presentaremos al lector una serie de desarrollos previos sobres que serán utilizados o sobre los que se asentará el sistema de detección de caídas. Esta selección es fruto de las decisiones tomadas tras una etapa de estudio del estado de la tecnología en el área de detección de actividad humana y análisis de diferentes opciones de materiales, servicios, técnicas, modelos y datos disponibles. Todos los desarrollos aquí presentes fueron seleccionados a priori, antes de iniciar cualquier otra etapa de desarrollo, basándonos únicamente en los requisitos y necesidades del sistema. En los capítulos sucesivos se hará mención y justificación del uso, o ausencia, en la implementación final de todas estas herramientas.
+
 \section{Plataforma y Entorno de Desarrollo}\label{sec:req:plataforma}
 
 Tras adquirir información de entorno y con el fin de acotar y restringir las opciones disponibles de cara a la elaboración del algoritmo a emplear es necesario determinar sobre qué plataforma o dispositivo va a ejecutarse la aplicación. Esta decisión impondrá nuevas restricciones tales como tipos de fuentes de información/sensores disponibles, frecuencias de muestreo, precisión y magnitud, posición del dispositivo, entorno de programación a utilizar. 
@@ -147,25 +149,47 @@ Para generar las capturas de los acelerómetros se implementa la aplicación \te
 
 A la hora de parametrizar el sistema de captura de datos, optamos por mantener los 50Hz de frecuencia de muestreo. \cite{Liu2018} demuestra que se pueden conseguir buenos modelos basados en aprendizaje automático con tan solo 5,8Hz, aunque generaliza en 21,3Hz la frecuencia de muestreo mínima necesaria. Nos mantenemos por encima de este límite para eliminar una posible fuente de errores en el modelo.
 
+
 \section{Modelo}\label{req_modelos}
 
 \todo{nada de vaguedades, qué modelos, cuales voy a usar, qué valores he calculado yo y cuales vienen de fuera}
 Estudios similares han mostrado la mayor capacidad de los sistemas basados en aprendizaje automático. Sin embargo estos algoritmos no han conseguido desplazar en los sistemas comerciales a los métodos analíticos por la gran capacidad de cálculo que requieren. Algunos trabajos han demostrado la eficacia de hibridar los modelos usando un modelo computacionalmente simple para raealizar una tarea de detección de candidatos a caídas de fondo y un modelo complejo que actúe únicamente sobre este subconjunto de episodios. Este es el acercamiento que toma este trabajo.
 
 \subsection{Modelos Analíticos}
-\warn{Básicamente miden aceleración y actitud del cuerpo. Para este trabajo usaremos únicamente los modelos que trabajen con aceleración, los más simles. Nos quedamos con Bourke. Explicar brevemente principio, pq Bourque y los resultados obtenidos de bourke con sisfall en otros estudios y en el nuestro}
 
-\paragraph{Bourke:} Los modelos de Bourke \cite{Bourke2006} se basan en la detección de la estructura típica del vector suma de la aceleración de una caída. Esta estructura está compuesta por un valle seguido de un pico. El valle está asociado al inicio de la caída, momento en el que se contrarresta la aceleración constante de 1G en sentido vertical al que están expuestos los cuerpos con la aceleración en el mismo sentido del cuerpo en caída. El posterior pico es debido a las aceleraciones durante el impacto con el suelo. Así pues Bourke propone establecer dos cotas, una para detectar el valle y otra el pico. Con estas cotas definidas se pueden extraer tres modelos. Uno que observe los picos, otro los valles y un tercero que obseerve valles y picos.
-\figura{BourkeLowThresholdsHistogram}{fig:bourke_low_hist}{Histograma valores \textit{valle} modelo Bourke}
-\figura{BourkeUpperThresholdsHistogram}{fig:bourke_upper_hist}{Histograma valores \textit{pico} modelo Bourke}
+En el apartado \ref{sec:arte:modelos_analiticos} hemos introducido el contexto de este conjunto de algoritmos. Para implementar el sistema necesitamos un modelo simple y de bajo coste computacional y que se base principalmente en los datos captados por un acelerómetro de tres ejes. Dada la situación del sensor, toda medida de la postura queda descartada por no ser aplicable. Finalmente, dado que su función es principalmente la de mecanismo de atención o generador de eventos de posibles caídas es primordial que su sensibilidad sea alta para no perder caídas. La tasa de especificidad modulará la eficiencia del sistema en los planos del tiempo de cálculo y consumo de energía, siendo preferible usar algoritmos con alta especificidad, siempre y cuando no se comprometa la sensibilidad. Tras analizar varios modelos y recopilar los resultados en la tabla \ref{tab:resumen_mod_anal} decidimos optar por la familia de algoritmos propuestos por \cite{Bourke2006} por ser el único que de forma consistente ofrece una sensibilidad del 100\%. Si se observan los resultados de los diferentes algoritmos analizados, se observa la gran varianza de resultados según el estudio que realizase el análisis. Por ejemplo, el algoritmo \textit{Bourke 1} pasa de ser un algoritmo perfecto con una precisión del 100\% a ser inservible por su bajísima especificidad según el conjunto de datos usado. 
+
+\tablan[0.85\linewidth]{tab:resumen_mod_anal}{Características de los modelos analíticos estudiados}{lccccccccll}{
+          &       &     & \multicolumn{2}{c}{Estudio 1\tnote{1}} &\multicolumn{2}{c}{Estudio 2\tnote{2}} & \multicolumn{2}{c}{Estudio 3\tnote{3}} & \\
+ Modelo  & Sens.\% & Esp.\%& Sens.\% & Esp.\% & Sens.\% & Esp.\% & Sens.\% & Esp.\% & Sensores & Postura \\ \hline
+ Kangas 1\tnote{4}  & 100 & -- & 48 & 94 &   &    &   &  & ACC & Si \\
+ Kangas 2           & 100 & -- & 48 & 94 & 86 & 98 &   &  & ACC & Si \\
+ Kangas 3           & 71  & -- & 31 & 97 & 94 & 94 &   &  & ACC & Si \\
+ Bourke 1\tnote{5}  & 100 & 100& 100& 19 & 100& 79 &   &  & ACC & No \\
+ Bourke 2\tnote{6}  & 97  & 99 & 72 & 87 & 70 & 99 &   &  & ACC & Si \\
+ Bourke 3\tnote{7}  & 100 & 100& 87 & 97 &    &    &   &  & ACC + GYRO & Si \\
+ Chen \tnote{8}     &     &    & 76 & 94 &    &    &   &  & ACC & No \\ % ACC & Si
+ FallIndex\tnote{9} &     &    &    &    &    &    & 42&95& ACC & No \\
+}{
+  \item [1] \citeA{Bagala2012}
+  \item [2] \citeA{Aziz2017}
+  \item [3] \citeA{Vilarinho2015}
+  \item [4] \citeA{Kangas2008}
+  \item [5] \citeA{Bourke2007}
+  \item [6] \citeA{Bourke2008}
+  \item [7] \citeA{Bourke2010}
+  \item [8] \citeA{Chen2005}
+  \item [9] \citeA{Yoshida2005}
+}
+
+
+
+\paragraph{Algoritmo Bourke 1} El modelo de Bourke 1\cite{Bourke2006} se basa en la detección de la estructura típica del vector suma de la aceleración de una caída. Esta estructura está compuesta por un valle seguido de un pico. El valle está asociado al inicio de la caída, momento en el que se contrarresta la aceleración constante de 1G en sentido vertical al que están expuestos los cuerpos con la aceleración en el mismo sentido del cuerpo en caída. El posterior pico es debido a las aceleraciones durante el impacto con el suelo. Así pues Bourke propone establecer dos cotas, una para detectar el valle y otra el pico. Con estas cotas definidas se pueden extraer tres modelos. Uno que observe los picos, otro los valles y un tercero que obseerve valles y picos.
+
 Para establecer las cotas, Bourke propone analizar un base de datos de caídas y establecer los niveles de tal forma que el 100\% de las caídas entren dentro del espacio, consiguiendo una sensibilidad del mismo valor por definición. Este modelo tiene la desventaja de tener una especificidad muy baja. Los resultados con el dataset SisFall nos arrojan un valor para las cotas de 0,971G para el valle y 4,164G para el pico. Con estos valores se consigue una especificidad de tan solo $0,9\%$. Si observamos la distribución de los valores de valle de las caídas y resto de actividades en la figura \ref{fig:bourke_low_hist}, se aprecia el alto grado de solapamiento y como pràcticamente todos los supuestos del dataset entran dentro del conjunto seguregado por el modelo. Por contra, el análisis de los valores de pico (figura \ref{fig:bourke_upper_hist}) arroja una dsitribucion que permite obtener un discriminador de mejor calidad.
 
-\warn{TODOS LOS RESULTADOS QUE CALCULE YO HAN DE IR EN EL APARTADO DESARROLLO!!!}
-
-Efectivamente en la figura \ref{fig:bourke_cfmatrix} se aprecia como usando únicamente la cota superior o del pico el modelo de bourke alcanza una especificidad del 42,84\% que aumenta hasta el 64\% si aceptamos una degradación de la sensibilidad hasta el 87,8\%.
-
-\figura{BourkeCONF_Matrix}{fig:bourke_cfmatrix}{Matrices de confusión para modelos Bourke}
 \subsection{Modelos Basados en Aprendizaje Automático}
+
 \warn{Mirada de estudios. Enfocarse en los que usar wearables y aceleración. Sistemas SVN, K-Means y RNN. Analizar los resultados usados con modelo Stateless Bidirectional GRU 1 capa 40 unidades. Comparar con los resultados de otros estudios}
 
 \subsection{Modelos Híbridos}
@@ -176,51 +200,120 @@ Opciones y limitaciones que impone el framework a introducir aquí
 
 
 
-\warn{RECOMENDACIÓN: ponerlo en su sección (capítulo 4), aunque es únicamente una sugerencia. Podemos quizás dejarlo y poner algo similar en cada capítulo.} Estos conceptos se retoman posteriormente para definir los prerrequisitos: plataforma de desarrollo \ref{req_hardware} como herramientas de software \ref{req_tflite} y conjuntos de datos adecuados para entrenamiento y validación de resultados \ref{req_base de datos}. Trataremos la situación actual y soluciones disponibles así como las limitaciones y sus posibles soluciones. Trataremos de nuevo el problema de los diferentes tipos de modelos de detección de caídas \ref{req_modelos} relacionando sus capacidades con las limitaciones tanto de los conjuntos de datos como del soporte físico y computacional usado y su adecuación a la solución propuesta.
+\warn{RECOMENDACIÓN: ponerlo en su sección (capítulo 4), aunque es únicamente una sugerencia. Podemos quizás dejarlo y poner algo similar en cada capítulo.} 
+Estos conceptos se retoman posteriormente para definir los requisitos previos: plataforma de desarrollo \ref{req_hardware} como herramientas de software \ref{req_tflite} y conjuntos de datos adecuados para entrenamiento y validación de resultados \ref{req_base de datos}. Trataremos la situación actual y soluciones disponibles así como las limitaciones y sus posibles soluciones. Trataremos de nuevo el problema de los diferentes tipos de modelos de detección de caídas \ref{req_modelos} relacionando sus capacidades con las limitaciones tanto de los conjuntos de datos como del soporte físico y computacional usado y su adecuación a la solución propuesta.
 
 
 
 \section{Optimización de modelos}\label{sec:req:optimizacion}
 
-Por último, de cara a la creación de un sistema embebido es necesario abordar la optimización del algoritmo y modelo usados. Entendemos por optimización la reducción de complejidad controlada para conseguir un modelo que requiera menor capacidad de cálculo y memoria. Estas técnicas tendrán todas un impacto en la precisión del sistema por lo que el objetivo es conseguir un equilibrio entre la degradación de la capacidad predictiva y la reducción de la latencia debida al menor coste computacional. Establecemos dos criterios previos a cumplir por el sistema final:
+Los modelos basados en redes neuronales adolecen generalmente por su gran tamaño y la necesidad realizar infinidad de cálculos. Estos problemas se acrecentan cuando el objetivo es usar el modelo en un sistema embebido con poca memoria y microprocesadores optimizados para el consumo de energía en lugar de potencia de cálculo. Esta escasez de recursos obliga a la \textit{optimización} del algoritmo y modelo usados. Entendiendo por optimización la reducción de complejidad controlada para conseguir un modelo que requiera menor capacidad de cálculo y memoria. Estas técnicas tendrán todas un impacto en la precisión del sistema por lo que el objetivo es conseguir un equilibrio entre la degradación de la capacidad predictiva y la reducción de la latencia debida al menor coste computacional. Establecemos dos criterios previos a cumplir por el sistema final:
+
 \begin{itemize}
-  \item Arbitrariamente escogemos una latencia máxima de 1 segundo. 
-  \item La elección de la plataforma nos limita tanto en velocidad de cálculo como en tamaño al disponer únicamente de 512MB de memoria RAM.
+  \item Arbitrariamente escogemos una latencia máxima de 1 segundo desde el instante del primer impacto.
+  \item La elección de la plataforma nos limita tanto en velocidad de cálculo como en tamaño al disponer únicamente de 512MBytes de memoria RAM.
 \end{itemize}
 
-\subsection{Celdas eficientes: GRU)
+\subsection{Celdas eficientes: GRU}
+  
+\todo{GRU como alternativa de mejor rendimiento a LSTM y mejor precisión que Tanh RNN}
 
-\subsection{Simplificación del modelo: Pruning}
+\subsection{Simplificación y optimización del modelo: Pruning y Cuantificación}
+
   A pesar de la creciente capacidad de cálculo de los dispositivos vestibles, será necesario optimizar el rendimiento del modelo con el fin de conseguir la mayor capacidad de predicción por Hz del sistema. Para ello dispondremos de dos técnicas: \textit{Pruning} y \textit{Cuantificación}.
 
+\subsubsection{Pruning}
 
-  \subsubsection{Pruning}
-  Un modelo de redes neuronales se puede entender como una matriz de pesos que indican la contribción de cada nodo o neurona al resultado final. Es normal que en esa red haya nodos que aporten más información que otros. Este efecto no es necesariamente negativo, la regularización o normalización L1 busca precisamente este efecto para reducir el sobreajuste de la red a los datos de entrenamiento.
+Si añadimos que indican la contribción de cada nodo o neurona al resultado final. Es normal que en esa red haya nodos que aporten más información que otros. Este efecto no es necesariamente negativo, la regularización o normalización L1 busca precisamente este efecto para reducir el sobreajuste de la red a los datos de entrenamiento.
 
-Esta diferencia de aportación nos permite realizar una compresión del modelo. Si aceptamos sufrir unas ciertas pérdidas en la capacidad predictiva del mismo, podemos eliminar los nodos de menor peso reduciendo el tamaño de la red y su consumo de memoria. Esta reducción permite además acelerar el modelo y adaptarlo al uso en sistemas embebidos.\todo{Buscar bibliografía formal para: https://www.machinecurve.com/index.php/2020/09/23/tensorflow-model-optimization-an-introduction-to-pruning/}
 
-\todo{Este artículo cita referencias y es ligeramente más técnico.
-https://www.machinecurve.com/index.php/2020/09/29/tensorflow-pruning-schedules-constantsparsity-and-polynomialdecay/}
+Si pensamos en reducir el tamaño de una red neuronal, probablemente una de las soluciones que nos venga a la cabeza sea sea hacer un \textit{tree-shacking}, eliminar aquello que no se necesita. El término, usado en ciencias de la computación se aplica para reducir el tamaño de aplicaciones al eliminar el código que no es utilizado. Podemos pensar en realizar un cribado similar en la red eliminando aquellos pesos menos relevantes para la salida. Propuesto en \citeA{Mozer1989} como una herramienta para simplificar las redes de neuronas y facilitar así la comprensión de su funcionamiento, acelerar el aprendizaje al reducir el tamaño de la red y por la misma razón facilitar la capacidad de la red de generalizar. La técnica propuesta consiste en medir la influencia de los nodos en la señal de salida: comparar el resultado con y sin el nodo activado. Sabiendo la influencia de la aportación de cada nodo podemos determinar un umbral y eliminar los nodos con menor contribución reduciendo la red. \citeA{Yann1989} confirma que además de conseguir reducir el tamaño de la red a la mitad, el aprendizaje de la misma puede llegar a mejorar.
 
-Una de las técnicas más sencillas para realizar esta eliminación de nodos consiste en definir una aportación mínima objetivo y comparar la magnitud de la aportación individual al resultado final, eliminando aquellos que no alcanzan el nivel $\lambda$ deseado
+
+Recordemos, una capa de una red neuronal se puede modelar mediante la ecuación $H_i = f_i(W_ix+B_i)$ donde tenemos una matriz de conexiones $W_{i}$ y una matriz de sesgos $B_{i}$ y la función de activación $f_i(x)$. Si añadimos varias capas sucesivas podemos deducir que el impacto de un nodo, especialmente en las primeras capas de la red crecerá con cada capa posterior. Sin embargo eso no es así ya que en muchos casos la aportación puede quedar neutralizada por sucesivas inversiones de signo en el resto de capas, o resultar que el nodo se activa prácticamente con el mismo valor o que las capas posteriores estén en el límite de la función de activación y su influencia sea prácticamente irrelevante\cite{Mozer1989}. Es más, posiblemente el lector haya rápidamente asociado por su similitud esta técnica con una regularización mediante \textit{dropout}. Las similitudes son evidentes, pero hay sin embargo diferencias importantes:
+\begin{itemize}
+  \item Los nodos anulados o eliminados se pierden de forma definitiva
+  \item Los nodos se seleccionan de acuerdo a su aportación y no de forma aleatoria
+\end{itemize}
+
+A la hora de aplicar una técnica de pruning sobre la red es necesario entender que tras cada etapa de eliminación de nodos debe realizarse una etapa de reajuste de la red resultante para corregir el efecto de la pérdida de las neuronas. Este reajuste o aplanamiento de la red resulta especialmente efectivo en redes con múltiples capas como demuestra \citeA{Cai2020} logrando reducir el tamaño de \textit{ResNet110} en un 30\% y un descenso de la precisión de la red del 0,15\% y la reducción del número de operaciones necesarias a la mitad. Otros estudios\cite{Lee2019,Bartoldson2019,Han2015} confirman estos resultados y presentan una novedad: Las grandes reducidas mediante pruning presentan mejores resultados que los modelos pequeños (ResNet32 tras ser comprimida es mejor clasificando imágenes que WRN16, a igual número de nodos). Básicamente, se mantiene la mayor capacidad de generalización o aprendizaje del uso de mayor número de capas incluso al reducir el número de neuronas.
+
+Esta técnica, junto con la cuantificación de los valores, se presenta como una herramienta imprescindible para lograr los objetivos de nuestro sistema. Tensorflow permite aplicar prunning a los modelos, aunque el único algoritmo disponible, \textit{prune low magnitude} sea similar al básico definido por \citeA{Mozer1989}: eliminar aquellos nodos cuyo peso sea menor que un determinado nivel.
 \[
-\hat{w_i} = \left\{ \begin{matrix} w_i & :\mbox{si} |w_i|>\lambda\\
-  0 & :\mbox{si} |w_i|\leq\lambda\end{matrix} \right.
+  pruned(w_{i})=\left\{
+    \begin{array}{lcl}
+      w_i & si & |w_i| > \lambda \\
+      0 & si & |w_i|\leq  \lambda
+    \end{array}
+    \right.
 \]
 
-Esta compresión se puede hacer sobre un modelo ya entrenado (siendo recomendable realizar un nuevo proceso de entrenamiento para balancear los pesos de los nodos existentes y reducir el error introducido) o realizarlo durante el entrenamiento como si de una regularización más se tratara.
+Este proceso se va realizando durante un número determinado de iteraciones de entrenamiento durante el cual se van anulando progresivamente una cantidad determinada (ya sea un número fijo o una evolución polinomial) de nodos en cada etapa de entrenamiento. \cite{Yann1989} Los modelos son cada vez más comlejos y con el aumento en complejidad de problemas seguirán crecienco. Un método que elimina nodos permite no solo mejorar la capacidad de generalizar 
 
-En el caso de TensorFlow\todo{referencia!!!!}, el entorno usado para este proyecto, se permite realizar esta regularización durante el entrenamiento de dos formas:
+\begin{comment}
 
-\begin{itemize}
-\item Eliminando nodos de forma lineal, o a tasa constante
-\item Eliminando nodos de forma polinomial, o a tasa creciente
-\end{itemize}
-\warn{si lo introduzco y lo uso, debo tratar ventajas e inconvenientes}
+  https://www.machinecurve.com/index.php/2020/09/23/tensorflow-model-optimization-an-introduction-to-pruning/
+  ligeramente más técnico.
+https://www.machinecurve.com/index.php/2020/09/29/tensorflow-pruning-schedules-constantsparsity-and-polynomialdecay/
+\end{comment}
+
 
 \subsubsection{Cuantificación}
 \warn{citas necesarias}
-Entendemos por cuantificación al proceso de discretizar un grupo de valores. En este caso hace referencia precisamente al descenso en la precisión numérica usada para representar los pesos de nodos y valores de entrada y salida de una red neuronal.
+
+Además de eliminando nodos de la red, hay otra técnica que permite reducir el tamaño y requisitos de esta: reducir el número de bits usados para representar las conexiones y sesgos. Entendemos por cuantificación al proceso de discretizar un grupo de valores. En este caso en concreto hace referencia al mencionado descenso en la precisión numérica usada para representar los pesos de nodos y valores de entrada y salida de una red neuronal.
+
+Una de las primeras aproximaciones a la cuantificación de los parámetros de redes neuronales aparece en \citeA{Courbariaux2015}. \citeauthor{Courbariaux2015} busca una solución al problema de los crecientes requisitos de potencia de cálculo necesarios por los modelos de redes de neuronas. Esta optimización espera reducir la dependencia en la mejora de las unidades GPU(\textit{Graphics Processing Unit}) y CPU, hasta ahora uno de los principales factores que limitan evolución en este área. \cita[{\citeNP[p.~1]{Courbariaux2015}}]{La mayoría de los cálculos realizados en el entrenamiento y aplicación de una red neuronal consisten en multiplicar un peso determinado por valor real por una activación definida por un valor real}, así pues decide binarizar tanto pesos como activaciones y reducirlos a solo dos valores: $0$ y $1$ o $+1$ y $-1$. Los resultados obtenidos son esperanzadores, una reducciónd el tamaño a 1/16 del original (de 16 bits usados para representar pesos y activaciones pasa a uno único) y una mejora en la velocidad de respuesta de la red tres veces menor.
+
+La reducción en el tamaño de la red es evidente. Si tenemos $N$ parámetros en una red representados con $m$ bits cada uno, el tamaño final de la red es $S(red)=Nm$ es por tanto una dependencia lineal. La mejora en los tiempos de cómputo es más complejo. Trabajar con números reales, o de coma flotante, requiere de unidades de cálculo especializadas, ya sean GPUs o unidades de coma flotante en CPUs. Este requisito de unidades especializadas es determinante en el rendimiento, pues será determinante en la velocidad de cálculo del modelo. Esta problemática la estudia en detalle \citeA{Vanhoucke2011} buscando optimizar la velocidad de los modelos. Se fija en la lentitud de las unidades CPU para realizar grandes cantidades de cálculos en coma flotante y propone en este caso usar valores enteros. Predice que el impacto negativo será mínimos pues \cita[{\citeNP[p.~5]{Vanhoucke2011}}]{las activaciones son probabilidades, limitadas al rango $[0:1]$ así pues no hay riesgos relacionados con el escalado al usar enteros. Y como la entrada de cada nodo es la salida de una activación esto asegura que el rango de valores permanecerá acotado}. Aplicando cuantización para convertir los pesos de reales a enteros, y otras optimizaciones en la implementación, consigue reducir a menos de un tercio el tiempo de respuesta de una red de procesado del habla con un error de precisión añadido inferior al 0,1\%.
+
+Hasta ahora hemos tratado pesos y activaciones como un todo: aplicamos la misma regularización o reducción de precisión a ambos conjuntos de valores por igual. A esta técnica se la conoce como \textit{Cuantificación de precisión uniforme}, en contraste con la \textit{Cuantificación de precisión mixta}. Este última propone tratar la reducción de tamaño de cada conjunto de valores por separado, consiguiendo una mayor reducción del tamaño con un impacto menor en la precisión del modelo \cite{Jin2019} e incluso a veces mejorando el rendimiento. 
+
+El resultado del último párrafo, de nuevo, no habrá pillado desprevenido al lector que rápidamente asocia la reducción en la precisión con un aumento del ruido, al que llamamos \textit{ruido de cuantificación} y por tanto similar a una regularización de la red por ruido \cite{Bishop1995,Noh2017}. Esta capacidad de regularización de la red resultante de la cuantificación y entrenamiento de los pesos de la red es utilizado directamente por \citeA{Wu2019} no ya con el objetivo de mejorar el tamaño y velocidad del modelo sino para mejorar su capacidad de aprendizaje y generalización mejorando la capacidad de clasificación de imágenes de una red en hasta un 10\%. 
+
+TensorFlow Lite ofrece diversas opciones para realizar la cuantificación de modelos como presenta la tabla \ref{tab:tflite_quantization}. En resumidas cuentas ofrece dos opciones: realizar la cuantificación sobre modelos ya entrenados o realizarlo durante el entrenamiento del modelo. Este segundo tipo ofrece mejor granularidad y fiabilidad ya que permite definir secciones específicas del modelo que no sean alteradas y asegura que los rangos y escalados de se realizan teniendo el cuenta todos los datos disponibles. 
+
+
+\tablan{tab:tflite_quantization}{Detalle de los tipos de cuantificación disponibles en TensorFlow Lite}{llcccl}{
+  Técnica & Datos Requeridos  & Compresión & Precisión & Velocidad & Hardware Soportado \\ \hline 
+  Float16\tnote{1}   & -               & \~50\%   & 0  & --  &      & CPU, GPU \\
+  Rango Dinámico\tnote{1} & -          & \~75\%  & --- & x2,5  & CPU, GPU \\
+  Enteros\tnote{1}   & Si\tnote{3}              & \~75\%  & --  & x3  & CPU, GPU, TPU, DSP \\
+  QAT\tnote{2} & Si\tnote{4}                    & \~75\%  & -   & x3  & CPU, GPU, TPU, DSP \\
+}{
+  \item [1] Cuantificación post-entrenamiento.
+  \item [2] \textit{Quantification Aware Training} (Entrenamiento Para Cuantificación), cuantificación se prepara durante el entrenamiento. 
+  \item [3] Es necesario proveer un subconjunto representativo de datos.
+  \item [4] Se usa todo el conjunto de entrenamiento.
+}
+
+La precisión y número de bits usado para representar los pesos y activaciones puede verse en la tabla \ref{tab:tflite_weights_activations}. La cuantificación a enteros y OAT resultan en redes con el mismo peso, la diferencia entre ambos es cómo se calculan y escalan los valores (Enteros usa un subconjunto de datos, lo cual penaliza su precisión, contra el uso de toda la base de datos de entrenamiento como hace OAT), y en que OAT al realizarse durante el entrenamiento permite compensar el error introducido, funcionando, como ya hemos mencionado, como una regularización.
+
+\tablan[0.55\linewidth]{tab:tflite_weights_activations}{Tipos de representación usados en cada técnica}{lcc}{
+  Técnica & Pesos & Activaciones \\ \hline
+  Float16 & Float(16bit) & Float(16bit) \\
+  Rango Dinámico & Entero(8bit) & Entero(8bit)\tnote{1} \\
+  Enteros & Entero(8bit) & Entero(8bit) \\
+  Enteros Experimental & Entero(8bit) & Entero(16bit) \\
+  OAT     & Entero(8bit) & Entero(8bit) \\
+}{
+  \item [1] Las activaciones se convierten de coma flotante a entero al vuelo y el resultado se almacena en coma flotante
+  }
+
+  La combinación de estas técnicas, no solo es posible, sino deseable para conseguir reducir el consumo de recursos, memoria, consumo energético y tiempo de proceso, en órdenes de magnitud. El uso de Pruning y Cuantificación permite reducir grandes redes a una fracción: VGG16 se comprime de los 552MBytes originales a apenas 11,3MBytes, Alex-Net adelgaza de 240MBytes hasta los 6,9MBytes ambas sin pérdida de precisión\cite{Han2015}. Respecto a los tiempos, según \citeauthor{Han2015}, en un chip integrado para móviles los tiempos de ejecución son en promedio 4,2 veces más rápidos. Dados estos resultados previos, esperamos que estas técnicas tengan un gran impacto a la hora de permitir la ejecución de modelos de calidad de manera eficiente.
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 La cuantificación de los valores de entrada y salida a la red consiste en reducir el peso de estos valores. Normalmente se normaliza la entrada y se convierte en valores de tipo entero. Tras el paso por la red, a la salida se aplicac la operación inversa para escalar la salida al rango de valores esperado.
 
