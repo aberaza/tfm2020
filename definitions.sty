@@ -13,13 +13,14 @@
 
 % Notas en las tablas
 \usepackage[flushleft]{threeparttable}
-
+% Macros más potentes
+\usepackage{ifthen}
 %Fancy maths
 %\usepackage{mathpazo}
 %%% Subfiguras
 %\usepackage{subfigure} % deprecated y rompe algo
 %\usepackage{caption}
-% \usepackage{subcaption} % conflicto con subfig
+\usepackage{subcaption} % conflicto con subfig
 % mirar paquete subfig
 
 
@@ -35,12 +36,16 @@
     \begin{figure}[!ht]
         \centering
         \IfFileExists{\texfigure}{
-          \includestandalone{\graphname}
+          \resizebox{\scale\linewidth}{!}{
+            \includestandalone{\graphname}
+          }
         }{
             \IfFileExists{\pgffigure}{
+              \resizebox{\scale\linewidth}{!}{
                 \input{\pgffigure}
                 %\includestandalone{\pgffigure}
                 %\includegraphics[width=0.9\textwidth]{\pgffigure}
+              }
            }{
                \includegraphics[scale=\scale]{\graphname}
            }
@@ -92,6 +97,29 @@
   \end{table*}
 }
 
+\newcommand\tabCap[4]{
+  \begin{tabular}{@{}#3@{}}
+    \toprule
+    #4
+    \bottomrule
+  \end{tabular}
+  %\caption{\label{#1} #2}
+}
+\newcommand\subtabla[6][0.48]{
+  \begin{subtable}[t]{0.48\textwidth}
+    \ifthenelse{
+      \equal{#6}{}
+      }{ IZDA
+        \resizebox{#1\textwidth}{!}{
+          \tabCap{#2}{#3}{#4}{#5}
+        }
+      }{
+        \resizebox{#1\textwidth}{!}{
+          \tabCap{#2}{#3}{#4}{#5}
+        }
+      }
+\end{subtable}
+}
 % \tabla{tab:id}{Título tabla}{lcccl}{ la tala propiamente dicha}
 \newcommand\tabla[5][\linewidth]{
 \begin{table*}

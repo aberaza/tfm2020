@@ -62,8 +62,16 @@ Nos referimos por entorno de desarrollo al conjunto de herramientas usadas para 
 
 
 \subsection{Soporte en la Nube}
-AWS
 
+Si bien el sistema a desarrollar es autocontenido, preveemos la necesidad de implementar una infraestructura de servidor en la nuve para ampliar la funcionalidad y permitir la recopilación de datos, especialmente durante la etapa de recopilación de muestras para crear la base de datos. En concreto buscamos una plataforma de servicios que permita:
+
+\begin{itemize}
+  \item Implementar servicios/APIs de forma sencilla.
+  \item Sin necesidad de infraestructura para reducir el mantenimiento.
+  \item Permita almacenar grandes cantidades de datos.
+\end{itemize}
+
+Con estas necesidades en mente seleccionamos la plataforma de servicios en la nube de Amazon (\url{https://www.amazon.com}) AWS(\url{https://aws.amazon.com}) dado que además de cumplir con los requisitos mínimos, su amplia popularidad ha permitido crear una comunidad que ofrece un amplio soporte. De toda la oferta de servicios disponibles nos centraremos en el servicio de almacenamiento \textit{S3}, \textit{lambda} para implementar servicios \textit{sin servidor} (sin infraestructura dedicada) y \textit{Amazon API Gateway} para exponer los servicios en Internet. Como extra cabe destacar la gran cantidad de lenguajes de programación soportados por AWS Lambda, lo cual facilitará la implementación al no requerir aprender nuevos lenguajes de programación.
 
 \section{Bases de datos de actividad}\label{sec:req:bases_datos}
 
@@ -117,30 +125,7 @@ Tras validar el funcionamiento y compararlo con otros modelos en igualdad de con
 
 
 
-
-
-
-% #########################################################
-
-\subsubsection{Sistema desarrollado }
-
-
-
-Para la realización de este trabajo es necesario conseguir aunar y definir tres componentes.
-\begin{itemize}
-  \item Dispositivo de captura de actividad y procesado
-  \item Conjunto de datos para entrenamiento y validación
-  \item Modelo de detección de caídas
-\end{itemize}
-
-
-
-
-\subsection{Base de Datos para la implementación}
-
-
-\section{Base de datos de actividad}\label{req_base de datos}
-Para poder generar un modelo con el mismo tipo de datos y capturado de la misma forma a los que deberá procesar posteriormente, optamos por realizar un base de datos de datos propio usando el mismo dispositivo sobre el que se ejecutará el prototipo como plataforma de captura.
+\todo{revisar esto}Para poder generar un modelo con el mismo tipo de datos y capturado de la misma forma a los que deberá procesar posteriormente, optamos por realizar un base de datos de datos propio usando el mismo dispositivo sobre el que se ejecutará el prototipo como plataforma de captura.
 
 Este base de datos se realiza usando únicamente información del sensor de aceleración triaxial del reloj Fossil Sport Gen3 \ref{app:fossil} a una frecuencia de muestreo de 50Hz. Los valores de aceleración medidos están expresados en $m/s^2$ dentro de los límites de la plataforma. Este es un base de datos no etiquetado dado que el objetivo es entrenar un modelo de predicción de series temporales y no un clasificador como suele ser habitual.
 
@@ -150,10 +135,13 @@ Para generar las capturas de los acelerómetros se implementa la aplicación \te
 A la hora de parametrizar el sistema de captura de datos, optamos por mantener los 50Hz de frecuencia de muestreo. \cite{Liu2018} demuestra que se pueden conseguir buenos modelos basados en aprendizaje automático con tan solo 5,8Hz, aunque generaliza en 21,3Hz la frecuencia de muestreo mínima necesaria. Nos mantenemos por encima de este límite para eliminar una posible fuente de errores en el modelo.
 
 
-\section{Modelo}\label{req_modelos}
+
+
+
+\section{Modelos y Algoritmo}\label{sec:req:modelos}
 
 \todo{nada de vaguedades, qué modelos, cuales voy a usar, qué valores he calculado yo y cuales vienen de fuera}
-Estudios similares han mostrado la mayor capacidad de los sistemas basados en aprendizaje automático. Sin embargo estos algoritmos no han conseguido desplazar en los sistemas comerciales a los métodos analíticos por la gran capacidad de cálculo que requieren. Algunos trabajos han demostrado la eficacia de hibridar los modelos usando un modelo computacionalmente simple para raealizar una tarea de detección de candidatos a caídas de fondo y un modelo complejo que actúe únicamente sobre este subconjunto de episodios. Este es el acercamiento que toma este trabajo.
+Estudios similares han mostrado la mayor capacidad de los sistemas basados en aprendizaje automático. Sin embargo estos algoritmos no han conseguido desplazar en los sistemas comerciales a los métodos analíticos por la gran capacidad de cálculo que requieren. Algunos trabajos han demostrado la eficacia de hibridar los modelos usando un modelo computacionalmente simple para realizar una tarea de detección de candidatos a caídas de fondo y un modelo complejo que actúe únicamente sobre este subconjunto de episodios. Este es el acercamiento que toma este trabajo.
 
 \subsection{Modelos Analíticos}
 
@@ -175,35 +163,59 @@ En el apartado \ref{sec:arte:modelos_analiticos} hemos introducido el contexto d
   \item [2] \citeA{Aziz2017}
   \item [3] \citeA{Vilarinho2015}
   \item [4] \citeA{Kangas2008}
-  \item [5] \citeA{Bourke2007}
+  \item [5] \citeA{Bourke2006}
   \item [6] \citeA{Bourke2008}
   \item [7] \citeA{Bourke2010}
   \item [8] \citeA{Chen2005}
-  \item [9] \citeA{Yoshida2005}
+  \item [9] \citeA{fallindex00}
 }
 
 
 
-\paragraph{Algoritmo Bourke 1} El modelo de Bourke 1\cite{Bourke2006} se basa en la detección de la estructura típica del vector suma de la aceleración de una caída. Esta estructura está compuesta por un valle seguido de un pico. El valle está asociado al inicio de la caída, momento en el que se contrarresta la aceleración constante de 1G en sentido vertical al que están expuestos los cuerpos con la aceleración en el mismo sentido del cuerpo en caída. El posterior pico es debido a las aceleraciones durante el impacto con el suelo. Así pues Bourke propone establecer dos cotas, una para detectar el valle y otra el pico. Con estas cotas definidas se pueden extraer tres modelos. Uno que observe los picos, otro los valles y un tercero que obseerve valles y picos.
+\paragraph{Algoritmo Bourke 1} El modelo de Bourke 1\cite{Bourke2006} se basa en el estudio de la evolución del módulo de la aceleración. Partimos del principio de que todo cuerpo sufre una aceleración constante de $9,8m/s$ o 1G correspondiente a la gravedad terrestre. Como podemos apreciar en la figura \ref{fig:bourke_thresholds}, al principio de una caída, típicamente se produce un descenso en el módulo de la aceleración ya que al caer, la componente vertical contrarresta el efecto de la gravedad. Al impactar posteriormente contra el suelo se produce un pico en la aceleración. El algoritmo de Bourke utiliza esta característica forma para establecer dos niveles para determinar la detección de caídas. Estas cotas se denominan \textit{LFT} (Nivel de caída inferior) para el nivel mínimo de aceleración medido y \textit{UFT} (Nivel de caída superior) para el nivel superior. El algoritmo de Bourke considera que se ha producido una caída cuando en un intervalo determinado de tiempo se rebasan ambos límites. 
 
-Para establecer las cotas, Bourke propone analizar un base de datos de caídas y establecer los niveles de tal forma que el 100\% de las caídas entren dentro del espacio, consiguiendo una sensibilidad del mismo valor por definición. Este modelo tiene la desventaja de tener una especificidad muy baja. Los resultados con el dataset SisFall nos arrojan un valor para las cotas de 0,971G para el valle y 4,164G para el pico. Con estos valores se consigue una especificidad de tan solo $0,9\%$. Si observamos la distribución de los valores de valle de las caídas y resto de actividades en la figura \ref{fig:bourke_low_hist}, se aprecia el alto grado de solapamiento y como pràcticamente todos los supuestos del dataset entran dentro del conjunto seguregado por el modelo. Por contra, el análisis de los valores de pico (figura \ref{fig:bourke_upper_hist}) arroja una dsitribucion que permite obtener un discriminador de mejor calidad.
+El proceso para elegir estos límites garantiza que por construcción la sensibilidad del algoritmo sea del 100\% sobre la base de datos elegida. Para ambos límites, se recorre todo el conjunto de datos y se busca entre todas las caídas:
+\begin{itemize}
+  \item El mayor de los mínimos de aceleración de las caídas (para definir \textbf{LFT})
+  \item El menor de los máximos de aceleración de las caídas (para definir \textbf{UFT})
+\end{itemize}
+
+Garantizando así que todas las caidas del conjunto de datos serán detectadas, y por tanto la sensibilidad siempre sea máxima. Por contra esto hace que el valor de especificidad del algoritmo sea altamente dependiente del resto de actividades incluidas en la base de datos. Esta característica explicaría la gran disparidad de resultados de la tabla \ref{tab:resumen_mod_anal}. 
+
+\figura{BourkeThresholds}{fig:bourke_thresholds}{Detalle del modelo de detección de Bourke}
+
+Recogemos en la tabla \ref{tab:bourke_threshold_values} una lista con los diferentes valores obtenidos para LFT y UFT según diversos estudios. Su valor es claramente orientativo dada la dependencia de la base de datos usada, que nos obligará a obtener estos valores nuevamente durante la implementación para adaptarlos a SisFall.
+
+\tabla[0.43\linewidth]{tab:bourke_threshold_values}{Valores UFT y LFT de Bourke por estudio}{llcc}{
+  Estudio & Posición & UFT & LFT \\ \hline
+  \citeA{Bourke2006} & Pecho & 3,52g & 0,41g \\
+                     & Cintura & 2,74g & 0,60g \\
+  \citeA{Bourke2010} & Cintura & 2,80g & 0,65g \\                   
+  \citeA{Bagala2012} & -- & 1,79g & 0.73g \\
+}
+
 
 \subsection{Modelos Basados en Aprendizaje Automático}
 
-\warn{Mirada de estudios. Enfocarse en los que usar wearables y aceleración. Sistemas SVN, K-Means y RNN. Analizar los resultados usados con modelo Stateless Bidirectional GRU 1 capa 40 unidades. Comparar con los resultados de otros estudios}
-
 \subsection{Modelos Híbridos}
-\warn{este es el trabajo a realizar. Introducir los trabajos de ..... y poco más}
 
-\section{TensorFlow Lite} \label{req_tflite}
-Opciones y limitaciones que impone el framework a introducir aquí
+\section{Biblioteca de Modelos Neuronales} \label{sec:req:tflite}
 
+Una de las piezas angulares de todo el desarrollo es la generación y entrenamiento del modelo. Si bien es factible realizar una imlementación directa tanto del modelo como de las funciones de entrenamiento, no es óptimo ni recursos ni en resultados. Existen multitud de de bibliotecas para el desarrollo, entrenamiento y despliegue de modelos de los que citamos brevemente los más extendidos:
 
+\paragraph{Caffe2 y PyTorch}
 
-\warn{RECOMENDACIÓN: ponerlo en su sección (capítulo 4), aunque es únicamente una sugerencia. Podemos quizás dejarlo y poner algo similar en cada capítulo.} 
-Estos conceptos se retoman posteriormente para definir los requisitos previos: plataforma de desarrollo \ref{req_hardware} como herramientas de software \ref{req_tflite} y conjuntos de datos adecuados para entrenamiento y validación de resultados \ref{req_base de datos}. Trataremos la situación actual y soluciones disponibles así como las limitaciones y sus posibles soluciones. Trataremos de nuevo el problema de los diferentes tipos de modelos de detección de caídas \ref{req_modelos} relacionando sus capacidades con las limitaciones tanto de los conjuntos de datos como del soporte físico y computacional usado y su adecuación a la solución propuesta.
+Caffe2 (\url{https://caffe2.ai/}) Es en su origen una biblioteca de modelos neuronales centrada en la velocidad con soporte para el lenguaje de programación \textit{python}. Desde hace 2018 forma parte de la biblioteca PyTorch (\url{https://pytorch.org/}). PyTorch auna un módulo de cálculo de tensores y uno de modelado de redes neuronales con gran énfasis en la aceleración mediante GPU. Es, junto con TensorFlow, la biblioteca de Modelos Neuronales más usada en el ámbito académico.
 
+\paragraph{TensorFlow + Keras}
 
+Similar al caso anterior, Keras (\url{https://keras.io/}) es un módulo que ofrece una API de alto nivel para facilitar la generación y entrenamiento de modelos. No es en si una biblioteca de redes neuronales sino una interfaz de alto nivel a varias de estas como TensorFlow, Theano, CNTK y otros. TensorFlow es al igual que PyTorch una biblioteca de cálculo de tensores y de modelado de redes si bien sus algoritmos están optimizados para ejecutarse sobre unidades TPU también soportan aceleración en GPUs. Desde la versión 2.0 de TensorFlow, se incluye Keras para ofrecer tanto una API de bajo nivel como otra de alto para la generación de modelos. Al ser propiedad de Google, la integración con sus productos es de las mejores. Dispone de un módulo para la ejecución de modelos en plataformas embebidas.
+
+\paragraph{SciKit-Learn}
+
+Scikit-learn (\url{https://scikit-learn.org/}) se presenta como una biblioteca de funciones de tratamiento de datos. Ofrece imlementaciones de funciones y algoritmos de aprendizaje automático muy variados como \textit{random forest}, \textit{SVM}, textit{K-NN} y otros, así como funciones para el pre-procesado de datos. Soporta también modelos de redes neuronales, aunque su API de desarrollo des de muy alto nivel y dificilmente industrializable.
+
+La elección del sistema WearOS para imlementar la aplicación, unida a la popularidad tanto en el ámbito académico como profesional así como el soporte y optimización para sistemas embebidos hace que nos decantemos por la opción TensorFlow + Keras.
 
 \section{Optimización de modelos}\label{sec:req:optimizacion}
 
@@ -214,11 +226,7 @@ Los modelos basados en redes neuronales adolecen generalmente por su gran tamañ
   \item La elección de la plataforma nos limita tanto en velocidad de cálculo como en tamaño al disponer únicamente de 512MBytes de memoria RAM.
 \end{itemize}
 
-\subsection{Celdas eficientes: GRU}
-  
-\todo{GRU como alternativa de mejor rendimiento a LSTM y mejor precisión que Tanh RNN}
-
-\subsection{Simplificación y optimización del modelo: Pruning y Cuantificación}
+\subsection{Técnicas de Optimización: Pruning y Cuantificación}
 
   A pesar de la creciente capacidad de cálculo de los dispositivos vestibles, será necesario optimizar el rendimiento del modelo con el fin de conseguir la mayor capacidad de predicción por Hz del sistema. Para ello dispondremos de dos técnicas: \textit{Pruning} y \textit{Cuantificación}.
 
@@ -259,7 +267,6 @@ https://www.machinecurve.com/index.php/2020/09/29/tensorflow-pruning-schedules-c
 
 
 \subsubsection{Cuantificación}
-\warn{citas necesarias}
 
 Además de eliminando nodos de la red, hay otra técnica que permite reducir el tamaño y requisitos de esta: reducir el número de bits usados para representar las conexiones y sesgos. Entendemos por cuantificación al proceso de discretizar un grupo de valores. En este caso en concreto hace referencia al mencionado descenso en la precisión numérica usada para representar los pesos de nodos y valores de entrada y salida de una red neuronal.
 

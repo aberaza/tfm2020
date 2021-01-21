@@ -1,4 +1,79 @@
-\textit{Aportar detalles del proceso de desarrollo incluyendo fases e hitos del proceso, diagramas representativos de la arquitectura y funcionamiento, capturas de pantalla para ilustrar el funcionamiento, etc.}
+% !TeX root = ../tfm.tex
+%! TEX root = ../tfm.tex
+
+\begin{comment}
+Aportar detalles del proceso de desarrollo incluyendo fases e hitos del proceso, diagramas representativos de la arquitectura y funcionamiento, capturas de pantalla para ilustrar el funcionamiento, etc.
+\end{comment}
+
+\warn{pequeña introducción}
+
+\section{Captura de secuencias y creación de la base de datos}
+Como ya hemos presentado anteriormente en la sección \ref{sec:req:bases_datos}, nos encontramos ante la falta de una base de datos para entrenar el modelo del producto final. Al tratarse de un modelo experimental es necesario conseguir un conjunto de datos lo más parecido posible a los capturados por la plataforma física utilizada. A su vez es necesario validar la capacidad de esta plataforma para servir al propósito de este trabajo. Así, con esta doble tarea de generar una bases de datos y confirmar que la plataforma cubre nuestras necesidades funcionales realizamos el primer desarrollo propio del trabajo.
+
+\subsection{Captura de datos: AccelCapture}\label{sub:imp:accelcapture}
+
+\textit{AccelCapture} es el nombre del sistema de captura de tramas de la aceleración capturada por el sensor situado en un reloj inteligente con sistema operativo \textit{WearOS}. Consta de dos componentes: una unidad de adquisición de datos, el propio reloj, y una segunda unidad de almacenamiento situada en la nube. Tal y como puede apreciarse en el diagrama de clases de la figura \ref{fig:accelcaptureClasesUml} la aplicación en si misma se compone de tres bloques funcionales.
+
+\figura[0.47]{accelcaptureClassUML}{fig:accelcaptureClasesUml}{Diagrama de clases de AccelCapture}
+
+\paragraph{MainWearActivity}
+El punto de entrada de la aplicación. Genera la interfaz de usuario y permite introducir el nombre el usuario a la vez que verificar el estado del servicio de captura de datos e iniciar o parar su ejecución.
+
+\paragaraph{SensorsReader}
+Un servicio que al ser creado se registra para recibir eventos y lecturas del sensor de aceleración triaxial del reloj. Posee una cola circular donde almacena los últimos 5 segundos de muestras (si por ejemplo la velocidad de lectura del sensor es de $1/50$, el buffer posserá $50 * 5 = 250$ muestras).
+Este servicio realiza el análisis de la aceleración para detectar movimiento según el algoritmo definido en la figura \ref{fig:capturaFlow}. Tras cada muestra leida analiza el valor y analiza dos mecanismos de detección:
+
+\figura[0.55]{capturaFlujo}{fig:capturaFlow}{Flujo de trabajo de la aplicación AccelCapture}
+
+\begin{enumerate}
+  \item \textbf{Movimiento repentino} Se activa si la muestra leida es mayor de $2g$.
+  \item \textbf{Movimiento prolongado} Activado cuando la aceleración promedio del contenido del buffer es superior a $0,2g$
+\end{enumerate}
+
+En caso de activarse alguno de estos mecanismos, el servicio considera que ha detectado una actividad y manda el contenido del buffer al servidor para ser guardado.
+
+\subsubsection{Almacenamiento de datos}
+
+Tal y como se menciona en el apartado \ref{sec:req:nube} la plataforma en la nube se implementa usando los servicios de AWS. Para esta función crea un microservicio o \textit{API}(lista de funciones de acceso público que ofrece una biblioteca de programación) ( del tipo \textit{REST}(Arquitectura que implementa una interfaz sobre el protocolo \textit{HTTP}). Este servicio, definido en la tabla \ref{tab:accelcapture:api} se encargará de recibir la llamadas de la aplicación y guardar el contenido en un archivo \textit{JSON} (lenguaje de definición de estructuras de datos que usa la notación de JavaScript).
+
+La estructura almacenada se muestra en la tabla \ref{tab:accelcapture:accel_session} la denominamos \textit{AccelSession}. Este objeto contiene información sobre el sensor (error y frequencia de muestreo), fecha de la captura así como unos identificadores del usuario y de la sesión además de la información capturada en los tres ejes del acelerómetro.
+
+\tabla[0.65\linewidth]{tab:accelcapture:api}{API del servidor AccelCapture}{llll}{
+  Método & URL & Carga & Función lambda \\ \hline
+  POST & /saveAccel\todo{poner la buena} & AccelSession & doGuardarAccel() \\
+}
+\subsubsection{Captura de datos}
+
+
+\subsubsubsection{Datos Capturados}
+
+\begin{table}
+  \subtabla[0.48]{tab:accelcapture:accel_session}{Descripción del Objeto AccelSession}{m{0.175\linewidth}m{0.15\linewidth}m{0.35\linewidth}}{
+Campo           & Tipo Dato     & Descripción \\ \hline
+\textit{uid}    & Alfanumérico  & Identificador único de usuario \\
+\textit{sid}    & Alfanumérico  & Identificador único de sesión \\
+\textit{sensorResolution} & Real & Resolución del sensor (en $m/s^2$) \\
+\textit{sensorMaxRange} & Real  & Valor máximo de la medida (en $m/s^2$) \\
+\textit{startTime} & Entero     & Tiempo EPOCH del inicio de la sesión (en segundos) \\
+\textit{samples}  & Entero      & Número de muestras de la sesión \\
+\textit{triggerMethod} & Texto  & Nombre del evento que inició la sesión de captura \\
+\textit{sessionData} & SessionData & Estructura con los datos capturados del sensor \\
+}{}
+
+%\hspace{\fill}
+
+\subtabla[0.48]{tab:accelcapture:session_data}{Descripción del Objeto SessionData}{m{0.175\linewidth}m{0.15\linewidth}m{0.35\linewidth}}{
+Campo           & Tipo Dato     & Descripción \\ \hline
+\textit{duration} & Entero      & Duración, en $\mu s$, de la sesión \\
+\textit{activity} & Texto       & Nombre de la actividad realizada durante la captura \\
+\textit{rate}   & Entero        & Ratio de muestreo (en $Hz$) \\
+\textit{accelerationX} & Lista<Reales> & Lista de valores de la aceleración capturados en el eje X (en $m/s^2$) \\
+\textit{accelerationY} & Lista<Reales> & Lista de valores de la aceleración capturados en el eje Y (en $m/s^2$) \\
+\textit{accelerationZ} & Lista<Reales> & Lista de valores de la aceleración capturados en el eje Z (en $m/s^2$) \\
+}{right}
+\end{table}
+
+% ########################################
 
 El desafío de consolidar en un sistema portable una aplicación autónoma de detección de caídas debe hacer frente a una serie de limitaciones.
 
@@ -47,6 +122,8 @@ El la generación, entrenamiento, análisis y evaluación de modelos se realiza 
 
 \subsection{Arquitectura del sistema}
 
+\warn{hablando de AWS: (ver siguiente páraffo)}
+Resumiendo la estructura del sistema, \textit{AWS S3} (\url{https://aws.amazon.com/es/s3/?c=ser&sec=srv}) es el sistema de almacenamiento de datos en la red. Un disco duro en la nube, escalable en capacidad y fácilmente accesible para poder recuperar los datos. \textit{AWS Lambda} (\url{https://aws.amazon.com/es/lambda/?c=ser&sec=srv}) permite implementar funciones de código y definir una serie de eventos para lanzar su ejecución, al formar parte del ecosistema AWS es fácil conectar estas funciones con el sistema S3 y API Gateway. Finalmente \textit{AWS API Gateway} permite definir unos puntos de entrada, o URLs que conformarán la API del servicio. Cuando una de estas direcciones URL es invocada, inmediatamente se ejecuta la 
 \subsection{Arquitectura de la aplicación}
 
 El sistema está compuesto por dos bloques funcionales tal y como se muestra en \ref{fig:clasesUml}. Tenemos un bloque o paquete que incluye los servicios encargados del registro de datos de los sensores, gestión de entradas y notificación de eventos, implementación del algoritmo de detección y comunicación con el servidor. Este primer bloque contiene a su vez una aplicación de gestión del servicio que permite realizar tareas de mantenimiento y configuración. En un segundo bloque tenemos la interfaz del usuario principal, encargada de lanzar la aplicación, alertar en caso de caída y capturar la respuesta del usuario en caso de necesitarla.
