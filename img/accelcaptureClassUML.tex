@@ -1,0 +1,32 @@
+\documentclass[tikz=true]{standalone}
+\usepackage{definitions}
+\begin{document}
+\begin{tikzpicture}[node distance=2cm]
+
+\begin{umlpackage}{AccelCapture}
+  \umlclass[y=5.1]{MainWearActivity}{
+    - sensorsService
+  }{
+    - setUser(String) \\
+    - runSensorsReader()\\
+    - isServiceRunning()\\
+  }
+  \umlclass[y=0]{SensorsReader}{
+    - dataBuffer
+  }{
+    + startService() \\
+    + stopService() \\
+    + onCreate() \\
+    + onDestroy() \\
+    + onSensorChanged() \\
+    -saveSession() \\
+  }
+  \umlassoc{SensorsReader}{MainWearActivity}
+  \umlclass[x=5,y=0]{ActivityRecognition}{
+  }{
+    - onDetectTransitionEvent()
+  }
+  \umlassoc{SensorsReader}{ActivityRecognition}
+\end{umlpackage}
+\end{tikzpicture}
+\end{document}
