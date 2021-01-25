@@ -21,16 +21,52 @@ El punto de entrada de la aplicación. Genera la interfaz de usuario y permite i
 
 \paragaraph{SensorsReader}
 Un servicio que al ser creado se registra para recibir eventos y lecturas del sensor de aceleración triaxial del reloj. Posee una cola circular donde almacena los últimos 5 segundos de muestras (si por ejemplo la velocidad de lectura del sensor es de $1/50$, el buffer posserá $50 * 5 = 250$ muestras).
-Este servicio realiza el análisis de la aceleración para detectar movimiento según el algoritmo definido en la figura \ref{fig:capturaFlow}. Tras cada muestra leida analiza el valor y analiza dos mecanismos de detección:
+Este servicio realiza el análisis de la aceleración para detectar movimiento según el algoritmo definido en la figura \ref{fig:capturaFlow}. Tras cada muestra el algoritmo evalúa la variación de la aceleración según la fórmula: 
+
+\[
+  \Delta A_{i}=\left\{
+    \begin{array}{lcl}
+      |A_i - g| & si & i = 0 \\
+      |A_i - A_{i-1}| & si & i > 0 \\
+    \end{array}
+    \right.
+\]
+
+Donde $g$ corresponde a la aceleración de la gravedad terrestre o $9,8m/s^2$. Este valor $\Delta A_i$ se utiliza para realizar la detección de actividad mediante dos mecanismos:
 
 \figura[0.55]{capturaFlujo}{fig:capturaFlow}{Flujo de trabajo de la aplicación AccelCapture}
 
 \begin{enumerate}
   \item \textbf{Movimiento repentino} Se activa si la muestra leida es mayor de $2g$.
-  \item \textbf{Movimiento prolongado} Activado cuando la aceleración promedio del contenido del buffer es superior a $0,2g$
+  \item \textbf{Movimiento prolongado} Activado cuando la aceleración promedio del contenido del buffer es superior a $0,3m/s^2$
 \end{enumerate}
 
-En caso de activarse alguno de estos mecanismos, el servicio considera que ha detectado una actividad y manda el contenido del buffer al servidor para ser guardado.
+La cota de detección de movimiento repentino se calcula a partir de los resultados obtenidos por \citeA{Bourke2006} para la medición de la cintura por ser la que menor aceleración registra. La diferencia entre la aceleración de pico y de valle usada por bourke es de $\Delta A = (2,74 - 0,60)g = 2,14g$ redondeando a la baja a $2g$ para garantizar la detección de todos los eventos de este tipo. Finalmente, la cota del detector de actividad prolongada, fijada en $0,3m/s^2$, se mide de forma experimental resultado de promediar el vector para realizar el movimiento de leer la hora en el reloj (figura\ref{fig:accelMirarReloj}) y volver a la posición de reposo durante la ventana de 5 segundos que usa la aplicación. En caso de activarse alguno de estos mecanismos, el servicio considera que ha detectado una actividad y manda el contenido del buffer al servidor para ser guardado. 
+
+\figura{MirarRelojAccel}{fig:accelMirarReloj}{$|A|$ y $\Delta A$ de resultantes de mirar el reloj}
+
+El código de las funciones lambda puede consultarse el el apéndice \ref{app:code:accelcapturelambda} mientras que el de la aplicación AccelCapture está disponible para descarga en \url{https://github.com/aberaza/accelCapture}.
+
+\subsubsection{Interfaz de Usuario}
+
+La interfaz de usuario de la aplicación permite gestionar y observar el estado del servicio de captura así como definir el identificador de usuario al que pertenece la sesión. Como puede observarse en las capturas de pantalla de la figura\ref{fig:accelcapture:UI} se muestra en la parte inferior de la pantalla un boton con información del estado actual del servicio. El botón al ser pulsado alterna entre los estados \textit{activado} y \textit{desactivado}. En la parte superior de la pantalla se muestra la información del identificador de usuario o \textit{nombre} al que se asociarán todas las sesiones registradas. Este identificador puede modificarse desde el mismo reloj. Una vez activado el servicio de captura, puede esconderse interfaz y volver al modo reloj ya que el servicio sigue trabajando de fondo. 
+\begin{figure}[htb!]
+  \centering
+  \begin{subfigure}[b]{0.4\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{accelCaptureAct.png}
+      \caption{AccelCapture Activado}
+      \label{fig:accelCapture:UI1}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.4\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{accelCaptureDes.png}
+      \caption{AccelCapture Desactivado}
+      \label{fig:accelCapture:UI2}
+  \end{subfigure}
+  \caption{\label{fig:accelcapture:UI} Interfaz de usuario de AccelCapture}
+\end{figure}
 
 \subsubsection{Almacenamiento de datos}
 
@@ -47,8 +83,8 @@ La estructura almacenada se muestra en la tabla \ref{tab:accelcapture:accel_sess
 
 \subsubsubsection{Datos Capturados}
 
-\begin{table}
-  \subtabla[0.48]{tab:accelcapture:accel_session}{Descripción del Objeto AccelSession}{m{0.175\linewidth}m{0.15\linewidth}m{0.35\linewidth}}{
+\begin{table}[h]
+  \subtabla[0.48]{tab:accelcapture:accel_session}{Descripción del Objeto AccelSession}{lll}{
 Campo           & Tipo Dato     & Descripción \\ \hline
 \textit{uid}    & Alfanumérico  & Identificador único de usuario \\
 \textit{sid}    & Alfanumérico  & Identificador único de sesión \\
@@ -61,8 +97,7 @@ Campo           & Tipo Dato     & Descripción \\ \hline
 }{}
 
 %\hspace{\fill}
-
-\subtabla[0.48]{tab:accelcapture:session_data}{Descripción del Objeto SessionData}{m{0.175\linewidth}m{0.15\linewidth}m{0.35\linewidth}}{
+\subtabla[0.48]{tab:accelcapture:session_data}{Descripción del Objeto SessionData}{lll}{
 Campo           & Tipo Dato     & Descripción \\ \hline
 \textit{duration} & Entero      & Duración, en $\mu s$, de la sesión \\
 \textit{activity} & Texto       & Nombre de la actividad realizada durante la captura \\
@@ -71,7 +106,12 @@ Campo           & Tipo Dato     & Descripción \\ \hline
 \textit{accelerationY} & Lista<Reales> & Lista de valores de la aceleración capturados en el eje Y (en $m/s^2$) \\
 \textit{accelerationZ} & Lista<Reales> & Lista de valores de la aceleración capturados en el eje Z (en $m/s^2$) \\
 }{right}
+
+\caption{\label{tab:accelcapture:data_types} Estructuras de datos de AccelCapture}
 \end{table}
+
+
+
 
 % ########################################
 
