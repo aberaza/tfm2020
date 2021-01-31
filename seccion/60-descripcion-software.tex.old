@@ -1,183 +1,125 @@
-% !eX root = ../tfm.tex
+% !TeX root = ../tfm.tex
 %! TEX root = ../tfm.tex
 
 \begin{comment}
 Aportar detalles del proceso de desarrollo incluyendo fases e hitos del proceso, diagramas representativos de la arquitectura y funcionamiento, capturas de pantalla para ilustrar el funcionamiento, etc.
 \end{comment}
 
-Tras un primer contacto con los componentes escogidos para implementar la aplicación en el capítulo anterior nos enfrentamos al desarrollo de la plataforma final. Empezaremos recuperando la base de datos \textit{Sisfall} como mencionamos en el capítulo de requisitos (Sección \ref{sec:req:bases_datos}) para implementar un prototipo del algoritmo, lo describiremos, analizaremos los resultados y compararemos con otros métodos ya existentes.
+\warn{pequeña introducción}
 
-Con el modelo validado nos centraremos en optimizarlo para mejorar el consumo de recursos de cara al siguiente paso: implementar el sistema final. Explicaremos en la estructura del sistema cliente-servidor escogida y entraremos en detalle en el estudio y análisis de la aplicación para dispositivos llevables presentada. Estudiaremos la arquitectura, interfaz de uso y rendimiento antes de abordar, en el capítulo siguiente, la idoneidad y <como de bien se adapta> a los requisitos previamente definidios.
+\section{Captura de secuencias y creación de la base de datos}
+Como ya hemos presentado anteriormente en la sección \ref{sec:req:bases_datos}, nos encontramos ante la falta de una base de datos para entrenar el modelo del producto final. Al tratarse de un modelo experimental es necesario conseguir un conjunto de datos lo más parecido posible a los capturados por la plataforma física utilizada. A su vez es necesario validar la capacidad de esta plataforma para servir al propósito de este trabajo. Así, con esta doble tarea de generar una bases de datos y confirmar que la plataforma cubre nuestras necesidades funcionales realizamos el primer desarrollo propio del trabajo.
 
-\section{Modelo y Algoritmo de iFell}
+\subsection{Captura de datos: AccelCapture}\label{sub:imp:accelcapture}
 
-\subsection{Algoritmo}\label{desc_modelo}
+\textit{AccelCapture} es el nombre del sistema de captura de tramas de la aceleración capturada por el sensor situado en un reloj inteligente con sistema operativo \textit{WearOS}. Consta de dos componentes: una unidad de adquisición de datos, el propio reloj, y una segunda unidad de almacenamiento situada en la nube. Tal y como puede apreciarse en el diagrama de clases de la figura \ref{fig:accelcaptureClasesUml} la aplicación en si misma se compone de tres bloques funcionales.
 
-Con el fin de buscar un equilibrio entre capacidad de detección y requisitos del sistema, optamos por un algoritmo híbrido con dos modelos (uno analítico y otro basado en redes recurrentes), tal y como se presenta en la figura \ref{fig:ifell:algoritmo}. Al utilizar dos etapas permite mantener el costoso modelo neuronal aletargado a la espera de un evento del modelo analítico. Este modelo, más simple, apenas consiste de un comparador, puede ejecutarse sin problema de forma continua sin tener un impacto notable en la duración de la batería del sistema.
+\figura[0.47]{accelcaptureClassUML}{fig:accelcaptureClasesUml}{Diagrama de clases de AccelCapture}
 
-\figura[0.5]{deteccionFlujo}{fig:ifell:algoritmo}{Algoritmo de detección de caídas de iFell}
+\paragraph{MainWearActivity}
+El punto de entrada de la aplicación. Genera la interfaz de usuario y permite introducir el nombre el usuario a la vez que verificar el estado del servicio de captura de datos e iniciar o parar su ejecución.
 
-Justificamos ya en la sección \ref{sec:req:modelos} la necesidad de usar modelos que no analicen la postura, posición o inclinación del sensor debido a la falta de coherencia entre la posición del sensor respecto la del cuerpo por su situación en la muñeca. Este factor, que tendrá un impacto en la calidad del modelo obtenido infiere a la vez de mayor simplicidad y facilitará su posterior uso en sistemas embebidos.
-
-\subsection{Modelo Analítico: Bourke2006}
-
-Presentado por \citeA{Bourke2006} es un algoritmo simple que al no requerir más que del módulo del vector aceleración permite ser usado en nuestro sistema. Usando dos cotas de detección consecutivas (una cota inferior para detectar valles en la aceleración y una superior para la detección del posterior pico como se muestra en la figura\ref{fig:bourke_thresholds}) permite identificar caídas basándose en la forma característica que sigue la aceleración del cuerpo en estos eventos.
-
-Como el resto de modelos analíticos aplicados a la detección de caídas tiene la gran ventaja de ser computacionalmente simple. Su mayor contraprestación es la dificultad de balancear las métricas de Especificidad y Sensibilidad. Al basarse en niveles o cotas, podemos aumentar la sensibilidad situando el nivel de estas de manera que la sensibilidad llegue al 100\%, como requiere el algoritmo por definición, aunque afectará a la especificidad negativamente \cite{Aziz2017}. 
-
-En nuestro algoritmo general, el modelo analítico es similar a una capa de gestión de la atención del modelo RNN. Es por esta razón que la baja especificidad  no resulta un problema ya que lo que nos interesa es que esta etapa tenga una sensibilidad próxima al 100\%. El dispositivo captura información de la aceleración en 3 ejes con una medida máxima de $9G$ y a una frecuencia de muestreo $f_m=50Hz$ \todo{seguro?}. Esta medida la convertimos en el módulo de la aceleración ($|\vec{A}| = |\sqrt{a_{x}^2+a_{y}^2+a_{z}^2}|$).:wa En concreto, comparamos el valor absoluto de la diferencia de dos mediciones consecutivas de la aceleración y comparamos con un umbral de referencia.
-\[
-ModeloAnalitico\rightarrow |SVTot_n - SVTot_{n-1}|\geq A_{umbral}
-\]
-
-
-Aunque ya hemos presentado los resultados de diferentes estudios que proporcionan valores para las cotas \textit{LFT} y \textit{UFT} del modelo (tabla \ref{tab:bourke_threshold_values}) también hemos comprobado la alta variabilidad de resultados según el conjunto de datos usado. Por esa razón, al no disponer de un estudio que analizase este modelo sobre la base de datos usada, calcularemos los valores usando las muestras de SisFall y analizaremos el comportamiento del modelo.
-
-\subsubsection{Preprocesado de la base de datos}
-
-Para acortar las distancias entre los resultados obtenidos en la simulación con los esperados sobre el dispositivo real realizamos un tratamiento previo de los datos para submuestrear a 25KHz.
-
-
-\paragraph{Filtrado IIR}
-
-Previo al subsampleado de la señal optamos por realizar un filtrado paso bajo respecto a la frecuencia de corte de Nyquist para señales muestreadas a 25Hz ($f_c=\frac{25}{2}=12,5$). Usaremos un filtro IIR de primer orden, con función de transferencia $H(z)$:
+\paragaraph{SensorsReader}
+Un servicio que al ser creado se registra para recibir eventos y lecturas del sensor de aceleración triaxial del reloj. Posee una cola circular donde almacena los últimos 5 segundos de muestras (si por ejemplo la velocidad de lectura del sensor es de $1/50$, el buffer posserá $50 * 5 = 250$ muestras).
+Este servicio realiza el análisis de la aceleración para detectar movimiento según el algoritmo definido en la figura \ref{fig:capturaFlow}. Tras cada muestra el algoritmo evalúa la variación de la aceleración según la fórmula: 
 
 \[
-  y_n = \alpha x_n + (1-\alpha) y_{n-1}
+  \Delta A_{i}=\left\{
+    \begin{array}{lcl}
+      |A_i - g| & si & i = 0 \\
+      |A_i - A_{i-1}| & si & i > 0 \\
+    \end{array}
+    \right.
 \]
 
-%comment = \alpha\times x_n + \(1-\alpha\)\times y_{n-1}
+Donde $g$ corresponde a la aceleración de la gravedad terrestre o $9,8m/s^2$. Este valor $\Delta A_i$ se utiliza para realizar la detección de actividad mediante dos mecanismos:
 
-\[
-  H(z) = \frac{\alpha}{1-(1-\alpha)z^{-1}}
-\]
+\figura[0.55]{capturaFlujo}{fig:capturaFlow}{Flujo de trabajo de la aplicación AccelCapture}
 
-Donde
-\begin{align*}
-\alpha = \frac{\delta t}{\delta t + RC} \\
-f_c= \frac{1}{2 \pi RC}
-\end{align*}
+\begin{enumerate}
+  \item \textbf{Movimiento repentino} Se activa si la muestra leida es mayor de $2g$.
+  \item \textbf{Movimiento prolongado} Activado cuando la aceleración promedio del contenido del buffer es superior a $0,3m/s^2$
+\end{enumerate}
 
-Dado que posteriormente submuestrearemos la señal a 25Hz y que sabemos que en estos primeros 12Hz hay suficiente información sobre las caídas, tomamos como ya hemos dicho $f_c=12,5Hz$. Hay que tener en cuenta que al ser un filtro paso bajo no afectará a la componente continua de la gravedad. Despejando las ecuación precedentes queda:
-\begin{align*}
-  f_m & = 200{Hz}\\
-  \delta t & = 1/f_m = 0.005s\\
-  RC & =\frac{1}{2\pi f_c} = \frac{1}{2\pi12,5} = 0,5\\
-  \alpha & = \frac{0.02}{0.02 + RC} = 0,015
-\end{align*}
+La cota de detección de movimiento repentino se calcula a partir de los resultados obtenidos por \citeA{Bourke2006} para la medición de la cintura por ser la que menor aceleración registra. La diferencia entre la aceleración de pico y de valle usada por bourke es de $\Delta A = (2,74 - 0,60)g = 2,14g$ redondeando a la baja a $2g$ para garantizar la detección de todos los eventos de este tipo. Finalmente, la cota del detector de actividad prolongada, fijada en $0,3m/s^2$, se mide de forma experimental resultado de promediar el vector para realizar el movimiento de leer la hora en el reloj (figura\ref{fig:accelMirarReloj}) y volver a la posición de reposo durante la ventana de 5 segundos que usa la aplicación. En caso de activarse alguno de estos mecanismos, el servicio considera que ha detectado una actividad y manda el contenido del buffer al servidor para ser guardado. 
 
-\begin{comment}
-%VER https://electronics.stackexchange.com/questions/498226/calculate-cutoff-frequency-of-a-digital-iir-filter
-%https://en.wikipedia.org/wiki/EWMA_chart
-%https://en.wikipedia.org/wiki/Low-pass_filter#Simple_infinite_impulse_response_filter
-\end{comment}
+\figura{MirarRelojAccel}{fig:accelMirarReloj}{$|A|$ y $\Delta A$ de resultantes de mirar el reloj}
 
-El interés de realizar un filtrado prevo al subsampleado puede observarse al compararse los resultados expuestos en la figura \ref{fig:iir} en ella se observa la destrucción de información producida por el muestreado de la señal. Se aprecia claramente como en las curvas de la figura\ref{sig:signalIIRFilter25} en que se ha muestreado la señal sin filtrado previo se ha aplanado en exceso. Resultado especialmente nocivo para nuestro modelo analítico que se basa precisamente en detectar estos picos valles.
+El código de las funciones lambda puede consultarse el el apéndice \ref{app:code:accelcapturelambda} mientras que el de la aplicación AccelCapture está disponible para descarga en \url{https://github.com/aberaza/accelCapture}.
 
+\subsubsection{Interfaz de Usuario}
+
+La interfaz de usuario de la aplicación permite gestionar y observar el estado del servicio de captura así como definir el identificador de usuario al que pertenece la sesión. Como puede observarse en las capturas de pantalla de la figura\ref{fig:accelcapture:UI} se muestra en la parte inferior de la pantalla un boton con información del estado actual del servicio. El botón al ser pulsado alterna entre los estados \textit{activado} y \textit{desactivado}. En la parte superior de la pantalla se muestra la información del identificador de usuario o \textit{nombre} al que se asociarán todas las sesiones registradas. Este identificador puede modificarse desde el mismo reloj. Una vez activado el servicio de captura, puede esconderse interfaz y volver al modo reloj ya que el servicio sigue trabajando de fondo. 
 \begin{figure}[htb!]
   \centering
-  \begin{subfigure}[b]{0.96\textwidth}
+  \begin{subfigure}[b]{0.4\textwidth}
       \centering
-      \pincludegraphics[0.9]{FilterAndDownsample}
-      \caption{Degradación de la señal con submuestreados y filtrados}
-      \label{fig:downsample}
-  \end{subfigure}
-  \centering
-
-  \begin{subfigure}[b]{0.48\textwidth}
-      \centering
-      \pincludegraphics[1.0]{SignalvsIIRFilter}
-      \caption{Señal original (200Hz) y filtrada}
-      \label{fig:signalIIRFilter}
+      \includegraphics[width=\textwidth]{accelCaptureAct.png}
+      \caption{AccelCapture Activado}
+      \label{fig:accelCapture:UI1}
   \end{subfigure}
   \hfill
-  \begin{subfigure}[b]{0.48\textwidth}
+  \begin{subfigure}[b]{0.4\textwidth}
       \centering
-      \pincludegraphics[1.0]{SignalvsIIRFilter25Hz}
-      \caption{Señal submuestreada a 25Hz y filtrada}
-      \label{fig:signalIIRFilter25}
+      \includegraphics[width=\linewidth]{accelCaptureDes.png}
+      \caption{AccelCapture Desactivado}
+      \label{fig:accelCapture:UI2}
   \end{subfigure}
-  \caption{\label{fig:iir}  Efecto del filtro IIR y submuestreado en la señal}
+  \caption{\label{fig:accelcapture:UI} Interfaz de usuario de AccelCapture}
 \end{figure}
 
-\paragraph{Submuestreado a 25Hz}
+\subsubsection{Almacenamiento de datos}
 
-La base de datos SisFall usa un muestreado a 200Hz, el reloj elegido como soporte admite únicamente un muestreado a 50Hz como máximo. Sin embargo a raíz del ya expuesto resultado de \todo{falta referencia de los 12KHz} decidimos reducir el muestreado hasta los 25Hz, que por Nyquist debería ser suficiente para no destruir la información de las caídas de la señal.
+Tal y como se menciona en el apartado \ref{sec:req:nube} la plataforma en la nube se implementa usando los servicios de AWS. Para esta función crea un microservicio o \textit{API}(lista de funciones de acceso público que ofrece una biblioteca de programación) ( del tipo \textit{REST}(Arquitectura que implementa una interfaz sobre el protocolo \textit{HTTP}). Este servicio, definido en la tabla \ref{tab:accelcapture:api} se encargará de recibir la llamadas de la aplicación y guardar el contenido en un archivo \textit{JSON} (lenguaje de definición de estructuras de datos que usa la notación de JavaScript).
 
-El sub-muestreado se realiza tomando una muestra de cada n con $n=\frac{f_m}{f_o}=\frac{25}{200}=8$. En la figura \ref{fig:downsample} se aprecia la degradación que sufre la señal original al aplicarle el filtrado y posterior reducción de muestras. Se observa un doble efecto del filtrado: un suavizado de la señal resultante y un desfase no lineal. El suavizado enmascara parcialmente los valores pico y valle, sin embargo garantiza mayor fidelidad del resultado a la señal original: si bien se pierde la información en picos y valles, la señal mantiene mejor la estructura general. En el fondo se ha reducido el ruido de la señal ya que el filtro en la práctica actúa como un ponderador.
+La estructura almacenada se muestra en la tabla \ref{tab:accelcapture:accel_session} la denominamos \textit{AccelSession}. Este objeto contiene información sobre el sensor (error y frequencia de muestreo), fecha de la captura así como unos identificadores del usuario y de la sesión además de la información capturada en los tres ejes del acelerómetro.
 
-%\figura{FilterAndDownsample}{fig:downsample}{Efecto de filtrar y submuestrear la señal)
-
-
-
-
-
-\begin{comment}
-Los estudios siguientes demuestran que el filtrado de ruido mejora la capacidad de tratamiento posterior
-Tian, T.; Sun, S.; Lin, H. Distributed fusion filter for multi-sensor systems with finite-step correlated noises. Inf. Fusion 2019, 46, 128-140.
-
-Luego, para el caso de natación
-Xiao, D.; Yu, Z.; Yi, F.; Wang, L.; Tan, C.C.; Guo, B. Smartswim: An infrastructure-free swimmer localization system based on smartphone sensors. In Proceedings of the International Conference on Smart Homes and Health Telematics, Wuhan, China, 25-27 May 2016; pp. 222-234.
-
-decide que una promediado por ventana flotante de tamaño M es el que mejores resultados da: $G_{filter}=\frac{1}{M}\sum_{i=0}^{M}G_i$. (Explicado en Liu \cite{Liu2020} que usa este método con una DeepNN basada en capas CNN + 2xLSTM + Fully Connected + Softmax).
-
-% \figura{capturaFlujo}{fig:capturaFlow}{Flujo de trabajo de la aplicación de captura de datos}
-\end{comment}
-
-\subsubsection{Cálculo de parámetros para el modelo Bourke}
-
-Realizamos una primera iteración por todas las secuencias incluidas en el conjunto de datos buscando el valor de valle y de pico para cada una y agrupamos los resultados en dos categorías: \textit{actividad normal} o \textit{caída}. Posteriormente analizamos los histogramas resultantes para obtener la función de densidad de la distribución de ambos valores. Si se observa la figura \ref{fig:bourke:hist} a primera vista la capacidad de segregación entre caídas y actividades de la distribución de los picos de aceleración es mayor que la de los valles. En parte previsible dado lo compacto del rango ( 1g) comparado con el de los valores de pico que es potencialmente ilimitada, o limitado únicamente por la capacidad del sensor. Analizando los datos, en el caso de los valores de pico, el percentil 0\% de las caídas se sitúa en 4,5g que se corresponde con el percentil 23\% de las actividades: si establezco la cota de pico en 4,5g conseguimos detectar el 100\% de la caídas aunque detectemos también como tales el 73\% de las actividades normales. Este porcentaje baja hasta el 59\% si aceptamos no detectar el 1\% de las caídas poniendo la cota en 5.7g. Para el caso de los valles si queremos detectar el 100\% de las caídas debemos situar la cota en 0,97g lo que apenas filtraría el 4\% de las actividades normales, aunque mejora hasta el 27\% si aceptamos no identificar el 1\% de las caídas.
-
-\begin{figure}[htb!]
-  \centering
-  \begin{subfigure}[b]{0.48\textwidth}
-      \centering
-      \pincludegraphics[1.1]{BourkeLowThresholdsHistogram}
-      \caption{Histograma valores \textit{valle} modelo Bourke}
-      \label{fig:bourke:hist:low}
-  \end{subfigure}
-  \hfill
-  \begin{subfigure}[b]{0.48\textwidth}
-      \centering
-      \pincludegraphics[1.1]{BourkeUpperThresholdsHistogram}
-      \caption{Histograma valores \textit{pico} modelo Bourke}
-      \label{fig:bourke:hist:high}
-  \end{subfigure}
-  \caption{\label{fig:bourke:hist} Histogramas de valores pico y valle}
-\end{figure}
-
-Es evidente a la luz de estos datos que los resultados del clasificador sobre SisFall son mediocres. Sin embargo dada su función de mecanismo atencional y la particularidad del conjunto de datos, enfocado al estudio de caídas y con muchos eventos similares a caídas etiquetados como actividades, es un resultado esperable.
+\tabla[0.65\linewidth]{tab:accelcapture:api}{API del servidor AccelCapture}{llll}{
+  Método & URL & Carga & Función lambda \\ \hline
+  POST & /saveAccel\todo{poner la buena} & AccelSession & doGuardarAccel() \\
+}
 
 
-\subsubsection{Evaluación del modelo Bourke sobre SisFall}
+\subsection{Generación de la Base de Datos}
 
-De forma aleatoria apartamos un 20\% (901 muestras) de las muestras de SisFall como conjunto de datos de validación y usamos las 3604 restantes como conjunto de entrenamiento. Recordamos que SisFall está compuesto por 4505 muestras, 1798 de las cuales se corresponden con caídas (el 39,7\%). Las caídas están por tanto sobrerrepresentadas con respecto a su ocurrencia en la vida real.
+\subsubsubsection{Datos Capturados}
 
-Tomando el conjunto de datos de entrenamiento previamente filtrado y submuestreado a 25Hz, iteramos sobre los datos de la aceleración para buscar los valores de pico y valle de cada ejercicio. Para establecer las cotas, Bourke propone establecer los niveles de tal forma que el 100\% de las caídas entren dentro del espacio, consiguiendo una sensibilidad del mismo valor por definición. 
+\begin{table}[h]
+  \subtabla[0.48]{tab:accelcapture:accel_session}{Descripción del Objeto AccelSession}{lll}{
+Campo           & Tipo Dato     & Descripción \\ \hline
+\textit{uid}    & Alfanumérico  & Identificador único de usuario \\
+\textit{sid}    & Alfanumérico  & Identificador único de sesión \\
+\textit{sensorResolution} & Real & Resolución del sensor (en $m/s^2$) \\
+\textit{sensorMaxRange} & Real  & Valor máximo de la medida (en $m/s^2$) \\
+\textit{startTime} & Entero     & Tiempo EPOCH del inicio de la sesión (en segundos) \\
+\textit{samples}  & Entero      & Número de muestras de la sesión \\
+\textit{triggerMethod} & Texto  & Nombre del evento que inició la sesión de captura \\
+\textit{sessionData} & SessionData & Estructura con los datos capturados del sensor \\
+}{}
 
-\tabla[0.4\linewidth]{tab:bourke:valores}{Valores UFT y LFT del modelo Bourke según percentil}{lllll}{
-         & \multicolumn{4}{c}{Valor Percentil} \\ \cmidrule(lr){2-5}
-    Cota & p. 0\%         & p. 1\% & p. 3\% & p. 10\%\\ \midrule
-    UFT  & \textbf{4,16g} & 5,77g  & 6,67g  & 8,69g\\
-    LFT  & \textbf{0,97g} & 0,86g  & 0,81g  & 0,68g\\
-  }
+%\hspace{\fill}
+\subtabla[0.48]{tab:accelcapture:session_data}{Descripción del Objeto SessionData}{lll}{
+Campo           & Tipo Dato     & Descripción \\ \hline
+\textit{duration} & Entero      & Duración, en $\mu s$, de la sesión \\
+\textit{activity} & Texto       & Nombre de la actividad realizada durante la captura \\
+\textit{rate}   & Entero        & Ratio de muestreo (en $Hz$) \\
+\textit{accelerationX} & Lista<Reales> & Lista de valores de la aceleración capturados en el eje X (en $m/s^2$) \\
+\textit{accelerationY} & Lista<Reales> & Lista de valores de la aceleración capturados en el eje Y (en $m/s^2$) \\
+\textit{accelerationZ} & Lista<Reales> & Lista de valores de la aceleración capturados en el eje Z (en $m/s^2$) \\
+}{right}
 
-Este modelo tiene la desventaja de tener una especificidad muy baja. Los resultados sobre SisFall nos arrojan un valor para las cotas de 0,971g para el valle y 4,164g para el pico (en la tabla \ref{tab:bourke:valores} se presentan los resultados para otros percentiles). Con estos valores se consigue una especificidad de tan solo el 28,7\% mientras que la sensibilidad se queda en 97,2\% usando Bourke estándar (lo designaremos como modelo \textit{BourkeUL} en adelante). Repetimos el experimento iterando sobre dos variaciones del modelo de Bourke: \textit{BourkeU} que busca únicamente los casos que superan la cota de pico y \textit{BourkeL} que hace lo propio con los valles. También variamos el valor de las cotas según el porcentaje de caídas que cumplen dicha cuota en cada caso. En la figura \ref{fig:bourke_cfmatrix} se muestran las matrices de confusión y los valores de sensibilidad y especificidad para cada combinación.
-
-\figura[0.9]{BourkeCONF_Matrix}{fig:bourke_cfmatrix}{Matrices de confusión para modelos Bourke}
-
-Al interpretar los resultados obtenidos interesa entender principalmente la causa por la que \textit{BourkeUL} no alcanza el 100\% de sensibilidad. Lo achacamos al hecho de que para ser detectado por el modelo implementado, la caída ha de cumplir ambas cotas en una ventana deslizante de 200 muestras. El siguiente resultado, y de mayor interés para el trabajo es el buen resultado obtenido por la variante \textit{BourkeU}: Alcanza el 100\% de sensibilidad y la especificidad es la mejor de todos los modelos a igual sensibilidad (por ejemplo, si bajamos la sensibilidad hasta el 97,2\% tiene una especificidad del 43,6\%, mucho mayor que el 28,7\% de \textit{BourkeUL}). Al aunar simplicidad y resultados, optaremos por el modelo BourkeU con un valor de cota de 4,16g para el algoritmo. 
+\caption{\label{tab:accelcapture:data_types} Estructuras de datos de AccelCapture}
+\end{table}
 
 
 
-\subsection{Modelo con Redes Neuronales Recurrentes}
+\subsubsection{Pre-procesado de datos}
+
+\subsubsection{Descripción de la base de datos}
+
+Finalmente, obtenemos una base de datos...
 
 
-La principal novedad de este trabajo es el uso de una red recurrente con una arquitectura codificador/decodificador para la detección de anomalías, o caídas en este caso. 
-
-Con el objetivo de mejorar el rendimiento optamos por usar celdas GRU (\textit{Gated Recurrent Unit}) con 
-
-\figura[]{modeloRNNencoderdecoder}{fig:modelo:encoderdecoder}{Esquema de una red RNN codificador/decodificador}
 
 
 
@@ -186,6 +128,7 @@ Con el objetivo de mejorar el rendimiento optamos por usar celdas GRU (\textit{G
 El desafío de consolidar en un sistema portable una aplicación autónoma de detección de caídas debe hacer frente a una serie de limitaciones.
 
 \section{Desafíos}
+
 \todo{esto son requisitos, movel al punto anterior} El objetivo de todo modelo de detección de eventos es lograr un sistema que consiga capturar la totalidad de las realizaciones del mismo con el menos número posible de falsos positivos. En otras palabras, buscamos un sistema con una especificidad y sensibilidad de 100\%\cite{Noury2007}. \todo{Añadir referencias a papers, comentarios sobre sensibilidad y especificidad}.
 
 \subsection{Usabilidad}\todo{de nuevo un requisito, al apartado anterior}
@@ -259,12 +202,26 @@ El proceso que contiene la lógica principal, descrita en la figura\ref{fig:dete
 
 El proceso de detección o filtrado usando el modelo implementado basado en redes recurrentes es el único que se exporta a una clase propia: \textit{CrashDetectService}. Toma de nuevo la forma de un servicio asíncrono que es invocado únicamente cuando el modelo analítico ha detectado un positivo. De esta forma se pretende reducir drásticamente las necesidades de cómputo. Este servicio a su vez se subdivide en unos módulos que son los modelos de detección propiamente dichos. Como se aprecia en el diagrama UML de la arquitectura\ref{fig:clasesUml}, es la clase \textit{TFLiteModelDetector} la que provee la cumunicación con el modelo de TFLite previamente generado y entrenado en Colab.
 
-\figura{SignalvsIIRFilter}{fig:signalIIRFilter}{Señal original y filtrada}
-\figura{SignalvsIIRFilter25Hz}{fig:signalIIRFilter25}{Señal subsampleada a 25Hz y filtrada}
-
 \section{Implementación}\label{desc_impl}
 
+\subsection{Algoritmo}\label{desc_modelo}
+
+El algoritmo de detección consta de dos fases consecutivas, tal y como se muestra en el diagrama \ref{fig:deteccionFlow}. Un primer bloque usando un algoritmo analítico basado en la variación del vector suma de la acceleración y una posterior etapa de depuración o filtrado basado en un modelo de detección de anomalías usando RNN.
+
+\figura{deteccionFlujo}{fig:deteccionFlow}{Flujo de trabajo de la aplicación de detección de caidas}
+
 \subsubsection{Modelo Analítico}
+
+Los modelos analíticos aplicados a la detección de caídas tienen la gran ventaja de ser computacionalmente simples. Su mayor contraprestación es la dificultad de balancear las métricas de Especificidad y Sensibilidad. Al basarse en niveles o cotas, podemos aumentar la sensibilidad situando el nivel de estas de manera que la sensibilidad llegue al 100\%, como requieren los algoritmos de Bourke\cite{Bourke2006} \todo{mover aquí el punto sobre bourke del capítulo 4}. Sin embargo esto afectará a la especificidad negativamente\cite{Aziz2017}.
+
+\warn{Actualmente usa $SVTot_n - SVTot_{n-1} < 2G$ como algoritmo. Bourke en pruebas con 3.5G de límite. Sección a revisar}
+
+En nuestro algoritmo general, el modelo analítico es similar a una capa de gestión de la atención del modelo RNN. Es por esta razón que la baja especificidad  no resulta un problema ya que lo que nos interesa es que esta etapa tenga una sensibilidad del 100\%. El dispositivo captura información de la aceleración en 3 ejes con una medida máxima de $9G$ y a una frecuencia de muestreo $f_m=50Hz$.
+
+Como primera etapa se utiliza un algoritmo basado el el vector total de la aceleración ($SVTot = |\sqrt{a_{x}^2+a_{y}^2+a_{z}^2}|$) por su simplicidad de cálculo. En concreto, comparamos el valor absoluto de la diferencia de dos mediciones consecutivas de la aceleración y comparamos con un umbral de referencia.
+\[
+ModeloAnalitico\rightarrow |SVTot_n - SVTot_{n-1}|\geq A_{umbral}
+\]
 
 \todo{show me the data!!! cómo llegamos a 3G?}
 El valor de $A_{umbral}$ se obtiene experimentalmente gracias al análisis de los datos obtenidos. Se fija en $A_{umbral} = 3G$ que resulta un buen equilibrio ya que conseguimos una cantidad reducida de eventos manteniendo un nivel bajo\todo{citar trabajos y medidas. Bourke usa 3,5G, otros usan valores más altos, la mayoría de caídas tienen niveles instantáneos de SVTot superiores a 6G}.\todo{incluir trabajo estadístico de los datos de aceleración del dataset} \todo{incluir gráfica temporal explicativa del algoritmo}
@@ -352,4 +309,16 @@ Quantización y prune
 \begin{comment}
   Viene del apartadoanterior a sugerencia de la profe
 \end{comment}
+
+\paragraph{Bourke} Los modelos de Bourke \cite{Bourke2006} se basan en la detección de la estructura típica del vector suma de la aceleración de una caída. Esta estructura está compuesta por un valle seguido de un pico. El valle está asociado al inicio de la caída, momento en el que se contrarresta la aceleración constante de 1G en sentido vertical al que están expuestos los cuerpos con la aceleración en el mismo sentido del cuerpo en caída. El posterior pico es debido a las aceleraciones durante el impacto con el suelo. Así pues Bourke propone establecer dos cotas, una para detectar el valle y otra el pico. Con estas cotas definidas se pueden extraer tres modelos. Uno que observe los picos, otro los valles y un tercero que obseerve valles y picos.
+\figura{BourkeLowThresholdsHistogram}{fig:bourke_low_hist}{Histograma valores \textit{valle} modelo Bourke}
+\figura{BourkeUpperThresholdsHistogram}{fig:bourke_upper_hist}{Histograma valores \textit{pico} modelo Bourke}
+Para establecer las cotas, Bourke propone analizar un base de datos de caídas y establecer los niveles de tal forma que el 100\% de las caídas entren dentro del espacio, consiguiendo una sensibilidad del mismo valor por definición. Este modelo tiene la desventaja de tener una especificidad muy baja. Los resultados con el dataset SisFall nos arrojan un valor para las cotas de 0,971G para el valle y 4,164G para el pico. Con estos valores se consigue una especificidad de tan solo $0,9\%$. Si observamos la distribución de los valores de valle de las caídas y resto de actividades en la figura \ref{fig:bourke_low_hist}, se aprecia el alto grado de solapamiento y como pràcticamente todos los supuestos del dataset entran dentro del conjunto seguregado por el modelo. Por contra, el análisis de los valores de pico (figura \ref{fig:bourke_upper_hist}) arroja una dsitribucion que permite obtener un discriminador de mejor calidad.
+
+\warn{TODOS LOS RESULTADOS QUE CALCULE YO HAN DE IR EN EL APARTADO DESARROLLO!!!}
+
+Efectivamente en la figura \ref{fig:bourke_cfmatrix} se aprecia como usando únicamente la cota superior o del pico el modelo de bourke alcanza una especificidad del 42,84\% que aumenta hasta el 64\% si aceptamos una degradación de la sensibilidad hasta el 87,8\%.
+
+\figura{BourkeCONF_Matrix}{fig:bourke_cfmatrix}{Matrices de confusión para modelos Bourke}
+
 

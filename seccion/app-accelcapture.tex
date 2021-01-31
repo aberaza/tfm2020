@@ -36,60 +36,6 @@ Si disponibles (y no es nunca) actividad realizada tal y como es automáticament
 
 En un primer instante, durante el proceso de captura de datos se analiza un subconjunto con unas 200 muestras capturadas para observar las propiedades de los datos. Mediante un estudio de la periodicidad usando autoconvolución de las secuencias para buscar la posible periodicidad de los eventos. Como puede observarse en los resultados, obtenemos que las secuencias tienen poca correlación consigo mismas y por tanto a medio y largo plazo ninguna dependencia temporal. Así pues y como conviene a nuestro experimento decidimos trabajar con subsecuencias que llamaremos eventos. Estos eventos tendrán una relación de XXX muestras y como puede comprobarse al repetir los análisis de autocorrelación, si guardan una mayor dependencia temporal consigo mismo y con los eventos vecinos de la misma secuencia temporal. El objetivo de estos eventos es poder contener una acción completa (ya sea el gesto de mirar la hora, una zancada o una caida). Esta noción de evento será reciclada en el transcurso de la implementación de solución final convirtiéndose en el episodio a predecir de la red LSTM.
 
-\subsubsection{Filtrado de ruido}
-Los estudios siguientes demuestran que el filtrado de ruido mejora la capacidad de tratamiento posterior
-Tian, T.; Sun, S.; Lin, H. Distributed fusion filter for multi-sensor systems with finite-step correlated noises. Inf. Fusion 2019, 46, 128-140.
-
-Luego, para el caso de natación
-Xiao, D.; Yu, Z.; Yi, F.; Wang, L.; Tan, C.C.; Guo, B. Smartswim: An infrastructure-free swimmer localization system based on smartphone sensors. In Proceedings of the International Conference on Smart Homes and Health Telematics, Wuhan, China, 25-27 May 2016; pp. 222-234.
-
-decide que una promediado por ventana flotante de tamaño M es el que mejores resultados da: $G_{filter}=\frac{1}{M}\sum_{i=0}^{M}G_i$. (Explicado en Liu \cite{Liu2020} que usa este método con una DeepNN basada en capas CNN + 2xLSTM + Fully Connected + Softmax).
-
-% \figura{capturaFlujo}{fig:capturaFlow}{Flujo de trabajo de la aplicación de captura de datos}
-
-\subsubsection{Preprocesado}
-
-\warn{En la lectura de los acelerómetros se mezcla la señal inercial con la medición constante de la gravedad y una señar parásita de ruido o movimientos de alta frequencia. Para este caso realizaremos un filtro paso bajo IIR de primer orden.}
-
-\[
-  y_n = \alpha x_n + (1-\alpha) y_{n-1}
-\]
-
-%comment = \alpha\times x_n + \(1-\alpha\)\times y_{n-1}
-La señal obtenida equivale a un filtro con función de transferencia
-
-\[
-  H(z) = \frac{\alpha}{1-(1-\alpha)z^{-1}}
-\]
-
-Donde
-\begin{align*}
-\alpha = \frac{\delta t}{\delta t + RC} \\
-f_c= \frac{1}{2 \pi RC}
-\end{align*}
-
-A la hora de elegir la frecuencia de corte $f_c$, debemos tener en cuenta que determinan que a 4Hz hay suficiente información útil como para realizar una predicción de la actividad. Dado que la señal de la Gravedad es contínua, optamos por una valor de frecuencia de corte $f_c=1Hz$.
-
-Despejando las eq. precedentes queda
-\begin{align*}
-  f_m & = 50{Hz}\\
-  \delta t & = 1/f_m = 0.02s\\
-  RC & =\frac{1}{2\pi f_c} = \frac{1}{2\pi} = 0.1591\\
-  \alpha & = \frac{0.02}{0.02 + RC} = 0,1116
-\end{align*}
-
-Con este filtrado obtendremos la señal debida a la Gravedad. Si la restamos a la señal original, obtendremos la señal filtrada paso alto.
-\begin{align*}
-  \vec{A_f}[n] & = \vec{A}[n] - \vec{G}[n]  \\
-  G_i[n] &= \alpha A_i[n] + (1-\alpha)G_i[n-1], \forall i \in [x,y,z]
-\end{align*}
-
-%VER https://electronics.stackexchange.com/questions/498226/calculate-cutoff-frequency-of-a-digital-iir-filter
-
-%https://en.wikipedia.org/wiki/EWMA_chart
-
-%https://en.wikipedia.org/wiki/Low-pass_filter#Simple_infinite_impulse_response_filter
-
 
 
 

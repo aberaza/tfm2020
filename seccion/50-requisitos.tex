@@ -282,11 +282,11 @@ TensorFlow Lite ofrece diversas opciones para realizar la cuantificación de mod
 
 
 \tablan{tab:tflite_quantization}{Detalle de los tipos de cuantificación disponibles en TensorFlow Lite}{llcccl}{
-  Técnica & Datos Requeridos  & Compresión & Precisión & Velocidad & Hardware Soportado \\ \hline 
-  Float16\tnote{1}   & -               & \~50\%   & 0  & --  &      & CPU, GPU \\
-  Rango Dinámico\tnote{1} & -          & \~75\%  & --- & x2,5  & CPU, GPU \\
-  Enteros\tnote{1}   & Si\tnote{3}              & \~75\%  & --  & x3  & CPU, GPU, TPU, DSP \\
-  QAT\tnote{2} & Si\tnote{4}                    & \~75\%  & -   & x3  & CPU, GPU, TPU, DSP \\
+  Técnica                   & Datos Requeridos  & Compresión  & Precisión & Velocidad & Hardware Soportado \\ \hline 
+  Float16\tnote{1}          & -                 & \~50\%      & 0         & --        & CPU, GPU \\
+  Rango Dinámico\tnote{1}   & -                 & \~75\%      & ---       & x2,5      & CPU, GPU \\
+  Enteros\tnote{1}          & Si\tnote{3}       & \~75\%      & --        & x3        & CPU, GPU, TPU, DSP \\
+  QAT\tnote{2}              & Si\tnote{4}       & \~75\%      & -         & x3        & CPU, GPU, TPU, DSP \\
 }{
   \item [1] Cuantificación post-entrenamiento.
   \item [2] \textit{Quantification Aware Training} (Entrenamiento Para Cuantificación), cuantificación se prepara durante el entrenamiento. 

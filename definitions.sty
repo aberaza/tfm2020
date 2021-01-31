@@ -24,7 +24,34 @@
 % mirar paquete subfig
 \usepackage{listings} % código formateado
 
+% Como es un book no hay \paragraph, lo creamos
+\renewcommand{\paragraph}[1]{\noindent{\small\textsl{\textbf{#1}}}\quad}
+% Fix unicode character - U+2212 not setup with latex 
+% \usepackage[utf8]{inputenc}
+\DeclareUnicodeCharacter{2212}{-}
+% \newunicodechar{−}{\ensuremath{⎯}}
 %\digura{scale}{image}{fig:id}{Titulo}
+\newcommand\pincludegraphics[2][0.9]{
+  \def\scale{#1}
+  \def\graphname{#2}
+  \def\texfigure{img/#2.tex}
+  \def\pgffigure{img/#2.pgf}
+  \IfFileExists{\texfigure}{
+    \resizebox{\scale\linewidth}{!}{
+      \includestandalone{\graphname}
+    }
+  }{
+    \IfFileExists{\pgffigure}{
+      \resizebox{\scale\linewidth}{!}{
+        \input{\pgffigure}
+        %\includestandalone{\pgffigure}
+        %\includegraphics[width=0.9\textwidth]{\pgffigure}
+      }
+    }{
+      \includegraphics[scale=\scale]{\graphname}
+    }
+  }
+}
 
 \newcommand\figura[4][0.7]{
   \def\scale{#1}
@@ -216,7 +243,10 @@
 %     (Preliminary Draft)", JavaScript 1.1.  1996-11-18.  [Online]
 %     http://hepunx.rl.ac.uk/~adye/jsspec11/titlepg2.htm
 %
+\ifxetex
+\usepackage{fontspec}
 \newfontfamily\listingsfont[Scale=.7]{Menlo}
+\fi
 \lstdefinelanguage{JavaScript}{
   morekeywords=[1]{break, continue, delete, else, for, function, if, in,
     new, return, this, typeof, var, void, while, with},
