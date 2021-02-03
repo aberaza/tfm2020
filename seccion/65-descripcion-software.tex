@@ -9,9 +9,9 @@ Tras un primer contacto con los componentes escogidos para implementar la aplica
 
 Con el modelo validado nos centraremos en optimizarlo para mejorar el consumo de recursos de cara al siguiente paso: implementar el sistema final. Explicaremos en la estructura del sistema cliente-servidor escogida y entraremos en detalle en el estudio y análisis de la aplicación para dispositivos llevables presentada. Estudiaremos la arquitectura, interfaz de uso y rendimiento antes de abordar, en el capítulo siguiente, la idoneidad y <como de bien se adapta> a los requisitos previamente definidios.
 
-\section{Modelo y Algoritmo de iFell}
+\section{Modelo y Algoritmo de iFell}\label{sec:imp:model}
 
-\subsection{Algoritmo}\label{desc_modelo}
+\subsection{Algoritmo}\label{sub:imp:model:algoritmo}
 
 Con el fin de buscar un equilibrio entre capacidad de detección y requisitos del sistema, optamos por un algoritmo híbrido con dos modelos (uno analítico y otro basado en redes recurrentes), tal y como se presenta en la figura \ref{fig:ifell:algoritmo}. Al utilizar dos etapas permite mantener el costoso modelo neuronal aletargado a la espera de un evento del modelo analítico. Este modelo, más simple, apenas consiste de un comparador, puede ejecutarse sin problema de forma continua sin tener un impacto notable en la duración de la batería del sistema.
 
@@ -19,7 +19,7 @@ Con el fin de buscar un equilibrio entre capacidad de detección y requisitos de
 
 Justificamos ya en la sección \ref{sec:req:modelos} la necesidad de usar modelos que no analicen la postura, posición o inclinación del sensor debido a la falta de coherencia entre la posición del sensor respecto la del cuerpo por su situación en la muñeca. Este factor, que tendrá un impacto en la calidad del modelo obtenido infiere a la vez de mayor simplicidad y facilitará su posterior uso en sistemas embebidos.
 
-\subsection{Modelo Analítico: Bourke2006}
+\subsection{Modelo Analítico: Bourke2006}\label{sub:imp:model:analitico}
 
 Presentado por \citeA{Bourke2006} es un algoritmo simple que al no requerir más que del módulo del vector aceleración permite ser usado en nuestro sistema. Usando dos cotas de detección consecutivas (una cota inferior para detectar valles en la aceleración y una superior para la detección del posterior pico como se muestra en la figura\ref{fig:bourke_thresholds}) permite identificar caídas basándose en la forma característica que sigue la aceleración del cuerpo en estos eventos.
 
@@ -170,15 +170,149 @@ Al interpretar los resultados obtenidos interesa entender principalmente la caus
 
 
 
-\subsection{Modelo con Redes Neuronales Recurrentes}
+\subsection{Modelo con Redes Neuronales Recurrentes}\label{sub:imp:model:rnn}
+
+La principal novedad de este trabajo es el uso de una red recurrente con una arquitectura codificador/decodificador para la detección de anomalías, o caídas en este caso. La detección de caídas pretende realizarse mediante un modelo de detección de anomalías. Dada una secuencia de medidas de la aceleración $X=\{x_1,x_2,\cdots,x_n\}$ de longitud $n$, definimos la secuencia $Y=\{y_1, y_2, \cdots,y_m\}$ de longitud $m$ como el resultado de aplicar el modelo RNN $RNN()$ sobre la secuencia $X$: $Y=RNN(X)$. Dado un operador $distancia(a,b)$ la detección de anomalía se realiza si la distancia entre la entrada y salida es mayor que un determinado nivel. 
+\[
+  isFall(X)=\left\{
+    \begin{array}{lcl}
+      cierto & si & distancia(X,Y) > \lambda \\
+      falso & si & distancia(X,Y) \leq  \lambda
+    \end{array}
+    \right.
+\]
+\\
+Donde:\\
+$Y = RNN(X)$ : Salida de la red recurrente codificador/decodificador al tomar $X$ como entrada.
+Al contrario que la mayoría de sistemas existentes para la detección de caídas, iFell no se basa en la clasificación de actividades, dado que dicho método requiere de extensos corpus con gran cantidad de instancias de las actividades y caídas a detectar y clasificar. Si bien existen otros algoritmos \cite{referencia} para la detección de caídas usando ya sea clasificadores de categoría única o técnicas de agrupamiento (KNN por ejemplo) que requieren de bases de datos extensas y bien etiquetadas para su entrenamiento, que para el el caso que aquí aplica, no están disponibles. Al usar una técnica de codificador/decodificador para comprimir la señal de entrada y luego reconstruirla, reducimos las necesidades del conjunto de datos para generar el modelo a secuencias no etiquetadas de secuencias de actividad que no contengan caídas para conseguir un codificador/decodificador eficiente en esta tarea, pero que no lo sea cuando la secuencia comprimida y reconstruida sea una caída, para la cual no ha sido entrenado y por tanto competa un mayor error en la tarea.
+
+\subsubsection{Modelo Recurrente basado en codificador/decodificador}
+
+Los modelos codificador/decodificador (véase la figura \fig{fig:modelo:encoderdecoder}), también referidos a veces como secuencia-a-secuencia se pueden entender como dos sistemas independientes: el \textit{codificador} y el \textit{decodificador}. El codificador realiza una conversión y reducción del espacio dimensional de una secuencia de entrada, intentando mantener intacta la información presente. Realiza por tanto una extracción de características de la secuencia de entrada. Evidentemente, a mayor reducción en las dimensiones del espacio de salida del codificador, mayor será la pérdida de información. Por su parte, el decodificador realiza la tarea inversa. Tomando como secuencia de entrada una de las representaciones obtenidas realiza una interpretación de las características para generar una secuencia de salida en otro espacio de resultados. Las aplicaciones son muy variadas, desde el análisis de sentimiento, compresión de series o traducción del lenguaje, a la generación de espacios de representación multimodo (por ejemplo, la descripción de una imagen o la generación de una imagen desde una descripción). 
+
+En nuestro caso optamos por una estructura en que el espacio de entrada y salida de la red es el mismo, y por tanto realizamos una compresión y descompresión de la señal. A partir de la serie de muestras $X$de longitud $n$, obtenemos un vector de características $C=codificador(X)=\{c_1,\cdots,c_l\}$ de longitud $l<n$. Posteriormente inyectamos este vector de características como entrada a una segunda red recurrente, el decodificador, que reconstruye una aproximación de la secuencia original $Y=decodificador(C)=\hat{X}$.
+
+% \figura[0.65]{modeloRNNencoderdecoder}{fig:modelo:encoderdecoder}{Esquema de una red RNN codificador/decodificador}
+
+Los principales parámetros a determinar para nuestro modelo son las longitudes de las secuencias de entrada y salida, así como la de la secuencia codificada o vector de características. Este ratio entre la longitud de la señal a reconstruir y la dimensión del espacio de características es determinante para definir la capacidad del sistema de detectar anomalías. Un ratio demasiado alto, y el error de reconstrucción será tan alto que no servirá como estimador. Un ratio demasiado bajo por contra permitiría a la red enviar toda la información de la entrada y de nuevo resultar poco apta para la detección de anomalías. Los valores tomados finalmente son:
+\begin{itemize}
+  \item $n=m=100$ Tomamos una ventana de entrada y salida de 100 muestras o 4 segundos. La mayoría de las caídas tienen una duración de $\plusminus1s$ centrado en el pico del impacto. Los dos segundos extra permiten añadir contexto a la señal.
+  \item $l=20$ La dimensión del espacio de características intermedio de 1/5 parte del tamaño del espacio de entrada y salida. Como veremos en el apartado siguiente, experimentalmente demuestra ser suficiente para la reconstrucción de la señal sin caer en la sobreadaptación.
+\end{itemize}
+
+\paragraph{Estructura de la red}
+En una primera instancia optamos por el uso de capas bidireccionales\cite{Schuster1997}. Estas capas son en realizad una composición de dos capas recurrentes de igual tamaño. Una procesa la entrada en un sentido y la otra en el inverso y se pondera el resultado de ambas para obtener la salida. Estas capas han demostrado en varios estudios \cite{Zaho2017, Su2018} su mayor eficiencia procesando series temporales, llegando a mejorar en un 30\% a las capas recurrentes que procesan en un único sentido. Su uso fue finalmente descartado por el soporte inestable de TensorFlow Lite de este tipo de capas, como trataremos en el punto \ref{par:desc:modelo:rnn:limitaciones}.
+
+Descartadas las capas bidireccionales, optamos por una arquitectura de red simétrica para codificador y decodificador, con tres capas unidireccionales de celdas GRU de 300 unidades cada una. Como hemos mencionado, la dimensión del espacio o vector de características intermedio es 20 y es el resultado de recuperar el estado interno de una última capa GRU con 20 unidades (una por característica) al codificador. Este vector se utiliza para alimentar la red del decodificador que tiene una estructura reflejo de la del codificador, con tres capas GRU de 300 unidades que reconstruyen una señal de 100 elementos.
+
+La elección de cada componente y parámetro se realiza buscando maximizar el rendimiento de la red resultante. Así pues se escogen celdas GRU por tener capacidades similares a las celdas LSTM a la hora de tratar con series temporales \cite{Chung2014} siendo menos complejas que estas. Usamos RELU como función de activación. Dado que estamos usando el módulo de la aceleración sin normalizar a la entrada, y que el valor del mismo es siempre positivo, es una elección aceptable. Además, su simplicidad facilita tanto el entrenamiento como su optimización y ejecución posterior.  
+
+\figura[0.4]{modeloRNNFinal}{fig:modelo:rnnFinal}{Modelo RNN de iFell}
+
+\paragraph{Limitaciones de la plataforma TensorFlow Lite}\label{par:desc:modelo:rnn:limitaciones}
+Para generar, entrenar y ejecutar el modelo de redes neuronales recurrentes optamos por la biblioteca TenorFlow/TensorFlow Lite por ser de uso generalizado y disponer de un intérprete de modelos para plataformas llevables sobre WearOS. Este cliente tiene sin embargo ciertas limitaciones que imponen restricciones a la estructura de la red entrenada. Los dos más notables es la ausencia de compatibilidad con celdas GRU\cite{tfliteGru}, que están soportadas parcialmente en la versión experimental del intérprete. Incluso así, la red recurrente generada tiene que ser una red sin estado, no podríamos implementar una red que leyese de forma contínua las muestras de la aceleración. Como nuestro modelo es episódico, esta limitación no supone un gran problema, mas allá del tener que usar un intérprete poco estable para la implementación. 
+La segunda limitación por contra si tuvo un impacto: TensorFlow Lite no soporta las redes bidireccionales directamente\cite{tfliteBidir} ni pueden usarse posteriormente técnicas de \textit{pruning} para reducir su tamaño\cite{tfPruneBidir}. Sin embargo es posible realizar implementaciones personalizadas para suplir estas carencias. Con ese fin se implementan las soluciones propuestas, siendo las más destacable el uso de una capa personalizada para simular una capa bidireccional que implemente las interfaz \textit{Prunable} y consista de dos capas GRU, una normal y otra regresiva. El código de esta solución, sugerida en los foros citados, se recoge en el apéndice  \ref{app:code:ifell:prunebidir}. Sin embargo el resultado obtenido es poco satisfactorio dado lo aleatorio de los resultados obtenidos: mientras que aplicar pruning parece funcionar sin problemas, la cuantización y conversión a TensorFlow Lite arrojaba errores de forma aleatoria resultando en modelos inutilizables tras realizar el entrenamiento. Por esta razón y dado que su uso se justificaba paradójicamente en función de la optimización de rendimiento del modelo se descartó su uso y se optó por capas progresivas tradicionales pero con una arquitectura más compleja para compensar la pérdida en la capacidad de inferencia.
+
+\subsubsection{Entrenamiento}
+
+Antes de iniciar el entrenamiento debemos preprocesar la base de datos. Aislamos todas las secuencias de actividades que no sean caídas del conjunto SisFall. De estas, Separamos un 20\% para validación y usaremos el 80\% restante para entrenar el modelo. Entrenamos durante un máximo de 100 iteraciones sobre el conjunto reservado para ello. Usaremos una tasa de aprendizaje variable, que nos permitirá realizar las primeras iteraciones con un valor alto para acelerar el aprendizaje. Tras cada iteración, si el error RMSE entre la entrada y salida del modelo es no se ha reducido respecto a la iteración precedente, reduciremos la tasa de aprendizaje. Así mismo usamos un mecanismo de parada anticipada del aprendizaje si durante 5 iteraciones seguidas no se consigue reducir el error RMSE. Usamos Adam como optimizador y normalización por \textit{dropout} en cada capa. 
+
+\figura{evolucionLR}{fig:LRvariable}{Evolución del valor LR exponencial}
+\todo{gráfica de la evolución del entrenamiento}
+
+\todo{comentario sobre el resultado obtenido}
+
+\subsubsection{Optimización del modelo}
+
+En la sección \ref{sec:req:optimizacion} hemos hablado ya de las técnicas de pruning y cuantización. Aplicaremos ambas, primero haciendo pruning del modelo entrenado, reentrenaremos el modelo con el mismo subconjunto usado para el primer entrenamiento para reajustar los pesos y corregir el error introducido al eliminar los nodos de menor interés. Con este modelo ya aligerado convertiremos el modelo para su uso en TensorFlow Lite. Realizaremos 4 conversiones: 1 sin aplicar cuantización y otras 3 usando diferentes técnicas (Conversión a enteros, dinámica y conversión a float16). Analizaremos las posibles variaciones en la precisión de la red, mejoras en el tiempo de procesado y en consumo de memoria.
+
+\paragraph{Pruning}
+Para realizar el cribado de nodos superfluos de la red usaremos el módulo \texttt{tfmot} de Keras que ofrece herramientas para realizar la evaluación y eliminación de nodos. Internamente genera un contador para cada nodo entrenable de la red donde se almacena el valor, impacto o importancia de dicho nodo en el resultado final usando algoritmos basados en el gradiente. Así pues es necesario añadir varios ciclos de entrenamiento para poder evaluar y eliminar nodos.
+
+Realizamos 10 ciclos extra de entrenamiento sobre el total del conjunto de datos. Usamos, al igual que en el entrenamiento una tasa de aprendizaje con decaimiento no lineal. La eliminación de nodos se realizará también de forma no lineal, decreciente. Tras una primera época para analizar la importancia de cada neurona, realizamos un cribado del 30\% de ellos, y batch por batch y de forma decreciente vamos eliminando pesos durante 4 épocas hasta llegar a eliminar el 50\% de ellos. El interés de usar una tasa de aprendizaje decreciente sirve a la tarea de poder realizar grandes correcciones en la red en las primeras etapas, cuando las modificaciones en su morfología son mayores e ir reduciendo la brusquedad de los ajustes, especialmente durante las últimas 5 iteraciones durante la cuales no se elimina ningún nodo.
+
+Como puede apreciarse en la gráfica de la función RMSE durante el entrenamiento de pruning, a pesar de la reducción de complejidad de la red, el comportamiento o error de la misma permanece prácticamente inalterado.
+
+\todo{falta gráfica del entrenamiento/pruning}
+
+\paragraph{Cuantización y conversión a TensorFlow Lite}
+El modelo ya comprimido es no sirve para convertirlo en un modelo TensorFlow Lite. Para ello hemos de recuperar la estructura del modelo original y aplicar los pesos del modelo comprimido, poniendo a 0 los pesos de los nodos y uniones eliminados. Este cambio parece anular los beneficios de aplicar pruning, pero como veremos en las pruebas, no es así. 
+Con la estructura original restituida, convertimos el modelo a TensorFlow Lite con y sin cuantización. En las tablas \ref{tab:tflite_weights_activations, tab:tflite_quantization}  introducimos los diferentes tipos de cuantización, su efecto en la representación de pesos y activaciones, velocidad, precisión y tamaño de la red. Analizamos los modelos usando la conversión a enteros (con rango dinámico y estático) y la reducción en la precisión decimal a \texttt{Float16} o 16bits.
+
+\tablan{tab:quant:resultados}{Resultados de los modelos optimizados}{lrrrrr}{
+            &             &       & \multicolumn{3}{c}{Latencia}  \\ \cmidrule(lr){4-6}
+  Modelo    &  Tamaño(MB) & RMSE  &  CPU  &  GPU  & Wearable  \\ \midrule
+  Base      & 11,1        & 0,532 & -     &       &           \\
+  Sparse\tnote{1} & 8.1   & 0,725 & -     &       &           \\
+  Int8      & 3.9         & 1.121 & -     &       &           \\
+  Float16   & 7,6         & 0,726 & -     &       &           \\
+  Dynamic   & 3.9         & 1.110 & -     &       &           \\
+}{
+\item [1] Tras restitución de la red.
+}
+
+Como se observa en los resultados de la tabla \ref{ŧab:quant:resultados}, podemos obtener modelos con menos de la mitad del tamaño de la red original,con un impacto controlado y mínimo en la capacidad predictiva de la red y una mejora de un orden de magnitud en el tiempo de ejecución. Si bien esta mejora depende de la presencia o no de una unidad GPU o de cálculo en coma flotante. Si se da alguno de estos supuestos, los modelos con cuantización a coma flotante de precisión reducida mantienen las ventajas de la aceleración de estas unidades de cálculo con una degradación mínima de la precisión a costa de una menor compresión en tamaño. De no poseer de estas unidades especializadas de cálculo, los dos modelos con conversión de parámetros a enteros de 8 bits ofrecen el mejor rendimiento, aunque la degradación en la precisión del modelo puede ser excesiva según la aplicación. 
+
+\section{Desarrollo de iFell}
+
+\subsection{Arquitectura del Sistema}
+
+\subsection{Arquitectura de la aplicación}
+
+El sistema está compuesto por dos bloques funcionales tal y como se muestra en \ref{fig:clasesUml}. Tenemos un bloque o paquete que incluye los servicios encargados del registro de datos de los sensores, gestión de entradas y notificación de eventos, implementación del algoritmo de detección y comunicación con el servidor. Este primer bloque contiene a su vez una aplicación de gestión del servicio que permite realizar tareas de mantenimiento y configuración. En un segundo bloque tenemos la interfaz del usuario principal, encargada de lanzar la aplicación, alertar en caso de caída y capturar la respuesta del usuario en caso de necesitarla.
+
+\figura{classUML}{fig:clasesUml}{Diagrama de clases de la aplicación}
+
+El proceso que contiene la lógica principal, descrita en la figura\ref{fig:deteccionFlow}, se encuentra en la clase \textit{AccelSensorRead}. Este servicio es lanzado automáticamente al ejecutarse cualquiera de las dos interfaces de usuario provistas, y se mantiene ejecutándose de fondo. Se encarga de:
+
+\begin{itemize}
+  \item Recupera configuración previa
+  \item Configurar y leer las muestras del acelerómetro
+  \item Realizar el primer proceso de detección (algoritmo basado en cotas)
+  \item Lanzar el proceso de análisis usando el modelo ML y recuperar el resultado
+  \item Alertar y notificar del evento tanto a los clientes locales como a los servidores remotos
+\end{itemize}
+
+El proceso de detección o filtrado usando el modelo implementado basado en redes recurrentes es el único que se exporta a una clase propia: \textit{CrashDetectService}. Toma de nuevo la forma de un servicio asíncrono que es invocado únicamente cuando el modelo analítico ha detectado un positivo. De esta forma se pretende reducir drásticamente las necesidades de cómputo. Este servicio a su vez se subdivide en unos módulos que son los modelos de detección propiamente dichos. Como se aprecia en el diagrama UML de la arquitectura\ref{fig:clasesUml}, es la clase \textit{TFLiteModelDetector} la que provee la cumunicación con el modelo de TFLite previamente generado y entrenado en Colab.
 
 
-La principal novedad de este trabajo es el uso de una red recurrente con una arquitectura codificador/decodificador para la detección de anomalías, o caídas en este caso. 
+\subsection{Interfaz de Usuario}
+Desde el punto de vista del usuario la aplicación provée dos puntos de entrada. La interfaz principal toma la forma de una \textit{watchface}. En \textit{WearOS}, una \textit{watchface} se corresponde con un tipo específico de aplicación que realiza principalmente la función de mostrar la hora al usuario. Realiza la función de "escritorio" del sistema y es por tanto el punto inicial de toda interacción del usuario con el sistema. Este acercamiento permite solventar dos problemas:
 
-Con el objetivo de mejorar el rendimiento optamos por usar celdas GRU (\textit{Gated Recurrent Unit}) con 
+Facilita la experiencia de usuario al no requerir de ninguna acción por parte del usuario para poner en marcha la aplicación. Al convertirse en la aplicación principal del reloj con  \textit{WearOS} garantizamos que el propio sistema operativo lanzará en el arranque y mantendrá activa la actividad en todo momento.
 
-\figura[]{modeloRNNencoderdecoder}{fig:modelo:encoderdecoder}{Esquema de una red RNN codificador/decodificador}
+\begin{figure}[!ht]
+  \centering
+  \begin{subfigure}[b]{0.4\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{appActivity.png}
+      \caption{Aplicación de gestión}
+      \label{fig:uiActivity}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.4\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{appWatchface.png}
+      \caption{\textit{Watchface}}
+      \label{fig:uiWatchface}
+  \end{subfigure}
+  \caption{\label{fig:ifell:UI} Interfaz de usuario de iFell}
+\iffalse
+\subfloat{\label{fig:uiActivity} Aplicación de gestión}{\includegraphics[width=0.4\linewidth]{appActivity.png}}
+     \caption{\label{fig:uiApps} Interfaces de usuario}
+     \hfill
+\subfloat{\label{fig:uiWatchface} Watchface}{\includegraphics[width=0.4\linewidth]{appWatchface.png}}
+\fi
+\end{figure}
 
+
+La aplicación toma forma de un objeto cotidiano e interactúa con el usuario utilizando un concepto conocido para este: un reloj digital. La única información que se muestra al usuario es la hora (adicionalmente el propio sistema operativo sobreimprime indicaciones de batería baja, ausencia de conexión a internet y existencia de notificaciones de otros servicios y aplicaciones). De esta forma, para el usuario, el dispositivo se convierte en un objeto conocido con un uso muy extendido que de forma adicional a su función tradicional realiza el proceso de detección de caídas.
+
+En esta aplicación se han reducido al máximo las interacciones requeridas por parte del usuario en todo momento, hasta el punto de no requerir ninguna. La aplicación funciona en todo momento como un reloj tradicional mostrando la hora de forma analógica mediante unas manecillas. En el caso de detectarse una caída o evento similar, emitirá de forma automática una serie de avisos visuales, acústicos y hápticos (según las capacidades del dispositivo sobre el que se ejecute) que podrán ser desactivados si se detecta actividad nuevamente. Aunque también existe la posibilidad de desactivarlos tocando la pantalla.
+
+La segunda interfaz que provee la aplicación se encarga de las tareas de administración y configuración. Permite introducir un nombre del usuario y forzar el estado de funcionamiento de los servicios de captura y detección. Si bien ninguno de estos procesos es necesario para el funcionamiento, se ofrece para facilitar la puesta en marcha y prueba del sistema.
+
+\subsection{Comunicación con el Servidor}
 
 
 % ########################################
@@ -196,7 +330,7 @@ Como se ha mencionado en la introducción del trabajo, los daños relacionados c
 
 Las personas de edad avanzada suelen padecer así mismo de otras condiciones que pueden limitar su grado de movilidad, atención o memoria que impidan o reduzcan la posibilidad de adaptarse o incorporar nuevas rutinas. Los problemas motores y de percepción reducen notablemente la capacidad de mostrar información así como de interactuar con el usuario cuando se necesite una acción por su parte.
 
-Se entiende por tanto que si se ha de realizar un producto para esta población, es requisito que sea lo menos obtrusivo posible \todo{de nuevo un requisito, al punto anterior}, siendo recomendable incorporar la funcionalidad a un objeto de uso cotidiano para evitar la modificación de rutinas o la reticencia a incorporar nuevos procesos o elementos en su vida diaría. La interfaz de usuario debe ser mínima, usando un lenguaje visual que resulte familiar alejado de los estándares de las aplicaciones modernas. Así mismo, reducir o eliminar los procesos de configuración y manipulación, con un sistema que funcione al salir de la caja \todo{mala traducción de \textit{out of the box}}.
+Se entiende por tanto que si se ha de realizar un producto para esta población, es requisito que sea lo menos obtrusivo posible \todo{de nuevo un requisito, al punto anterior}, siendo recomendable incorporar la funcionalidad a un objeto de uso cotidiano para evitar la modificación de rutinas o la reticencia a incorporar nuevos procesos o elementos en su vida diaria. La interfaz de usuario debe ser mínima, usando un lenguaje visual que resulte familiar alejado de los estándares de las aplicaciones modernas. Así mismo, reducir o eliminar los procesos de configuración y manipulación, con un sistema que funcione al salir de la caja \todo{mala traducción de \textit{out of the box}}.
 
 \subsubsection{Localización}
 
@@ -212,9 +346,6 @@ El principal problema de la conectividad radica en el hecho de que a pérdida de
 
 El sistema implementado opta por una arquitectura cliente-pesado y servidor ligero. El cliente tiene suficiente capacidad para realizar captura, cómputo y capacidad de alerta como para funcionar de forma aislada. El servidor realiza funciones de expansión de la capacidad de alerta de la plataforma, así como de distribución de actualizaciones o mejoras en modelos y parámetros, pero de ninguna manera resulta imprescindible para el funcionamiento del dispositivo portable. Este es el principio básico y director de este trabajo: implementar una plataforma autónoma de detección de caídas capaz de ejecutarse en un dispositibo vestible.
 
-\subsection{Rendimiento}
-
-Como en toda imlpementación, el
 
 \section{Plataforma}
 \todo{justificar cada una de estas decisiones}
@@ -231,40 +362,8 @@ El la generación, entrenamiento, análisis y evaluación de modelos se realiza 
 
 \warn{hablando de AWS: (ver siguiente páraffo)}
 Resumiendo la estructura del sistema, \textit{AWS S3} (\url{https://aws.amazon.com/es/s3/?c=ser&sec=srv}) es el sistema de almacenamiento de datos en la red. Un disco duro en la nube, escalable en capacidad y fácilmente accesible para poder recuperar los datos. \textit{AWS Lambda} (\url{https://aws.amazon.com/es/lambda/?c=ser&sec=srv}) permite implementar funciones de código y definir una serie de eventos para lanzar su ejecución, al formar parte del ecosistema AWS es fácil conectar estas funciones con el sistema S3 y API Gateway. Finalmente \textit{AWS API Gateway} permite definir unos puntos de entrada, o URLs que conformarán la API del servicio. Cuando una de estas direcciones URL es invocada, inmediatamente se ejecuta la 
-\subsection{Arquitectura de la aplicación}
 
-El sistema está compuesto por dos bloques funcionales tal y como se muestra en \ref{fig:clasesUml}. Tenemos un bloque o paquete que incluye los servicios encargados del registro de datos de los sensores, gestión de entradas y notificación de eventos, implementación del algoritmo de detección y comunicación con el servidor. Este primer bloque contiene a su vez una aplicación de gestión del servicio que permite realizar tareas de mantenimiento y configuración. En un segundo bloque tenemos la interfaz del usuario principal, encargada de lanzar la aplicación, alertar en caso de caída y capturar la respuesta del usuario en caso de necesitarla.
 
-\figura{classUML}{fig:clasesUml}{Diagrama de clases de la aplicación}
-
-Desde el punto de vista del usuario la aplicación provée dos puntos de entrada. La interfaz principal toma la forma de una \textit{watchface}. En \textit{WearOS}, una \textit{watchface} se corresponde con un tipo específico de aplicación que realiza principalmente la función de mostrar la hora al usuario. Realiza la función de "escritorio" del sistema y es por tanto el punto inicial de toda interacción del usuario con el sistema. Este acercamiento permite solventar dos problemas:
-
-Facilita la experiencia de usuario al no requerir de ninguna acción por parte del usuario para poner en marcha la aplicación. Al convertirse en la aplicación principal del reloj con  \textit{WearOS} garantizamos que el propio sistema operativo lanzará en el arranque y mantendrá activa la actividad en todo momento.
-
-La aplicación toma forma de un objeto cotidiano e interactúa con el usuario utilizando un concepto conocido para este: un reloj digital. La única información que se muestra al usuario es la hora (adicionalmente el propio sistema operativo sobreimprime indicaciones de batería baja, ausencia de conexión a internet y existencia de notificaciones de otros servicios y aplicaciones). De esta forma, para el usuario, el dispositivo se convierte en un objeto conocido con un uso muy extendido que de forma adicional a su función tradicional realiza el proceso de detección de caídas.
-
-En esta aplicación se han reducido al máximo las interacciones requeridas por parte del usuario en todo momento, hasta el punto de no requerir ninguna. La aplicación funciona en todo momento com un reloj tradicional mostrando la hora de forma analógica mediante unas manecillas. En el caso de detectarse una caída o evento similar, emitirá de forma automática una serie de avisos visuales, acústicos y táctiles que podrán ser desactivados si se detecta actividad nuevamente. Aunque también existe la posibilidad de desactivarlos tocando la pantalla.
-
-La segunda interfaz que provee la aplicación se encarga de las tareas de administración y configuración. Permite introducir un nombre del usuario y forzar el estado de funcionamiento de los servicios de captura y detección. Si bien ninguno de estos procesos es necesario, se ofrece para facilitar la puesta en marcha y prueba del sistema.
-
-El proceso que contiene la lógica principal, descrita en la figura\ref{fig:deteccionFlow}, se encuentra en la clase \textit{AccelSensorRead}. Este servicio es lanzado automáticamente al ejecutarse cualquiera de las dos interfaces de usuario provistas, y se mantiene ejecutándose de fondo. Se encarga de:
-
-\begin{itemize}
-  \item Recupera configuración previa
-  \item Configurar y leer las muestras del acelerómetro
-  \item Realizar el primer proceso de detección (algoritmo basado en cotas)
-  \item Lanzar el proceso de análisis usando el modelo ML y recuperar el resultado
-  \item Alertar y notificar del evento tanto a los clientes locales como a los servidores remotos
-\end{itemize}
-
-El proceso de detección o filtrado usando el modelo implementado basado en redes recurrentes es el único que se exporta a una clase propia: \textit{CrashDetectService}. Toma de nuevo la forma de un servicio asíncrono que es invocado únicamente cuando el modelo analítico ha detectado un positivo. De esta forma se pretende reducir drásticamente las necesidades de cómputo. Este servicio a su vez se subdivide en unos módulos que son los modelos de detección propiamente dichos. Como se aprecia en el diagrama UML de la arquitectura\ref{fig:clasesUml}, es la clase \textit{TFLiteModelDetector} la que provee la cumunicación con el modelo de TFLite previamente generado y entrenado en Colab.
-
-\figura{SignalvsIIRFilter}{fig:signalIIRFilter}{Señal original y filtrada}
-\figura{SignalvsIIRFilter25Hz}{fig:signalIIRFilter25}{Señal subsampleada a 25Hz y filtrada}
-
-\section{Implementación}\label{desc_impl}
-
-\subsubsection{Modelo Analítico}
 
 \todo{show me the data!!! cómo llegamos a 3G?}
 El valor de $A_{umbral}$ se obtiene experimentalmente gracias al análisis de los datos obtenidos. Se fija en $A_{umbral} = 3G$ que resulta un buen equilibrio ya que conseguimos una cantidad reducida de eventos manteniendo un nivel bajo\todo{citar trabajos y medidas. Bourke usa 3,5G, otros usan valores más altos, la mayoría de caídas tienen niveles instantáneos de SVTot superiores a 6G}.\todo{incluir trabajo estadístico de los datos de aceleración del dataset} \todo{incluir gráfica temporal explicativa del algoritmo}
@@ -274,28 +373,13 @@ Si se sobrepasa el umbral en $t=0$. El sistema envía instantáneamente al sigui
 
 \subsubsection{Modelo RNN}
 
-El modelo RNN comporta a su vez dos bloques. Un primer bloque de predicción y un segundo de detección de anomalías. \todo{explicar porque de estos dos bloques}
-
-\paragraph{Limitaciones de la plataforma}
-Al ejecutarse sobre un intérprete de TFLite, el modelo implementado sufre las restricciones que esta plataforma impone. Las de mayor impacto a este proyecto es la del uso de celdas GRU, no soportadas de forma nativa\cite{tfliteGru}, de la misma forma que las redes RNN bidireccionales, que no pueden ser portadas directamente a a TFLite\cite{tfliteBidir} ni se les puede aplicar pruning para reducir su tamaño\cite{tfPruneBidir}. Este último problema tiene sin embargo una alternativa consistente en usar una capa personalizada que implemente la interfaz de pruning y consista en dos redes LSTM, una normal y otra regresiva.
-
-
-\paragraph*{Predicción}
-\info{Detalles del modelo pueden variar fácilmente. Actualmente usando LSTM bidireccional 50 unidades. }
-
-\figura{modeloRNN}{fig:rnnModel}{Modelo RNN}
 
 El modelo predictivo, se basa en la capacidad de las redes RNN y particularmente las basadas en celdas LSTM y GRU para generar modelos predictivos de calidad para series temporales de señales estacionarias \cite{Qin2019}.
 
-La arquitectura el modelo usa una red LSTM bidireccional con 50 unidades de memoria y una única salida. Tal y como se observa en el diagrama \ref{fig:rnnModel} a partir de la primera serie de 200 muestras recibidas el modelo es capaz de generar la predicción de la muestra siguiente.
 
-Para conseguir la predicción de las 49 muestras restantes, debemos convertir dicho modelo en \textit{many2many} (del inglés \textit{de muchas a muchas}, por las muestras recibidas y las predichas). Tal manipulación se consigue alimentando iterativamente el modelo en cada paso con la predicción calculada en el paso previo $x_{t} = \hat{y}_t$ tal y como se muestra en \ref{fig:rnnModelMany}
 
-\figura{evolucionLR}{fig:LRvariable}{Evolución del valor LR exponencial}
 
 \figura{trainingModeloRNN}{fig:rnnTrainAlt}{Evolución de RMSE durante el entrenamiento}
-
-\figura{modeloRNNmany2many}{fig:rnnModelMany}{Conversión del modelo en \textit{Many2Many}}
 
 \figura{prediction.png}{fig:prediccionAceleracion}{Predicción de la aceleración}
 
@@ -308,48 +392,4 @@ RECM=\sqrt{1/T\sum_{t_1}^{t_2}|y-\hat{y}|^2 }
 Comparando el resultado del error obtenido con un nuevo umbral al que denominaremos umbral de detección $U_{d}$ obtendremos finalmente la clasificación del evento en \textit{Caída} o \textit{no-Caida}. Dicho umbral se obtiene de nuevo de forma experimental.
 
 En este caso el valor utilizado se calcula mediante el análisis del RECM usado durante la validación del modelo durante el entrenamiento. \todo{mostrar valores}
-
-
-\subsection{Optimización del modelo RNN}\label{desc_optim}
-
-Quantización y prune
-\warn{Dado que Tensorflow no permite realizar cuantificación ni prune sobre las capas LSTM/Gru bidireccionales estoy usando una versión propia de estas redes que implementa la interfaz prunable y por tanto debería permitirlo. Desgraciadamente todavía no he conseguido que funcione...}
-
-
-\subsection{Interfaz}
-
-
-\begin{figure}[!ht]
-  \centering
-  \iffalse
-  \begin{subfigure}[b]{}
-      \centering
-      \includegraphics[width=\linewidth]{appActivity.png}
-      \caption{Aplicación de gestión}
-      \label{fig:uiActivity}
-  \end{subfigure}
-  \hfill
-  \begin{subfigure}[b]{}
-      \centering
-      \includegraphics[width=\linewidth]{appWatchface.png}
-      \caption{\textit{Watchface}}
-      \label{fig:uiWatchface}
-  \end{subfigure}
-\fi
-\subfloat{\label{fig:uiActivity} Aplicación de gestión}{\includegraphics[width=0.4\linewidth]{appActivity.png}}
-     \caption{\label{fig:uiApps} Interfaces de usuario}
-     \hfill
-\subfloat{\label{fig:uiWatchface} Watchface}{\includegraphics[width=0.4\linewidth]{appWatchface.png}}
-
-\end{figure}
-
-
-\warn{RECOMENDACIÓN: ponerlo en su sección (capítulo 5), aunque es únicamente una sugerencia. Podemos quizás dejarlo y poner algo similar en cada capítulo.}En las secciones posteriores detallaremos el algoritmo y modelo usado para la detección de caídas \ref{desc_modelo}, estructura \ref{desc_archi}, implementación \ref{desc_impl} e interfaz\todo{añadir referencia} de la aplicación y las optimizaciones implementadas \ref{desc_optim}, para a la postre evaluar tanto la viabilidad del modelo usado respecto a otras implementaciones \ref{eval_modelo}, como la usabilidad de la aplicación y su adecuación al problema a tratar\todo{añadir referencia}.
-
-
-
-
-\begin{comment}
-  Viene del apartadoanterior a sugerencia de la profe
-\end{comment}
 

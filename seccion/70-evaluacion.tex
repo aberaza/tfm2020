@@ -1,11 +1,6 @@
 % !TeX root = ../tfm.tex
 %! TEX root = ../tfm.tex
-\documentclass[../tfm.tex]{subfiles}
-\begin{document}
 
-\info{al menos una mínima evaluación de usabilidad de la herramienta y su aplicabilidad para resolver el problema resuelto.}
-
-\section{Evaluación del modelo}\label{eval_modelo}
 
 Un sistema de detección de caídas es en el fondo un clasificador con una única clase. Todos los resultados pueden por tanto agruparse en los que pertenecen o no a dicho conjunto. Con el fin de evaluar y comparar los resultados obtenidos usaremos dos métricas estadísticas:
 \begin{itemize}
@@ -19,7 +14,28 @@ Un sistema de detección de caídas es en el fondo un clasificador con una únic
   \]
 \end{itemize}
 
-Estas métricas son usadas habitualmente en otros trabajos similares\cite{Noury2007,Chen2005, Bourke2006}
+Estas métricas son usadas habitualmente en otros trabajos similares\cite{Noury2007,Chen2005, Bourke2006} y permite usar los mismos indicadores para analizar los resultados de diferentes modelos.
+
+\section{Evaluación del algoritmo obre SisFall}\label{sec:eval:hibrido}
+
+De la misma forma que analizamos el comportamiento del algoritmo de Bourke en la sección \ref{sub:imp:model:analitico}analizamos el comportamiento del algoritmo de modelo hibrido de iFell. De nuevo nos encontramos con que debemos encontrar y definir una nivel de error del modelo codificador/decodificador para identificar si se trata de una caída. Tomando de nuevo el conjunto de entrenamiento, esta vez sin aislar las caídas, calculamos la distribución del error RMSE para ambos conjuntos, caídas y resto de actividades como puede observarse en la figura \todo{inssertar histograma modelo híbrdio}. Numéricamente observamos en la tabla \ref{}
+
+\tabla[0.4\linewidth]{tab:eval:hibrid:percentiles}{Percentiles de caídas y actvidades para una misma cota de error RMSE}{lcc}{
+  RMSE & Caídas (\%) & Actividades (\%) \\
+  0,12 & 0          & 1,9   \\
+  0,29 & 1          & 28,4  \\
+  0,45 & 3          & 45,8  \\
+  0,53 & 5          & 51,8  \\
+  0,63 & 10         & 57,8  \\
+}
+
+Comparando los resultados con los del modelo de Bourke, se observa un primer fenómeno de compresión del espacio de resultados: mientras que el caso de Bourke la distribución de los valores de pico cubría un rango muy amplio, en el caso del error RMSE el rango obtenido más reducido. Si analizamos los datos de la tabla \ref{tab:eval:hibrid:percentiles} 
+
+
+
+
+\section{Evaluación del algoritmo en uso real}\label{sec:eval:real}
+
 \info{añadir el resto de citas}.
 
 
@@ -34,18 +50,20 @@ Hussain2019 "Activity Aware falldetection and recognition based on wearable sens
 
 En la tabla \ref{tab:MLResults} Destacan los buenos resultados obtenidos por los modelos que usan técnicas de aprendizaje automático. Si bien en lo referente a la latencia, \cite{Liu2020} obtiene tiempos que superan el segundo en la mayoría de modelos, llegando incluso a los 8,87s obtenidos con un clasificador de Bayes. Tanto en los trabajos de \cite{Liu2020} como \cite{Musci2020} y \cite{Torti2018} se subraya el hecho de la no uniformidad de los resultados. Los mejores resultados se obtienen con población joven mientras que con población adulta las métricas pueden perder hasta 5 puntos, en parte debido a la falta de datos de entrenamiento.
 
-\tablas{tab:MLResults}{Resultados de sistemas basados en ML}{l|c|c|c|ccc}{
-   & Yo & Musci2020 & Torti2018  & Liu2020  & Liu2020 & Liu2020 \\
-   & GRU & RNN(LSTM) & RNN(LSTM)  & FD-DNN   & LSTM    & CNN     \\ \midrule
-Sensitividad (\%) &  &   & 98,73  & 94,09  & 81,47   & 87,50   \\
-Especificidad (\%)&   &   & 97,93  & 99,94  & 99,57   & 99,88   \\
-Accuracy (\%)     & 91,1 &   & 98,33  & 99,17  & 96,88   & 98,13   \\
-Tiempo(s)         &     &     &     &     &     &     \\
+\tablas{tab:MLResults}{Resultados de sistemas basados en ML}{l|cc|c|c|ccc}{
+    & \multicolumn{2}{c}{\textbf{iFell}}  & Musci2020 & Torti2018   & Liu2020  & Liu2020  & Liu2020 \\
+                  & S100  & S99  & RNN(LSTM) & RNN(LSTM)   & FD-DNN   & LSTM     & CNN     \\ \midrule
+Sensitividad (\%) & 100   & 99,2 &           & 98,73       & 94,09     & 81,47   & 87,50   \\
+Especificidad (\%)& 34,4  & 64,7 &           & 97,93       & 99,94     & 99,57   & 99,88   \\
+Accuracy (\%)     &       &      &           & 98,33       & 99,17     & 96,88   & 98,13   \\
+Tiempo(s)         & 0,065 & 0,06 &           &             &           &         &         \\
 }
 
 \figura{CompositeFallNormalRMSHistogram_t-25}{fig:GRU_predictionRMS_Histogram}{Histograma de los errores de predicción del modelo GRU\todo{Se han mezclado muestras de caidas en el entrenamiento y el modelo. Repitiendo el entrenamiento.}}
 
 En la tabla\ref{tab:analiticResults} se muestran los resultados de los modelos basados en métodos analíticos. Su importancia para este estudio proviene del hecho de que son los métodos más extendidos en los sistemas disponibles hoy en día y establecen por tanto el nivel a superar. Se muestra también los resultados obtenidos para el clasificador bourke utilizado a modo comparativo y de validación del resultado obtenido.
+
+\begin{comment}
 \tablas{tab:analiticResults}{Resultados de sistemas basados en métodos analíticos}{l|c|c|c|c}{
               & Yo        & Yo      & SisFALL & SisFALL \\
               & Bourke    & Hibrido & Cotas(SumVect)  & Cotas(SV) 100\%Sens \\ \midrule
@@ -55,11 +73,10 @@ Accuracy (\%) & 64,55 &     67  & 95,21 & 66,43 \\
 Tiempo (s)    & 0     & 2,5     & 0       & \\
 }
 \warn{Falta extraer Lim2014 con sisfall y comparar}
-
+\end{comment}
 \subsection{Mixto Bourke + GRU}
 
 
 \todo{Validar la mejora del acercamiento en cuanto a especificidad respecto a Bourke simple. Comparar con los resultados de la tabla anterior}
 
 
-\end{document}

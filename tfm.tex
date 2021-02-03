@@ -19,7 +19,7 @@
 \usepackage{rotating}
 % Siguientes 3 para imágenes compuestas
 \usepackage{float}
-\usepackage[caption = false]{subfig}
+% \usepackage[caption = false]{subfig}
 %\usepackage[export]{adjustbox}
 
 % para usar \currenttime
@@ -127,10 +127,10 @@
 
 
 \chapter{Evaluación}\label{chap:eval}
-%\subfile{seccion/70-evaluacion}
+\input{seccion/70-evaluacion}
 
 \chapter{Conclusiones y Trabajo Futuro}\label{chap:conclusiones}
-%\subfile{seccion/80-conclusiones}
+\input{seccion/80-conclusiones}
 
 
 %\bibliographystyle{unsrt}
@@ -142,8 +142,8 @@
 
 \appendix
 
-\chapter{Captura de datos y construcción del dataset}\label{app:dataset}
-\subfile{seccion/app-accelcapture}
+% \chapter{Captura de datos y construcción del dataset}\label{app:dataset}
+% \subfile{seccion/app-accelcapture}
 
 \chapter{Listados de código}\label{app:codigo}
 \input{seccion/app-listadoscodigo}

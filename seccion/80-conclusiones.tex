@@ -1,13 +1,22 @@
 % !TeX root = ../tfm.tex
 %! TEX root = ../tfm.tex
-\documentclass[../tfm.tex]{subfiles}
-\begin{document}
 
 \section{Conclusiones}
 
+A lo largo de este ejercicio hemos introducido, definido y realizado la implementación de \textit{iFell}, una plataforma de detección de caídas que puede ejecutarse de forma completamente autónoma
+sobre un dispositivo llevable. Hemos demostrado la viabilidad de un algoritmo híbrido basado que ejecute un modelo basado en redes de neuronas recurrentes de forma episódica para reducir los requisitos tanto a nivel de cómputo como de consumo energético logrando un sistema que puede permanecer activo durante días con una latencia inferior a un segundo. Hemos introducido un nuevo modelo de detección de anomalías en series temporales usando una arquitectura codificador/decodificador con redes recurrentes y el RMSE que mejora en hasta un 50\% especificidad de un modelo Bourke, manteniendo el 100\% de sensibilidad. Hemos demostrado que la extracción de características de la señal $|\vec{A}|$ muestreada a únicamente 50Hz tiene suficiente información para segregar cídas del resto de actividades, incluso llevando el sensor en la muñeca. En el camino hemos analizado variaciones del modelo codificador/decodificador para detección de anomalías usando tanto la predicción de múltiples pasos futuros como la capacidad de reconstrucción de la señal y hemos evaluado el impacto en rendimiento y recursos de varias técnicas de optimización de modelos basados en redes de neuronas.
+
+También hemos recolectado una muestra de capturas de actividad cotidiana, para lo cual hemos implementado una aplicación específica: \textit{AccelCapture}. Analizando estas muestras hemos observado la estacioanriedad de la señal aceleración, su inexistente autocorrelación en la mayoría de actividades y la distribución de picos y valles de la aceleración para actividades normales y caídas.
+
+
+
+
 \section{Lineas de trabajo futuro}
 
-Lineas de trabajo que podrían aportar valor al TFM realizado. Perspectivas de futuro que abre el trabajo realizado. Justificar en qué modo puede emplearse la aportación desarrollada y en qué campos.
+Durante el trabajo se han ido comentando varias opciones que por una razón u otra no fue viable explorar en su momento, como por ejemplo el uso de capas bidireccionales o técnicas de optimización de la discretización de pesos avanzadas. Sin embargo estas lineas de mejora entregarán un beneficio marginal.
 
-\end{document}
+De especial interés de cara a futuras iteraciones del modelo codificador/decodificador aquí presentado, es el posible uso de técnicas de clústering como K-means sobre el espacio de salida del codificador para la detección de anomalías reemplazando el codificador y comparador RMSE. Si se pretende proseguir por el uso de técnicas de aprendizaje no supervisado, el uso de redes generativas antagónicas (\textit{GAN}) para entrenar un discriminador que sepa reconocer actividad normal y cotidiana de caídas puede ser una vía alternativa ya sea al uso de un decodificador o directamente reemplazar todo el sistema. Finalmente, se puede estudiar cambiar el codificador o extractor de característica y reemplazarlo por una red convolucional que analice la señal de los sensores de entrada.
+
+De cara a mejorar la calidad del algoritmo híbrido, en especial del modelo analítico, puede ser interesante el uso de información de otros sensores que habitualmente se encuentran en pulseras de actividad y otros dispositivos llevables como puede ser un giroscopio o sensor del campo magnético o pulsómetro. Con la llegada de nuevas generaciones de microprocesadores con unidades de cómputo especializadas en modelos neuronales se facilita la posibilidad de aumentar la complejidad de estos y permitir el uso de entradas compuestas de varias fuentes. Este incremento en la diversidad de fuentes de datos debería ayudar a paliar el problema de la baja calidad de las medidas de la aceleración realizadas en la muñeca como estimador de la actividad.
+
 
