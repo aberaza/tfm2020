@@ -317,3 +317,7 @@
   language=ES6,
   style=JSES6Base
 }
+
+% Necesita hyperref
+\newcommand*{\fullref}[1]{\hyperref[{#1}]{\autoref*{#1}: \textit{\nameref*{#1}}}} % Sección 3.2 Titulo de la sección
+
