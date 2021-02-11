@@ -5,11 +5,28 @@ En este capítulo expondremos las tareas realizadas para obtener una base de dat
 
 Como ya hemos presentado anteriormente en la sección \ref{sec:req:bases_datos}, nos encontramos ante la falta de una base de datos para entrenar el modelo del producto final. Al tratarse de un modelo experimental es necesario conseguir un conjunto de datos lo más parecido posible a los capturados por la plataforma física utilizada. A su vez es necesario validar la capacidad de esta plataforma para servir al propósito de este trabajo. Así, con esta doble tarea de generar una bases de datos y confirmar que la plataforma cubre nuestras necesidades funcionales realizamos el primer desarrollo propio del trabajo.
 
-\section{Captura de datos: AccelCapture}\label{sub:imp:accelcapture}
+\section{Elección y definición de la plataforma}\label{sec:imp:plataforma}
 
-\textit{AccelCapture} es el nombre del sistema de captura de tramas de la aceleración capturada por el sensor situado en un reloj inteligente con sistema operativo \textit{WearOS}. Consta de dos componentes: una unidad de adquisición de datos, el propio reloj, y una segunda unidad de almacenamiento situada en la nube. Tal y como puede apreciarse en el diagrama de clases de la figura \ref{fig:accelcaptureClasesUml} la aplicación en si misma se compone de tres bloques funcionales.
+Tras el análisis de requisitos se concreta la plataforma de servicios en la nube, dispositivo y entorno de desarrollo y pruebas a utilizar. 
+
+\paragraph{Plataforma de red}
+Para el servidor optamos por una arquitectura de microservicios usando la plataforma de AWS Lambda con almacenamiento en S3. Como ya se ha expuesto en el análisi de requisitos, esta plataforma integra todas las funciones requeridas y permite su programación en \textit{JavaScript}, lenguaje con el que el autor está familiarizado. Además, dispone de una interfaz de programación pública que permitirá facilitar la generación y entrenamiento de modelos.
+
+\paragraph{Dispositivo de captura y procesado}
+Para el dispositivo móvil usamos un reloj inteligente Fossil Sport con sistema operativo WearOS y por tanto compatible con el ecosistema Android. Esta plataforma cumple con las exigencias funcionales ya que permite desarrollar aplicaciones y portar modelos de redes de neuronas usando \textit{TensorFlow Lite}. El dispositivo además se ofrece a un precio competitivo (cercano a los 100€) que sin ser un requisito si es un punto a tener en cuenta. Mas información sobre el mismo, características técnicas y sensores se encuentran listadas en el \autoref{app:plataforma}.
+
+\paragraph{Entorno de desarrollo}
+El la generación, entrenamiento, análisis y evaluación de modelos se realiza usando Keras/Tensorflow corriendo en la plataforma Google Colab (\url{https://research.google/}). Este entorno permite generar y trabajar con modelos TensorFlow y TensorFlow Lite y al basarse en Python 3.x es fácil integrar la generación de modelos con el sistema de servidor en la nube de AWS (con librerías como \textit{boto3} (\url{https://github.com/boto/boto3}). En concreto el sistema guardará todos los modelos generados, historial del entrenamiento, gráficas y resultados varios en el servidor, y recuperará los datos de entrenamiento (tanto las sesiones obtenidas con \textit{AccelCapture} como \textit{SisFALL}) del mismo de forma dinámica. Colab permite ejecutar el código en potentes servidores multiprocesador con unidades GPU y/o TPU. En el \autoref{app:colab} se encuentran listados con informaciónde los servidores.
+
+
+\section{Captura de datos: AccelCapture}\label{sec:imp:accelcapture}
+
+\textit{AccelCapture} es el nombre del sistema de adquisición de tramas o secuencias de la aceleración registrada por el sensor situado en un reloj inteligente con sistema operativo \textit{WearOS}. Consta de dos componentes: una unidad de adquisición de datos, el propio reloj, y una segunda unidad de almacenamiento situada en la nube. Tal y como puede apreciarse en el diagrama de clases de la figura \ref{fig:accelcaptureClasesUml} la aplicación en si misma se compone de tres bloques funcionales.
 
 \figura[0.47]{accelcaptureClassUML}{fig:accelcaptureClasesUml}{Diagrama de clases de AccelCapture}
+
+\begin{tabe}
+\end{table}
 
 \paragraph{MainWearActivity}
 El punto de entrada de la aplicación. Genera la interfaz de usuario y permite introducir el nombre el usuario a la vez que verificar el estado del servicio de captura de datos e iniciar o parar su ejecución.
@@ -68,7 +85,7 @@ La interfaz de usuario de la aplicación permite gestionar y observar el estado 
 \tabla[0.65\linewidth]{tab:accelcapture:api}{API del servidor AccelCapture}{llll}{
   Método  & URL         & Carga         & Función lambda    \\ \hline
   POST    & /saveAccel  & AccelSession  & doGuardarAccel()  \\
-}\todo{poner la vuena ruta}
+}{2}\todo{poner la buena ruta}
 
 Tal y como se menciona en el apartado \ref{sec:req:nube} la plataforma en la nube se implementa usando los servicios de AWS. Para esta función crea un microservicio o \textit{API}(lista de funciones de acceso público que ofrece una biblioteca de programación) ( del tipo \textit{REST}(Arquitectura que implementa una interfaz sobre el protocolo \textit{HTTP}). Este servicio, definido en la tabla \ref{tab:accelcapture:api} se encargará de recibir la llamadas de la aplicación y guardar el contenido en un archivo \textit{JSON} (lenguaje de definición de estructuras de datos que usa la notación de JavaScript).
 
@@ -89,7 +106,7 @@ Campo           & Tipo Dato     & Descripción \\ \hline
 \textit{samples}  & Entero      & Número de muestras de la sesión \\
 \textit{triggerMethod} & Texto  & Nombre del evento que inició la sesión de captura \\
 \textit{sessionData} & SessionData & Estructura con los datos capturados del sensor \\
-}{}
+}{}{2}
 
 %\hspace{\fill}
 \subtabla[0.48]{tab:accelcapture:session_data}{Descripción del Objeto SessionData}{lll}{
@@ -100,7 +117,7 @@ Campo           & Tipo Dato     & Descripción \\ \hline
 \textit{accelerationX} & Lista<Reales> & Lista de valores de la aceleración capturados en el eje X (en $m/s^2$) \\
 \textit{accelerationY} & Lista<Reales> & Lista de valores de la aceleración capturados en el eje Y (en $m/s^2$) \\
 \textit{accelerationZ} & Lista<Reales> & Lista de valores de la aceleración capturados en el eje Z (en $m/s^2$) \\
-}{right}
+}{right}{2}
 
 \caption{\label{tab:accelcapture:data_types} Estructuras de datos de AccelCapture}
 \end{table}
@@ -121,7 +138,7 @@ Con el fin de entender las características de la señal capturada procedemos a 
   \item La señal temporal de la aceleración y la señal diferencia $dif(A_i) = |A_i - A_{i-1}|$
     (Figura \ref{fig:dataset:samples})
   \item El comportamiento frecuencial mediante la transformada de Fourirer (Figura \ref{fig:dataset:fftsample})
-  \item Autocorrelación de la señal temporal y señal diferencia (Figura \ref{fig:dataset:autocorrsample}
+  \item Autocorrelación de la señal temporal y señal diferencia (Figura \ref{fig:dataset:autocorrsample})
 \end{itemize}
 
 
@@ -194,6 +211,6 @@ La base de datos final consta de 37563 segundos de actividad capturada en 274 se
   Unidades medida & $m/s^2$ & \\
   Resolución del Sensor & 0,0011 $m/s^2$ &  \\
   Valor Máximo & 60$m/s^2$ & \\
-}
+}{2}
 
 

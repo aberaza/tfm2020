@@ -13,31 +13,8 @@ Measurable (se pueda medir el éxito o fracaso)
 Attainable (viable su conecución con el tiempo y recursos disponibles)
 Relevant (que tenga un impacto demostrable)
 Time-related (que se pueda realizar en un tiempo determinado)
-\end{comment}
 
-\section{Objetivo General}\label{sec:obj:objetivo_general}
-%\begin{comment}
-%Un poco la descripción a grandes rasgos de qué se espera explicado al público general.
-%Ejemplo: Mejorar el servicio de audio gruía de un museo con una guía interactiva por voz valorada positivamente con un 4/5 al menos.
-%\end{comment}
-
-Al término de este trabajo se presentará una implementación de un sistema de detección de caídas autónomo sobre un dispositivo vestible del tipo \textit{smartwatch} con una precisión mayor a la disponible en los sistemas vestibles actuales y comparable a la de los sistemas basados en aprendizaje automático.
-
-\section{Objetivos Específicos}\label{sec:obj:objetivos_especificos}
-
-Dividiremos el trabajo a realizar en los siguientes metas con la idea de compartimentar el trabajo y facilitar su posterior evaluación y valoración del cumplimiento de los mismos.
-
-\begin{enumerate}
-  \item Identificar los requisitos funcionales que debe cumplir un sistema de detección de caídas.
-  \item Diseñar o determinar un algoritmo eficiente para la detección de caídas: Debe tener bajo coste de cómputo sin sacrificar la fiabilidad.
-  \item Implementar un modelo basado en el algoritmo anterior.
-  \item Comparar y evaluar el modelo implementado frente a otros algoritmos existentes para analizar su eficiencia y viabilidad.
-  \item Establecer e implementar un sistema de detección de caídas usando el modelo previamente definido y validado.
-  \item Analizar los resultados del sistema y su viabilidad como solución al problema de la detección de caídas.
-
-\end{enumerate}
-
-\begin{comment}
+Objetivos secundarios:
 Conjunto de objetivos más específicos alcanzables por separado. suelen ser los diferentes pasos a seguir para conseguir el objetivo general. Han de ser smart, los verbos deberían ser:     • Analizar
 Calcular
 Clasificar
@@ -55,15 +32,34 @@ Indagar
 Medir
 Sintetizar
 Verificar
+
+Objetivo general
+Un poco la descripción a grandes rasgos de qué se espera explicado al público general.
+Ejemplo: Mejorar el servicio de audio gruía de un museo con una guía interactiva por voz valorada positivamente con un 4/5 al menos.
+
 \end{comment}
 
-\section{Metodología de trabajo}
+\section{Objetivo General}\label{sec:obj:objetivo_general}
+Al término de este trabajo se presentará una implementación de un sistema de detección de caídas autónomo sobre un dispositivo vestible del tipo \textit{smartwatch} con una precisión mayor a la disponible en los sistemas vestibles actuales y comparable a la de los sistemas basados en aprendizaje automático.
 
+\section{Objetivos Específicos}\label{sec:obj:objetivos_especificos}
+Dividiremos el trabajo a realizar en los siguientes metas con la idea de compartimentar el trabajo y facilitar su posterior evaluación y valoración del cumplimiento de los mismos.
+
+\begin{enumerate}
+  \item Identificar los requisitos funcionales que debe cumplir un sistema de detección de caídas.
+  \item Diseñar o determinar un algoritmo eficiente para la detección de caídas: Debe tener bajo coste de cómputo sin sacrificar la fiabilidad.
+  \item Implementar un modelo basado en el algoritmo anterior.
+  \item Comparar y evaluar el modelo implementado frente a otros algoritmos existentes para analizar su eficiencia y viabilidad.
+  \item Establecer e implementar un sistema de detección de caídas usando el modelo previamente definido y validado.
+  \item Analizar los resultados del sistema y su viabilidad como solución al problema de la detección de caídas.
+
+\end{enumerate}
+
+\section{Metodología de trabajo}
 Se van a abordar muchas y muy variadas tareas, por lo que es fundamental establecer una jerarquía y organización entre estas. Definimos aquí las principales etapas del proceso seguido:
 
 \subsection{Documentación previa}
-
-Una vez definido del objetivo general definido en la sección \ref{sec:obj:objetivo_general} es necesario adquirir un conocimiento del contexto y estado de la tecnología en el área definida. Para ello es necesario recopilar información de diversas fuentes y publicaciones. Validaremos este punto definiendo:
+Una vez definido del objetivo general definido en la \autoref{sec:obj:objetivo_general} es necesario adquirir un conocimiento del contexto y estado de la tecnología en el área definida. Para ello es necesario recopilar información de diversas fuentes y publicaciones. Validaremos este punto definiendo:
 \begin{itemize}
   \item Un modelo y algoritmo que a priori permita realizar la tarea propuesta.
   \item El índice o índices necesarios para alimentar al modelo.
@@ -105,4 +101,3 @@ Partiendo del modelo anterior, crearemos una aplicación que capture y procese l
 \subsection{Validación en uso real}
 Dada la naturaleza del evento a estudiar es complejo realizar una validación experimental con muestras suficientes. Sin embargo esta etapa debe proveer el punto de vista del usuario final sobre el sistema así, su experiencia de uso, adecuación de la solución al problema y posibles ejes de mejora. Los datos recogidos por la aplicación deben ser analizados para detectar puntos de mejora a proponer para posteriores estudios o evoluciones.
 
-% \end{document}

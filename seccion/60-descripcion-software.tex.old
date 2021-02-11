@@ -161,12 +161,6 @@ Como en toda imlpementación, el
 
 \section{Plataforma}
 \todo{justificar cada una de estas decisiones}
-Para el servidor optamos por una arquitectura de microservicios usando la plataforma de AWS Lambda con almacenamiento en S3
-
-Para el dispositivo móvil usamos un reloj inteligente Fossil Sport con sistema operativo WearOS y por tanto compatible con el ecosistema Android.
-
-El la generación, entrenamiento, análisis y evaluación de modelos se realiza usando Keras/Tensorflow corriendo en la plataforma Google Colab.
-
 \section{Arquitectura}\label{desc_archi}
 \warn{según la profe punto muy interesante, a pulir }
 

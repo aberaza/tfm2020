@@ -27,7 +27,7 @@ De la misma forma que analizamos el comportamiento del algoritmo de Bourke en la
   0,45 & 3          & 45,8  \\
   0,53 & 5          & 51,8  \\
   0,63 & 10         & 57,8  \\
-}
+}{2}
 
 Comparando los resultados con los del modelo de Bourke, se observa un primer fenómeno de compresión del espacio de resultados: mientras que el caso de Bourke la distribución de los valores de pico cubría un rango muy amplio, en el caso del error RMSE el rango obtenido más reducido. Si analizamos los datos de la tabla \ref{tab:eval:hibrid:percentiles} 
 
@@ -57,21 +57,21 @@ Sensitividad (\%) & 100   & 99,2 &           & 98,73       & 94,09     & 81,47  
 Especificidad (\%)& 34,4  & 64,7 &           & 97,93       & 99,94     & 99,57   & 99,88   \\
 Accuracy (\%)     &       &      &           & 98,33       & 99,17     & 96,88   & 98,13   \\
 Tiempo(s)         & 0,065 & 0,06 &           &             &           &         &         \\
-}
+}{3}
 
-\figura{CompositeFallNormalRMSHistogram_t-25}{fig:GRU_predictionRMS_Histogram}{Histograma de los errores de predicción del modelo GRU\todo{Se han mezclado muestras de caidas en el entrenamiento y el modelo. Repitiendo el entrenamiento.}}
+\figura{CompositeFallNormalRMSHistogram_t-25}{fig:GRU_predictionRMS_Histogram}{Histograma de los errores de predicción del modelo GRU\todo{Se han mezclado muestras de caídas en el entrenamiento y el modelo. Repitiendo el entrenamiento.}}
 
 En la tabla\ref{tab:analiticResults} se muestran los resultados de los modelos basados en métodos analíticos. Su importancia para este estudio proviene del hecho de que son los métodos más extendidos en los sistemas disponibles hoy en día y establecen por tanto el nivel a superar. Se muestra también los resultados obtenidos para el clasificador bourke utilizado a modo comparativo y de validación del resultado obtenido.
 
 \begin{comment}
 \tablas{tab:analiticResults}{Resultados de sistemas basados en métodos analíticos}{l|c|c|c|c}{
-              & Yo        & Yo      & SisFALL & SisFALL \\
+              & \emph{iFell} & \emph{iFell} & \emph{SisFALL} & \emph{SisFALL} \\
               & Bourke    & Hibrido & Cotas(SumVect)  & Cotas(SV) 100\%Sens \\ \midrule
 Sensitividad (\%) & 99,4  &    91,13   & 94,28 & 100  \\
 Especificidad (\%) & 29,7 &   42,88    & 96,13 & 32,9 \\
 Accuracy (\%) & 64,55 &     67  & 95,21 & 66,43 \\
 Tiempo (s)    & 0     & 2,5     & 0       & \\
-}
+}{3}
 \warn{Falta extraer Lim2014 con sisfall y comparar}
 \end{comment}
 \subsection{Mixto Bourke + GRU}

@@ -1,34 +1,150 @@
 % !TeX root = ../tfm.tex
 %! TEX root = ../tfm.tex
 
+\section{Entorno Colab}\label{app:colab}
+Los siguientes listados son resultado de ejecutar los comandos indicados en instancias de Colab.
+
+\subsection{/proc/cpuinfo}
+
+\begin{lstlisting}[language=bash,tabsize=2,name=cpuinfo,frame=single]
+!cat /proc/cpuinfo
+\end{lstlisting}
+\begin{lstlisting}[language=bash,name=cpuinfo,backgroundcolor=\color{Gray!20},lineskip=-1pt,basicstyle=\footnotesize]
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 79
+model name	: Intel(R) Xeon(R) CPU @ 2.20GHz
+stepping	: 0
+microcode	: 0x1
+cpu MHz		: 2199.998
+cache size	: 56320 KB
+physical id	: 0
+siblings	: 2
+core id		: 0
+cpu cores	: 1
+apicid		: 0
+initial apicid	: 0
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology nonstop_tsc cpuid tsc_known_freq pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs ibpb stibp fsgsbase tsc_adjust bmi1 hle avx2 smep bmi2 erms invpcid rtm rdseed adx smap xsaveopt arat md_clear arch_capabilities
+bugs		: cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs taa
+bogomips	: 4399.99
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 46 bits physical, 48 bits virtual
+power management:
+
+processor	: 1
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 79
+model name	: Intel(R) Xeon(R) CPU @ 2.20GHz
+stepping	: 0
+microcode	: 0x1
+cpu MHz		: 2199.998
+cache size	: 56320 KB
+physical id	: 0
+siblings	: 2
+core id		: 0
+cpu cores	: 1
+apicid		: 1
+initial apicid	: 1
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology nonstop_tsc cpuid tsc_known_freq pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs ibpb stibp fsgsbase tsc_adjust bmi1 hle avx2 smep bmi2 erms invpcid rtm rdseed adx smap xsaveopt arat md_clear arch_capabilities
+bugs		: cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs taa
+bogomips	: 4399.99
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 46 bits physical, 48 bits virtual
+power management:
+\end{lstlisting}
+
+\subsection{/proc/meminfo}
+\begin{lstlisting}[language=bash,tabsize=2,name=cpuinfo,frame=single]
+!cat /proc/meminfo
+\end{lstlisting}
+\begin{lstlisting}[language=bash,name=cpuinfo,backgroundcolor=\color{Gray!20},lineskip=-1pt,basicstyle=\footnotesize]
+MemTotal:       13333596 kB
+MemFree:        10865600 kB
+MemAvailable:   12530440 kB
+Buffers:           78104 kB
+Cached:          1728664 kB
+SwapCached:            0 kB
+Active:           916132 kB
+Inactive:        1283728 kB
+Active(anon):     359860 kB
+Inactive(anon):      348 kB
+Active(file):     556272 kB
+Inactive(file):  1283380 kB
+Unevictable:           0 kB
+Mlocked:               0 kB
+SwapTotal:             0 kB
+SwapFree:              0 kB
+Dirty:               604 kB
+Writeback:             0 kB
+AnonPages:        393072 kB
+Mapped:           214572 kB
+Shmem:               980 kB
+Slab:             174540 kB
+SReclaimable:     131940 kB
+SUnreclaim:        42600 kB
+KernelStack:        3840 kB
+PageTables:         5196 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:     6666796 kB
+Committed_AS:    2884120 kB
+VmallocTotal:   34359738367 kB
+VmallocUsed:           0 kB
+VmallocChunk:          0 kB
+Percpu:             1024 kB
+AnonHugePages:         0 kB
+ShmemHugePages:        0 kB
+ShmemPmdMapped:        0 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+Hugetlb:               0 kB
+DirectMap4k:       89320 kB
+DirectMap2M:     4104192 kB
+DirectMap1G:    11534336 kB
+\end{lstlisting}
+
 \section{Dispositivo: Fossil Sport Gen 3} \label{app:fossil}
 
 \subsubsection{Especificiaciones}
-\warn{Las tablas no aparecen por alguna razón, verificar}
 
-\tablas{tab:watch-specs}{Especificaciones del dispositivo de referencia}{|l|c|}{
-  Nombre              & Fossil Gen3 Sport \\ \midrule
-  Tamaño Pantalla     & 1,4" \\ \midrule
-  Formato de Pantalla & Circular \\
-  Tipo de Pantalla    & Táctil color (AMOLED) \\
-  Resolución Pantalla & 454 x 454 px \\
-  Bluetooth           & 4.1 \\
-  Wifi & 802.11 b/g/n \\
-  ROM                 & 4GBytes \\
-  RAM                 & 512MBytes \\
-  CPU                 & Snapdragon 2100 \\
-  OS & WearOS 2 \\
-  Sensor Freq. Cardiaca & Si \\
-  Giroscopio & Si \\
-  Aclerómetro & 3 ejes \\
-}
+\tablas{tab:watch-specs}{Especificaciones del dispositivo de referencia}{lc}{
+  \emph{Nombre}              & Fossil Gen3 Sport \\
+  \emph{Tamaño Pantalla}     & 1,4" \\
+  \emph{Formato de Pantalla} & Circular \\
+  \emph{Tipo de Pantalla}    & Táctil color (AMOLED) \\
+  \emph{Resolución Pantalla} & 454 x 454 px \\
+  \emph{Bluetooth}           & 4.1 \\
+  \emph{Wifi}                & 802.11 b/g/n \\
+  \emph{ROM}                 & 4GBytes \\
+  \emph{RAM}                 & 512MBytes \\
+  \emph{CPU}                 & Snapdragon 2100 \\
+  \emph{OS}                  & WearOS 2 \\
+  \emph{Sensor Freq. Cardiaca} & Si \\
+  \emph{Giroscopio}          & Si \\
+  \emph{Acelerómetro}         & 3 ejes \\
+}{1}
 
 \subsection{Sensores}
-\tablas{tab:watch-accelerometer}{Datos Acelerómetro}{|l|c|}{
-Ejes & 3 \\
-Valor Máximo & 384,8867$m/s^2$ \\
-Resolución & 0,00119$m/s^2$\\
-}
+\tablas{tab:watch-accelerometer}{Datos Acelerómetro}{lc}{
+  \emph{Ejes} & 3 \\
+  \emph{Valor Máximo} & 384,8867$m/s^2$ \\
+  \emph{Resolución} & 0,00119$m/s^2$\\
+}{2}
 
-\info{Aunar aquí la información sobre el reloj dispersa por todo el trabajo}
 

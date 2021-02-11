@@ -72,7 +72,7 @@ Dado que posteriormente submuestrearemos la señal a 25Hz y que sabemos que en e
 %https://en.wikipedia.org/wiki/Low-pass_filter#Simple_infinite_impulse_response_filter
 \end{comment}
 
-El interés de realizar un filtrado prevo al subsampleado puede observarse al compararse los resultados expuestos en la figura \ref{fig:iir} en ella se observa la destrucción de información producida por el muestreado de la señal. Se aprecia claramente como en las curvas de la figura\ref{sig:signalIIRFilter25} en que se ha muestreado la señal sin filtrado previo se ha aplanado en exceso. Resultado especialmente nocivo para nuestro modelo analítico que se basa precisamente en detectar estos picos valles.
+El interés de realizar un filtrado prevo al subsampleado puede observarse al compararse los resultados expuestos en la figura \ref{fig:iir} en ella se observa la destrucción de información producida por el muestreado de la señal. Se aprecia claramente como en las curvas de la figura\ref{fig:signalIIRFilter25} en que se ha muestreado la señal sin filtrado previo se ha aplanado en exceso. Resultado especialmente nocivo para nuestro modelo analítico que se basa precisamente en detectar estos picos valles.
 
 \begin{figure}[htb!]
   \centering
@@ -160,7 +160,7 @@ Tomando el conjunto de datos de entrenamiento previamente filtrado y submuestrea
     Cota & p. 0\%         & p. 1\% & p. 3\% & p. 10\%\\ \midrule
     UFT  & \textbf{4,16g} & 5,77g  & 6,67g  & 8,69g\\
     LFT  & \textbf{0,97g} & 0,86g  & 0,81g  & 0,68g\\
-  }
+  }{3}
 
 Este modelo tiene la desventaja de tener una especificidad muy baja. Los resultados sobre SisFall nos arrojan un valor para las cotas de 0,971g para el valle y 4,164g para el pico (en la tabla \ref{tab:bourke:valores} se presentan los resultados para otros percentiles). Con estos valores se consigue una especificidad de tan solo el 28,7\% mientras que la sensibilidad se queda en 97,2\% usando Bourke estándar (lo designaremos como modelo \textit{BourkeUL} en adelante). Repetimos el experimento iterando sobre dos variaciones del modelo de Bourke: \textit{BourkeU} que busca únicamente los casos que superan la cota de pico y \textit{BourkeL} que hace lo propio con los valles. También variamos el valor de las cotas según el porcentaje de caídas que cumplen dicha cuota en cada caso. En la figura \ref{fig:bourke_cfmatrix} se muestran las matrices de confusión y los valores de sensibilidad y especificidad para cada combinación.
 
@@ -188,7 +188,7 @@ Al contrario que la mayoría de sistemas existentes para la detección de caída
 
 \subsubsection{Modelo Recurrente basado en codificador/decodificador}
 
-Los modelos codificador/decodificador (véase la figura \fig{fig:modelo:encoderdecoder}), también referidos a veces como secuencia-a-secuencia se pueden entender como dos sistemas independientes: el \textit{codificador} y el \textit{decodificador}. El codificador realiza una conversión y reducción del espacio dimensional de una secuencia de entrada, intentando mantener intacta la información presente. Realiza por tanto una extracción de características de la secuencia de entrada. Evidentemente, a mayor reducción en las dimensiones del espacio de salida del codificador, mayor será la pérdida de información. Por su parte, el decodificador realiza la tarea inversa. Tomando como secuencia de entrada una de las representaciones obtenidas realiza una interpretación de las características para generar una secuencia de salida en otro espacio de resultados. Las aplicaciones son muy variadas, desde el análisis de sentimiento, compresión de series o traducción del lenguaje, a la generación de espacios de representación multimodo (por ejemplo, la descripción de una imagen o la generación de una imagen desde una descripción). 
+Los modelos codificador/decodificador (véase la figura \ref{fig:modelo:encoderdecoder}), también referidos a veces como secuencia-a-secuencia se pueden entender como dos sistemas independientes: el \textit{codificador} y el \textit{decodificador}. El codificador realiza una conversión y reducción del espacio dimensional de una secuencia de entrada, intentando mantener intacta la información presente. Realiza por tanto una extracción de características de la secuencia de entrada. Evidentemente, a mayor reducción en las dimensiones del espacio de salida del codificador, mayor será la pérdida de información. Por su parte, el decodificador realiza la tarea inversa. Tomando como secuencia de entrada una de las representaciones obtenidas realiza una interpretación de las características para generar una secuencia de salida en otro espacio de resultados. Las aplicaciones son muy variadas, desde el análisis de sentimiento, compresión de series o traducción del lenguaje, a la generación de espacios de representación multimodo (por ejemplo, la descripción de una imagen o la generación de una imagen desde una descripción). 
 
 En nuestro caso optamos por una estructura en que el espacio de entrada y salida de la red es el mismo, y por tanto realizamos una compresión y descompresión de la señal. A partir de la serie de muestras $X$de longitud $n$, obtenemos un vector de características $C=codificador(X)=\{c_1,\cdots,c_l\}$ de longitud $l<n$. Posteriormente inyectamos este vector de características como entrada a una segunda red recurrente, el decodificador, que reconstruye una aproximación de la secuencia original $Y=decodificador(C)=\hat{X}$.
 
@@ -249,7 +249,7 @@ Con la estructura original restituida, convertimos el modelo a TensorFlow Lite c
   Dynamic   & 3.9         & 1.110 & -     &       &           \\
 }{
 \item [1] Tras restitución de la red.
-}
+}{3}
 
 Como se observa en los resultados de la tabla \ref{ŧab:quant:resultados}, podemos obtener modelos con menos de la mitad del tamaño de la red original,con un impacto controlado y mínimo en la capacidad predictiva de la red y una mejora de un orden de magnitud en el tiempo de ejecución. Si bien esta mejora depende de la presencia o no de una unidad GPU o de cálculo en coma flotante. Si se da alguno de estos supuestos, los modelos con cuantización a coma flotante de precisión reducida mantienen las ventajas de la aceleración de estas unidades de cálculo con una degradación mínima de la precisión a costa de una menor compresión en tamaño. De no poseer de estas unidades especializadas de cálculo, los dos modelos con conversión de parámetros a enteros de 8 bits ofrecen el mejor rendimiento, aunque la degradación en la precisión del modelo puede ser excesiva según la aplicación. 
 
