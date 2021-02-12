@@ -1,23 +1,37 @@
+% !TeX root = ../tfm.tex
+%! TEX root = ../tfm.tex
 \documentclass[tikz=true]{standalone}
 \usepackage{definitions}
 \begin{document}
-\begin{tikzpicture}[node distance=2cm]
+\begin{tikzpicture}[node distance=2cm, inner sep=2pt, outer sep=2pt]
   % Nodos
   \node (start) [startstop] {Inicio};
   \node[process, below of=start] (readAccel) {Leer Muestra};
   \node (accel) [io, left of=readAccel, xshift=-3cm] {Acelerómetro};
-  \node (estaLleno) [decision, below of=readAccel, yshift=-1.5cm] {buffer completo?};
-  \node[process, below of=estaLleno, yshift=-1.5cm] (comparar) {Comparar con n-1};
-  \node (mayorCota)[decision, below of=comparar, yshift=-1.5cm] {Supera cuota 1?};
+  \node (isRec) [decision, right of=readAccel, xshift=2cm] {¿Grabando?};
+  \node[process, right of=estaLleno, below of=isRec, xshift=3cm, yshift=-1.5cm](guardarMuestra){Guardar muestra};
+  \node (hayActividad) [decision, below of=guardarMuestra, yshift=-3cm,align=center] {¿Sigue la\\actividad?};
+  \node[startstop, right of=hayActividad, align=center, xshift=2.5cm] (sendSession) {Guardar Sesión\\en AWS};
+  \node[startstop, below of=sendSession, yshift=-2cm] (stopRec) {Dejar de grabar};
+  \node (estaLleno) [decision, below of=readAccel, yshift=-1.5cm,align=center] {¿Buffer\\completo?};
+  \node[process, below of=estaLleno, yshift=-1.5cm] (comparar) {Comparar con $n-1$};
+  \node (mayorCota)[decision, below of=comparar, yshift=-1.5cm,align=center] {¿Movimiento\\repentino?};
   \node (promedioBuffer) [process, right of=mayorCota, xshift=3cm] {Aceleración Promedio};
-  \node (guardar) [process, below of=mayorCota, yshift=-1.5cm] {Guardar Buffer};
-  \node[decision, below of=promedioBuffer, yshift=-1.5cm] (mayorPromedio) {Supera cuota 2?};
-
+  \node (guardar) [startstop, below of=mayorCota, yshift=-1.5cm] {Grabando};
+  \node[decision, below of=promedioBuffer, yshift=-1.5cm,align=center] (mayorPromedio) {¿Movimiento\\prolongado?};
+  \node[right of=stopRec](margen){};
   % Flechas
   \draw [arrow] (start) -- (readAccel);
   \draw [arrow] (accel) -- (readAccel);
-  \draw [arrow] (readAccel) -- (estaLleno);
-  \draw [arrow] (estaLleno) -- node[anchor=east] {no} (readAccel);
+  \draw [arrow] (readAccel) -- (isRec);
+  \draw [arrow] (isRec) |- node[anchor=west] {no} (estaLleno);
+  \draw [arrow] (isRec) -| node[near start, anchor=south] {si} (guardarMuestra);
+  \draw [arrow] (guardarMuestra) -- (hayActividad);
+  \draw[->] (hayActividad) --++ (0,-8cm) node [near start, anchor=west] {si} -| (accel);
+  \draw [arrow] (hayActividad) -- node[anchor=south]{no} (sendSession);
+  \draw [arrow] (sendSession) -- (stopRec);
+  \draw[->] (stopRec) --++ (0,-4cm) -| (accel);
+  \draw [arrow] (estaLleno) -| node[near start,anchor=south] {no} (accel);
   \draw [arrow] (estaLleno) -- node[anchor=east] {si}(comparar);
   \draw [arrow] (comparar) -- (mayorCota);
   \draw [arrow] (mayorCota) -- node[anchor=east] {si} (guardar);
@@ -25,6 +39,7 @@
   \draw [arrow] (guardar) -| (accel);
   \draw [arrow] (promedioBuffer) -- (mayorPromedio);
   \draw [arrow] (mayorPromedio) --node[anchor=south] {si}(guardar);
-  \draw [arrow] (mayorPromedio) -- +(0,-2.5cm) --node[anchor=south]{no} +(-10,-2.5cm) -- (accel);
+  \draw [arrow] (mayorPromedio) --++(0, -2.5cm) node[near start, anchor=west]{no} -| (accel)
+  % \draw [arrow] (mayorPromedio) --++(0,-2.5cm) node[near start,anchor=west]{no} +(-10,-2.5cm) -- (accel);
 \end{tikzpicture}
 \end{document}
