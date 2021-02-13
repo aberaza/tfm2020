@@ -2,10 +2,8 @@
 %! TEX root = ../tfm.tex
 % !TeX root = ../tfm.tex
 
-\section{Captura de datos y creación del dataset}
-
+\section{Captura de datos y creación de la base de datos}
 \subsection{Necesidad}
-
 Dos son las principales causas que motivan la tarea de generar un conjunto de datos propios para la realización de este trabajo: su caracter de prototipo experimental y la carestía de conjuntos de datos aplicables al probelma y materiales disponibles públicamente. Como mencionaremos, ambas causas suponen un fuerte peso en la decisión final.
 
 Los conjuntos de datos existentes hoy en día son todavía escasos, y la gran mayoría están orientados a las necesidades específicas del estudio para el que fueron creados. Ya sea por las diferencias en los dispositivos de captura, posición de los mismos o incluso actividades registradas, o simplemente por contener información irrelevante al problema, es difícil aplicar o reutilizar estos base de datos en otros proyectos. Existen cada vez mas proyectos que pretenden solventar esta situación, muchos orientados al discernimiento y clasificación de actividades humanas, como son \cite{Anguita2013,ReyesOrtiz2014}, (estadísticas en \url{https://github.com/srvds/Human-Activity-Recognition}). En \cite{Casilari2020} se recoge un listado de 21 conjuntos de datos y sus especificaciones entre los que destacan MobiFall\cite{MobiFall}/MobiAct\cite{MobiAct}, SisFall\cite{Sucerquia2017}, UMAFall\cite{Edu/UMA/2017}, tFall\cite{tfall} y ProjectGravity\cite{Vilarinho2015} por ser los más utilizados. Sin embargo estos conjuntos de datos no cumplen todos los requisitos necesarios para entrenar modelos para la plataforma de hardware usada o para el tipo de procesado usado en este proyecto.
@@ -14,7 +12,7 @@ Estas diferencias, ya sea en el tipo de datos recogidos, el formato de los mismo
 
 En un principio la labor de capturar y generar un nuevo conjunto de datos de entrenamiento parece una tarea desorbitada. Sin embargo, por las peculliaridades del sistema de detección usado se ve rápidamente reducida al mero hecho de capturar series temporales de las medidas de la aceleración y filtrar o separar aquellas que se correspondan con caídas. Afortunadamente para los participantes, durante todo el proceso de captura ninguno de los sujetos sufrió una caída, facilitando enormemente la labor de recolección y limpieza de los datos, aunque impidiendo la validación del dispositivo de forma experimental al no disponer de suficientes casos de caídas para obtener métricas de calidad.
 
-\subsection{Captura de datos: AccelCapture}\label{app:accelcapture}
+\subsection{Captura de datos:\accelcapture/}\label{app:accelcapture}
 
 Con el fin de obtener un conjunto de datos para el entrenamiento, test y validación del sistema, se opta por implementar una primera aplicación para la plataforma de desarrollo.
 
@@ -34,16 +32,4 @@ Si disponibles (y no es nunca) actividad realizada tal y como es automáticament
 
 En un primer instante, durante el proceso de captura de datos se analiza un subconjunto con unas 200 muestras capturadas para observar las propiedades de los datos. Mediante un estudio de la periodicidad usando autoconvolución de las secuencias para buscar la posible periodicidad de los eventos. Como puede observarse en los resultados, obtenemos que las secuencias tienen poca correlación consigo mismas y por tanto a medio y largo plazo ninguna dependencia temporal. Así pues y como conviene a nuestro experimento decidimos trabajar con subsecuencias que llamaremos eventos. Estos eventos tendrán una relación de XXX muestras y como puede comprobarse al repetir los análisis de autocorrelación, si guardan una mayor dependencia temporal consigo mismo y con los eventos vecinos de la misma secuencia temporal. El objetivo de estos eventos es poder contener una acción completa (ya sea el gesto de mirar la hora, una zancada o una caida). Esta noción de evento será reciclada en el transcurso de la implementación de solución final convirtiéndose en el episodio a predecir de la red LSTM.
 
-
-
-
-\iffalse
-%todo este contenido no se tiene en cuenta, es como un comentario de bloque
-\begin{figure}[!ht]
-  \centering
-  \includestandalone[width=\textwidth]{capturaFlujo}
-\caption{\label{fig:capturaFlow} Flujo de trabajo de la aplicación de captura de datos}
-\end{figure}
-
-\fi
 

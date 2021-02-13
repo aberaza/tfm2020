@@ -28,7 +28,7 @@
 
 % Como es un book no hay \paragraph, lo creamos
 \renewcommand{\paragraph}[1]{\noindent{\small\textsl{\textbf{#1}}}\quad}
-% Fix unicode character - U+2212 not setup with latex 
+% Fix unicode character - U+2212 not setup with latex
 % \usepackage[utf8]{inputenc}
 \DeclareUnicodeCharacter{2212}{-}
 % \newunicodechar{−}{\ensuremath{⎯}}
@@ -331,3 +331,11 @@
 % Necesita hyperref
 \newcommand*{\fullref}[1]{\hyperref[{#1}]{\autoref*{#1}: \textit{\nameref*{#1}}}} % Sección 3.2 Titulo de la sección
 
+
+%% Vocabulario y palabrejos especiales
+
+\def\accelcapture/{\textsl{\textsf{Accel}}\textsf{Capture}}
+\def\ifell/{\textsl{\textsf{i}}\textsf{Fell}}
+\def\sisfall/{\textsc{SisFALL}}
+\def\tflow/{\textsf{TensorFlow}}
+\def\tflite/{\textsf{TensorFlow}~{\footnotesize\texttt{Lite}}}

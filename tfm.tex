@@ -13,7 +13,7 @@
 \usepackage{definitions}
 \usepackage{verbatim} % to use \begin{comment} for block comments
 
-%tablas más presentablesi 
+%tablas más presentables 
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{rotating}
@@ -102,14 +102,10 @@
 %\subfile{seccion/10-abstract.en.tex}
 \input{seccion/10-abstract.en.tex}
 
-
-
 \chapter{Introducción}\label{chap:intro}
-%\subfile{seccion/20-introduccion}
 \input{seccion/20-introduccion}
 
 \chapter{Contexto y Estado del Arte}\label{chap:stateofart}
-%\subfile{seccion/30-estado-arte}
 \input{seccion/30-estado-arte}
 
 \chapter{Objetivos}\label{chap:objetivos}
@@ -120,9 +116,11 @@
 
 \chapter{Generación de la base de datos}\label{chap:generar:dataset}
 \input{seccion/60-generar-dataset}
+% Esta sección añade MUCHOS errores,especialmente captura flujo tex 
 
 \chapter{Desarrollo de la aplicación}\label{chap:desarrollo:algoritmo}
-\input{seccion/65-descripcion-software}
+\input{seccion/65-descripcion-software} 
+%Añade errores pero sobretodo son referencias
 
 
 \chapter{Evaluación}\label{chap:eval}
@@ -132,8 +130,8 @@
 \input{seccion/80-conclusiones}
 
 
-%\bibliographystyle{unsrt}
-%\bibliographystyle{apalike}
+% \bibliographystyle{unsrt}
+% \bibliographystyle{apalike}
 \newpage %necesario? parece que con apacite si
 \bibliographystyle{apacite} % usa apacite y parece no funcionar, pero es el bueno
 \bibliography{tfm}

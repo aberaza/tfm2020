@@ -7,7 +7,7 @@ Como ya hemos presentado anteriormente en la sección \ref{sec:req:bases_datos},
 
 \section{Elección y definición de la plataforma}\label{sec:imp:plataforma}
 
-Tras el análisis de requisitos se concreta la plataforma de servicios en la nube, dispositivo y entorno de desarrollo y pruebas a utilizar. 
+Tras el análisis de requisitos se concreta la plataforma de servicios en la nube, dispositivo y entorno de desarrollo y pruebas a utilizar.
 
 \paragraph{Plataforma de red}\\
 Para el servidor optamos por una arquitectura de microservicios usando la plataforma de AWS Lambda con almacenamiento en S3. Como ya se ha expuesto en el análisi de requisitos, esta plataforma integra todas las funciones requeridas y permite su programación en \textit{JavaScript}, lenguaje con el que el autor está familiarizado. Además, dispone de una interfaz de programación pública que permitirá facilitar la generación y entrenamiento de modelos.
@@ -18,26 +18,26 @@ Para el dispositivo móvil usamos un reloj inteligente Fossil Sport Gen. 3 con s
 Esta plataforma cumple con las exigencias funcionales ya que permite desarrollar aplicaciones y portar modelos de redes de neuronas usando \textit{TensorFlow Lite}. Al contar con 512MBytes de memoria RAM, nos permitirá cargar modelos de tamaño pequeño o medio, aunque sea probablemente el procesador quien limite el tamaño del modelo debido a su baja capacidad de cálculo al disponer de una GPU muy limitada, si bien es uno de los microprocesadores más potentes que pueden encontrarse en el mercado de dispositivos llevables sin reducir en exceso la autonomía, como ya hemos visto. El dispositivo además se ofrece a un precio competitivo (cercano a los 100€) que sin ser un requisito si es un punto a tener en cuenta. Mas información sobre el mismo, características técnicas y sensores se encuentran listadas en el \autoref{app:plataforma}.
 
 \paragraph{Entorno de desarrollo}\\
-El la generación, entrenamiento, análisis y evaluación de modelos se realiza usando Keras/Tensorflow corriendo en la plataforma Google Colab (\url{https://research.google/}). Este entorno permite generar y trabajar con modelos TensorFlow y TensorFlow Lite y al basarse en Python 3.x es fácil integrar la generación de modelos con el sistema de servidor en la nube de AWS (con librerías como \textit{boto3} (\url{https://github.com/boto/boto3}). En concreto el sistema guardará todos los modelos generados, historial del entrenamiento, gráficas y resultados varios en el servidor, y recuperará los datos de entrenamiento (tanto las sesiones obtenidas con \textit{AccelCapture} como \textit{SisFALL}) del mismo de forma dinámica. Colab permite ejecutar el código en potentes servidores multiprocesador con unidades GPU y/o TPU. En la \autoref{app:colab} se encuentran listados con información de los servidores.
+El la generación, entrenamiento, análisis y evaluación de modelos se realiza usando Keras/Tensorflow corriendo en la plataforma Google Colab (\url{https://research.google/}). Este entorno permite generar y trabajar con modelos TensorFlow y TensorFlow Lite y al basarse en Python 3.x es fácil integrar la generación de modelos con el sistema de servidor en la nube de AWS (con librerías como \textit{boto3} (\url{https://github.com/boto/boto3}). En concreto el sistema guardará todos los modelos generados, historial del entrenamiento, gráficas y resultados varios en el servidor, y recuperará los datos de entrenamiento (tanto las sesiones obtenidas con \accelcapture/ como \textit{SisFALL}) del mismo de forma dinámica. Colab permite ejecutar el código en potentes servidores multiprocesador con unidades GPU y/o TPU. En la \autoref{app:colab} se encuentran listados con información de los servidores.
 
 
-\section{Captura de datos: AccelCapture}\label{sec:imp:accelcapture}
+\section{Captura de datos: \accelcapture/}\label{sec:imp:accelcapture}
 
-Bautizamos como \textit{AccelCapture} al sistema de adquisición de tramas o secuencias de la aceleración registrada por el sensor situado en un reloj inteligente son sistema operativo \textit{WearOS}. La aplicación está diseñada para una vez activada, ejecutarse en segundo plano, detectando actividad, guardando las medidas del acelerómetro y enviando estas secuencias de medidas al un servidor por Internet.
+Bautizamos como \accelcapture/ al sistema de adquisición de tramas o secuencias de la aceleración registrada por el sensor situado en un reloj inteligente son sistema operativo \textit{WearOS}. La aplicación está diseñada para una vez activada, ejecutarse en segundo plano, detectando actividad, guardando las medidas del acelerómetro y enviando estas secuencias de medidas al un servidor por Internet.
 
-Con esta aplicación el objetivo es doble: probar las capacidades del sistema para albergar la futura implementación del sistema de detección de caídas y obtener un conjunto suficiente de datos para realizar el entrenamiento del modelo de detección de caídas que se usará en el sistema. Dado que la arquitectura de \textit{AccelCapture} como de la futura \textit{iFell} (la aplicación de detección de caídas en si) comparten gran similitud en su estructura o arquitectura y comparten algunos módulos o clases.
+Con esta aplicación el objetivo es doble: probar las capacidades del sistema para albergar la futura implementación del sistema de detección de caídas y obtener un conjunto suficiente de datos para realizar el entrenamiento del modelo de detección de caídas que se usará en el sistema. Dado que la arquitectura de \accelcapture/ como de la futura \textit{iFell} (la aplicación de detección de caídas en si) comparten gran similitud en su estructura o arquitectura y comparten algunos módulos o clases.
 
-El código de las funciones lambda AWS puede consultarse el el apéndice \ref{app:code:accelcapturelambda} mientras que el de la aplicación AccelCapture está disponible para descarga en \url{https://github.com/aberaza/accelCapture}.
+El código de las funciones lambda AWS puede consultarse el el apéndice \ref{app:code:accelcapturelambda} mientras que el de la aplicación\accelcapture/ está disponible para descarga en \url{https://github.com/aberaza/accelCapture}.
 
 \subsection{Funcionamiento de la aplicación}\label{sub:accelcapture:flujo}
 
-La función principal de \textit{AccelCapture} es la de funcionar como un servicio de lectura en segundo plano de los datos del acelerómetro del sistema. Las única interacción necesaria por parte del usuario es la de activar el servicio de captura una primera vez desde la interfaz de usuario que ofrece la aplicación tal y como se muestra en la \autoref{sub:accelcapture:interfaz}. Una vez realizado este paso, y la etapa opcional de introducir el nombre del usuario, el programa funciona de manera persistente en un segundo plano, capturando datos y enviándolos a un servidor en Internet para su tratamiento.
+La función principal de \accelcapture/ es la de funcionar como un servicio de lectura en segundo plano de los datos del acelerómetro del sistema. Las única interacción necesaria por parte del usuario es la de activar el servicio de captura una primera vez desde la interfaz de usuario que ofrece la aplicación tal y como se muestra en la \autoref{sub:accelcapture:interfaz}. Una vez realizado este paso, y la etapa opcional de introducir el nombre del usuario, el programa funciona de manera persistente en un segundo plano, capturando datos y enviándolos a un servidor en Internet para su tratamiento.
 
-En cuanto al funcionamiento del servicio, se describe en el diagrama \ref{fig:capturaFlow}. La aplicación, una vez en ejecución tiene dos estados posibles: \textit{Reposo} y \textit{Grabando}. Cuando se encuentra en \textit{Reposo} la aplicación lee muestras en busca de actividad y en caso de detectar actividad, pasaría al siguiente estado: \textit{Grabando} en el cual almacena las muestras leidas para enviarlas al servidor cuando deje de medir actividad y vuelva a cambiar de estado. 
+En cuanto al funcionamiento del servicio, se describe en el diagrama \ref{fig:capturaFlow}. La aplicación, una vez en ejecución tiene dos estados posibles: \textit{Reposo} y \textit{Grabando}. Cuando se encuentra en \textit{Reposo} la aplicación lee muestras en busca de actividad y en caso de detectar actividad, pasaría al siguiente estado: \textit{Grabando} en el cual almacena las muestras leidas para enviarlas al servidor cuando deje de medir actividad y vuelva a cambiar de estado.
 
-\figura[0.85]{capturaFlujo}{fig:capturaFlow}{Flujo de trabajo de la aplicación AccelCapture}
+\figura[0.85]{capturaFlujo}{fig:capturaFlow}{Flujo de trabajo de la aplicación \accelcapture/}
 
-Si entramos en más detalle, el sistema lee muestras de la aceleración capturadas por un sensor triaxial, por lo que obtenemos las componentes en los tres ejes. Aunque almacenamos las componentes de forma individual en cada muestra, para el algoritmo de la aplicación trabajaremos con la norma o módulo del vector aceleración que denotaremos como $\|\vec{A}\|$ para no confundir con el valor absoluto. Dicho esto, el sistema mantiene en todo momento una ventana con los últimos 5 segundos de actividad. Con cada nueva muestra calcula dos índices para detectar actividad o la ausencia de esta, y cambiar en consecuencia de un estado a otro. 
+Si entramos en más detalle, el sistema lee muestras de la aceleración capturadas por un sensor triaxial, por lo que obtenemos las componentes en los tres ejes. Aunque almacenamos las componentes de forma individual en cada muestra, para el algoritmo de la aplicación trabajaremos con la norma o módulo del vector aceleración que denotaremos como $\|\vec{A}\|$ para no confundir con el valor absoluto. Dicho esto, el sistema mantiene en todo momento una ventana con los últimos 5 segundos de actividad. Con cada nueva muestra calcula dos índices para detectar actividad o la ausencia de esta, y cambiar en consecuencia de un estado a otro.
 
 El índice de actividad usado es la variación de aceleración entre dos muestras consecutivas $\Delta \|\vec{A}_i\|$ tal y como define la fórmula:
 \[
@@ -51,7 +51,7 @@ El índice de actividad usado es la variación de aceleración entre dos muestra
 
 Donde:\\
 $g$ corresponde a la aceleración de la gravedad terrestre o $9,8m/s^2$\\
-$\|A_n\|$ es la norma o módulo del vector aceleración en el instante $n$ . 
+$\|A_n\|$ es la norma o módulo del vector aceleración en el instante $n$ .
 
 Este índice se usa para los dos mecanismos de detección de actividad de la aplicación:
 
@@ -68,23 +68,23 @@ Finalmente, para volver al estado de \textit{Reposo} el único mecanismo que lo 
 
 \subsection{Interfaz de Usuario}\label{sub:accelcapture:interfaz}
 
-La interfaz de usuario de la aplicación permite gestionar y observar el estado del servicio de captura así como definir el identificador de usuario al que pertenece la sesión. Como puede observarse en las capturas de pantalla de la figura\ref{fig:accelcapture:UI} se muestra en la parte inferior de la pantalla un boton con información del estado actual del servicio. El botón al ser pulsado alterna entre los estados \textit{activado} y \textit{desactivado}. En la parte superior de la pantalla se muestra la información del identificador de usuario o \textit{nombre} al que se asociarán todas las sesiones registradas. Este identificador puede modificarse desde el mismo reloj. Una vez activado el servicio de captura, puede esconderse interfaz y volver al modo reloj ya que el servicio sigue trabajando de fondo. 
+La interfaz de usuario de la aplicación permite gestionar y observar el estado del servicio de captura así como definir el identificador de usuario al que pertenece la sesión. Como puede observarse en las capturas de pantalla de la figura\ref{fig:accelcapture:UI} se muestra en la parte inferior de la pantalla un boton con información del estado actual del servicio. El botón al ser pulsado alterna entre los estados \textit{activado} y \textit{desactivado}. En la parte superior de la pantalla se muestra la información del identificador de usuario o \textit{nombre} al que se asociarán todas las sesiones registradas. Este identificador puede modificarse desde el mismo reloj. Una vez activado el servicio de captura, puede esconderse interfaz y volver al modo reloj ya que el servicio sigue trabajando de fondo.
 \begin{figure}[htb!]
   \centering
   \begin{subfigure}[b]{0.4\textwidth}
       \centering
       \includegraphics[width=\textwidth]{accelCaptureAct.png}
-      \caption{AccelCapture Activado}
+      \caption{\accelcapture/ Activado}
       \label{fig:accelCapture:UI1}
   \end{subfigure}
   \hfill
   \begin{subfigure}[b]{0.4\textwidth}
       \centering
       \includegraphics[width=\linewidth]{accelCaptureDes.png}
-      \caption{AccelCapture Desactivado}
+      \caption{\accelcapture/ Desactivado}
       \label{fig:accelCapture:UI2}
   \end{subfigure}
-  \caption{\label{fig:accelcapture:UI} Interfaz de usuario de AccelCapture}
+  \caption{\label{fig:accelcapture:UI} Interfaz de usuario de \accelcapture/}
 \end{figure}
 
 
@@ -93,7 +93,7 @@ La interfaz de usuario de la aplicación permite gestionar y observar el estado 
 
 Desde el punto de vista del sistema consta de dos componentes: una unidad de adquisición de datos, el propio reloj, y una segunda unidad de almacenamiento situada en la nube. La estructura de la aplicación se compone de tres bloques funcionales principales tal y como puede apreciarse en el diagrama de clases de la figura \ref{fig:accelcaptureClasesUml}.
 
-\figura[0.47]{accelcaptureClassUML}{fig:accelcaptureClasesUml}{Diagrama de clases de AccelCapture}
+\figura[0.47]{accelcaptureClassUML}{fig:accelcaptureClasesUml}{Diagrama de clases de \accelcapture/}
 
 
 \paragraph{MainWearActivity}
@@ -109,12 +109,12 @@ Este bloque lo componen los algoritmos de detección de actividad explicados ant
 
 \subsection{Envío y Formato de los datos}\label{sub:accelcapture:red}
 
-El objetivo último de \textit{AccelCapture} es el de obtener y almacenar estas tramas o sesiones de actividad para su posterior tratamiento. Este paso se realiza enviando las información a un servidor. Este paso es posible gracias a las múltiples capacidades de conexión que tiene el dispositivo (Wifi y Bluetooth) que le permiten conectarse desde prácticamente cualquier ubicación y enviar y recibir información. Esta autonomía de funcionamiento permite validar en primera instancia el requisito de no necesitar de infraestructura para el funcionamiento de la aplicación final. Al haber logrado una plataforma autónoma con \textit{AccelCapture}, que requiere de una conexión con un servidor, lograrlo con \textit{iFell}, que no tiene necesidad de conexión alguna, debería ser trivial.
+El objetivo último de \accelcapture/ es el de obtener y almacenar estas tramas o sesiones de actividad para su posterior tratamiento. Este paso se realiza enviando las información a un servidor. Este paso es posible gracias a las múltiples capacidades de conexión que tiene el dispositivo (Wifi y Bluetooth) que le permiten conectarse desde prácticamente cualquier ubicación y enviar y recibir información. Esta autonomía de funcionamiento permite validar en primera instancia el requisito de no necesitar de infraestructura para el funcionamiento de la aplicación final. Al haber logrado una plataforma autónoma con \accelcapture/, que requiere de una conexión con un servidor, lograrlo con \textit{iFell}, que no tiene necesidad de conexión alguna, debería ser trivial.
 A su vez, permite poder obtener datos de usuarios de forma remota, sin necesidad otra para obtenerlos que el que se instalen la aplicación.
 
 Tal y como se menciona en el apartado \ref{sec:req:nube} la plataforma en la nube se implementa usando los servicios de AWS. Para esta función crea un microservicio o \textit{API}(lista de funciones de acceso público que ofrece una biblioteca de programación) ( del tipo \textit{REST}(Arquitectura que implementa una interfaz sobre el protocolo \textit{HTTP}). Este servicio, definido en la tabla \ref{tab:accelcapture:api} se encargará de recibir la llamadas de la aplicación y guardar el contenido en un archivo \textit{JSON} (lenguaje de definición de estructuras de datos que usa la notación de JavaScript).
 
-\tabla[0.65\linewidth]{tab:accelcapture:api}{API del servidor AccelCapture}{llll}{
+\tabla[0.65\linewidth]{tab:accelcapture:api}{API del servidor \accelcapture/}{llll}{
   Método  & URL         & Carga         & Función lambda    \\ \midrule
   POST    & /saveAccel  & AccelSession  & saveToS3()  \\
 }{2}
@@ -147,13 +147,13 @@ Campo           & Tipo Dato     & Descripción \\ \hline
 \textit{accelerationZ} & Lista<Reales> & Lista de valores de la aceleración capturados en el eje Z (en $m/s^2$) \\
 }{right}{2}
 
-\caption{\label{tab:accelcapture:data_types} Estructuras de datos de AccelCapture}
+\caption{\label{tab:accelcapture:data_types} Estructuras de datos de \accelcapture/}
 \end{table}
 
 
 \section{Generación de la base de datos}
 
-Durante un periodo de 6 meses se han realizado capturas de movimiento usando la aplicación \textit{AccelCapture} en diversos sujetos. Las capturas se realizan llevando el sensor activado 24 horas al día, incluidos los periodos de reposo y sueño, eliminando, de ser necesario, aquellas capturas en las que hubo alguna caida. El objetivo es capturar la mayor cantidad posible de sesiones de actividades diarias ordinarias, así como otros eventos que, a pesar de que el usuario se encuentre estacionario y en reposo, generan una señal de aceleración no constante como puede ser el uso de diferentes modos de transporte (tren, avión, coche, moto). En total se han registrado más de 10 horas de actividad repartidas en 300 sesiones diferentes.
+Durante un periodo de 6 meses se han realizado capturas de movimiento usando la aplicación \accelcapture/ en diversos sujetos. Las capturas se realizan llevando el sensor activado 24 horas al día, incluidos los periodos de reposo y sueño, eliminando, de ser necesario, aquellas capturas en las que hubo alguna caida. El objetivo es capturar la mayor cantidad posible de sesiones de actividades diarias ordinarias, así como otros eventos que, a pesar de que el usuario se encuentre estacionario y en reposo, generan una señal de aceleración no constante como puede ser el uso de diferentes modos de transporte (tren, avión, coche, moto). En total se han registrado más de 10 horas de actividad repartidas en 300 sesiones diferentes.
 
 \subsection{Procesado de las tramas}
 
@@ -189,7 +189,7 @@ Con el fin de entender las características de la señal capturada procedemos a 
     \centering
     \pincludegraphics[1.1]{XYZModFFT}
     \caption{Análisis en frecuencia de X, Y, Z y $\|\vec{A}\|$}
-    \label{fig:dataset:fftsample} 
+    \label{fig:dataset:fftsample}
   \end{subfigure}
   \hfill
   \begin{subfigure}[b]{0.48\textwidth}

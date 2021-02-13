@@ -10,18 +10,18 @@ Aportar detalles del proceso de desarrollo incluyendo fases e hitos del proceso,
 \section{Captura de secuencias y creación de la base de datos}
 Como ya hemos presentado anteriormente en la sección \ref{sec:req:bases_datos}, nos encontramos ante la falta de una base de datos para entrenar el modelo del producto final. Al tratarse de un modelo experimental es necesario conseguir un conjunto de datos lo más parecido posible a los capturados por la plataforma física utilizada. A su vez es necesario validar la capacidad de esta plataforma para servir al propósito de este trabajo. Así, con esta doble tarea de generar una bases de datos y confirmar que la plataforma cubre nuestras necesidades funcionales realizamos el primer desarrollo propio del trabajo.
 
-\subsection{Captura de datos: AccelCapture}\label{sub:imp:accelcapture}
+\subsection{Captura de datos: \accelcapture/}\label{sub:imp:accelcapture}
 
-\textit{AccelCapture} es el nombre del sistema de captura de tramas de la aceleración capturada por el sensor situado en un reloj inteligente con sistema operativo \textit{WearOS}. Consta de dos componentes: una unidad de adquisición de datos, el propio reloj, y una segunda unidad de almacenamiento situada en la nube. Tal y como puede apreciarse en el diagrama de clases de la figura \ref{fig:accelcaptureClasesUml} la aplicación en si misma se compone de tres bloques funcionales.
+\accelcapture/ es el nombre del sistema de captura de tramas de la aceleración capturada por el sensor situado en un reloj inteligente con sistema operativo \textit{WearOS}. Consta de dos componentes: una unidad de adquisición de datos, el propio reloj, y una segunda unidad de almacenamiento situada en la nube. Tal y como puede apreciarse en el diagrama de clases de la figura \ref{fig:accelcaptureClasesUml} la aplicación en si misma se compone de tres bloques funcionales.
 
-\figura[0.47]{accelcaptureClassUML}{fig:accelcaptureClasesUml}{Diagrama de clases de AccelCapture}
+\figura[0.47]{accelcaptureClassUML}{fig:accelcaptureClasesUml}{Diagrama de clases de\accelcapture/}
 
 \paragraph{MainWearActivity}
 El punto de entrada de la aplicación. Genera la interfaz de usuario y permite introducir el nombre el usuario a la vez que verificar el estado del servicio de captura de datos e iniciar o parar su ejecución.
 
 \paragaraph{SensorsReader}
 Un servicio que al ser creado se registra para recibir eventos y lecturas del sensor de aceleración triaxial del reloj. Posee una cola circular donde almacena los últimos 5 segundos de muestras (si por ejemplo la velocidad de lectura del sensor es de $1/50$, el buffer posserá $50 * 5 = 250$ muestras).
-Este servicio realiza el análisis de la aceleración para detectar movimiento según el algoritmo definido en la figura \ref{fig:capturaFlow}. Tras cada muestra el algoritmo evalúa la variación de la aceleración según la fórmula: 
+Este servicio realiza el análisis de la aceleración para detectar movimiento según el algoritmo definido en la figura \ref{fig:capturaFlow}. Tras cada muestra el algoritmo evalúa la variación de la aceleración según la fórmula:
 
 \[
   \Delta A_{i}=\left\{
@@ -34,22 +34,22 @@ Este servicio realiza el análisis de la aceleración para detectar movimiento s
 
 Donde $g$ corresponde a la aceleración de la gravedad terrestre o $9,8m/s^2$. Este valor $\Delta A_i$ se utiliza para realizar la detección de actividad mediante dos mecanismos:
 
-\figura[0.55]{capturaFlujo}{fig:capturaFlow}{Flujo de trabajo de la aplicación AccelCapture}
+\figura[0.55]{capturaFlujo}{fig:capturaFlow}{Flujo de trabajo de la aplicación\accelcapture/}
 
 \begin{enumerate}
   \item \textbf{Movimiento repentino} Se activa si la muestra leida es mayor de $2g$.
   \item \textbf{Movimiento prolongado} Activado cuando la aceleración promedio del contenido del buffer es superior a $0,3m/s^2$
 \end{enumerate}
 
-La cota de detección de movimiento repentino se calcula a partir de los resultados obtenidos por \citeA{Bourke2006} para la medición de la cintura por ser la que menor aceleración registra. La diferencia entre la aceleración de pico y de valle usada por bourke es de $\Delta A = (2,74 - 0,60)g = 2,14g$ redondeando a la baja a $2g$ para garantizar la detección de todos los eventos de este tipo. Finalmente, la cota del detector de actividad prolongada, fijada en $0,3m/s^2$, se mide de forma experimental resultado de promediar el vector para realizar el movimiento de leer la hora en el reloj (figura\ref{fig:accelMirarReloj}) y volver a la posición de reposo durante la ventana de 5 segundos que usa la aplicación. En caso de activarse alguno de estos mecanismos, el servicio considera que ha detectado una actividad y manda el contenido del buffer al servidor para ser guardado. 
+La cota de detección de movimiento repentino se calcula a partir de los resultados obtenidos por \citeA{Bourke2006} para la medición de la cintura por ser la que menor aceleración registra. La diferencia entre la aceleración de pico y de valle usada por bourke es de $\Delta A = (2,74 - 0,60)g = 2,14g$ redondeando a la baja a $2g$ para garantizar la detección de todos los eventos de este tipo. Finalmente, la cota del detector de actividad prolongada, fijada en $0,3m/s^2$, se mide de forma experimental resultado de promediar el vector para realizar el movimiento de leer la hora en el reloj (figura\ref{fig:accelMirarReloj}) y volver a la posición de reposo durante la ventana de 5 segundos que usa la aplicación. En caso de activarse alguno de estos mecanismos, el servicio considera que ha detectado una actividad y manda el contenido del buffer al servidor para ser guardado.
 
 \figura{MirarRelojAccel}{fig:accelMirarReloj}{$|A|$ y $\Delta A$ de resultantes de mirar el reloj}
 
-El código de las funciones lambda puede consultarse el el apéndice \ref{app:code:accelcapturelambda} mientras que el de la aplicación AccelCapture está disponible para descarga en \url{https://github.com/aberaza/accelCapture}.
+El código de las funciones lambda puede consultarse el el apéndice \ref{app:code:accelcapturelambda} mientras que el de la aplicación\accelcapture/ está disponible para descarga en \url{https://github.com/aberaza/accelCapture}.
 
 \subsubsection{Interfaz de Usuario}
 
-La interfaz de usuario de la aplicación permite gestionar y observar el estado del servicio de captura así como definir el identificador de usuario al que pertenece la sesión. Como puede observarse en las capturas de pantalla de la figura\ref{fig:accelcapture:UI} se muestra en la parte inferior de la pantalla un boton con información del estado actual del servicio. El botón al ser pulsado alterna entre los estados \textit{activado} y \textit{desactivado}. En la parte superior de la pantalla se muestra la información del identificador de usuario o \textit{nombre} al que se asociarán todas las sesiones registradas. Este identificador puede modificarse desde el mismo reloj. Una vez activado el servicio de captura, puede esconderse interfaz y volver al modo reloj ya que el servicio sigue trabajando de fondo. 
+La interfaz de usuario de la aplicación permite gestionar y observar el estado del servicio de captura así como definir el identificador de usuario al que pertenece la sesión. Como puede observarse en las capturas de pantalla de la figura\ref{fig:accelcapture:UI} se muestra en la parte inferior de la pantalla un boton con información del estado actual del servicio. El botón al ser pulsado alterna entre los estados \textit{activado} y \textit{desactivado}. En la parte superior de la pantalla se muestra la información del identificador de usuario o \textit{nombre} al que se asociarán todas las sesiones registradas. Este identificador puede modificarse desde el mismo reloj. Una vez activado el servicio de captura, puede esconderse interfaz y volver al modo reloj ya que el servicio sigue trabajando de fondo.
 \begin{figure}[htb!]
   \centering
   \begin{subfigure}[b]{0.4\textwidth}
@@ -65,7 +65,7 @@ La interfaz de usuario de la aplicación permite gestionar y observar el estado 
       \caption{AccelCapture Desactivado}
       \label{fig:accelCapture:UI2}
   \end{subfigure}
-  \caption{\label{fig:accelcapture:UI} Interfaz de usuario de AccelCapture}
+  \caption{\label{fig:accelcapture:UI} Interfaz de usuario de\accelcapture/}
 \end{figure}
 
 \subsubsection{Almacenamiento de datos}
@@ -74,7 +74,7 @@ Tal y como se menciona en el apartado \ref{sec:req:nube} la plataforma en la nub
 
 La estructura almacenada se muestra en la tabla \ref{tab:accelcapture:accel_session} la denominamos \textit{AccelSession}. Este objeto contiene información sobre el sensor (error y frequencia de muestreo), fecha de la captura así como unos identificadores del usuario y de la sesión además de la información capturada en los tres ejes del acelerómetro.
 
-\tabla[0.65\linewidth]{tab:accelcapture:api}{API del servidor AccelCapture}{llll}{
+\tabla[0.65\linewidth]{tab:accelcapture:api}{API del servidor\accelcapture/}{llll}{
   Método & URL & Carga & Función lambda \\ \hline
   POST & /saveAccel\todo{poner la buena} & AccelSession & doGuardarAccel() \\
 }
@@ -108,7 +108,7 @@ Campo           & Tipo Dato     & Descripción \\ \hline
 \textit{accelerationZ} & Lista<Reales> & Lista de valores de la aceleración capturados en el eje Z (en $m/s^2$) \\
 }{right}
 
-\caption{\label{tab:accelcapture:data_types} Estructuras de datos de AccelCapture}
+\caption{\label{tab:accelcapture:data_types} Estructuras de datos de\accelcapture/}
 \end{table}
 
 
@@ -167,7 +167,7 @@ Como en toda imlpementación, el
 \subsection{Arquitectura del sistema}
 
 \warn{hablando de AWS: (ver siguiente páraffo)}
-Resumiendo la estructura del sistema, \textit{AWS S3} (\url{https://aws.amazon.com/es/s3/?c=ser&sec=srv}) es el sistema de almacenamiento de datos en la red. Un disco duro en la nube, escalable en capacidad y fácilmente accesible para poder recuperar los datos. \textit{AWS Lambda} (\url{https://aws.amazon.com/es/lambda/?c=ser&sec=srv}) permite implementar funciones de código y definir una serie de eventos para lanzar su ejecución, al formar parte del ecosistema AWS es fácil conectar estas funciones con el sistema S3 y API Gateway. Finalmente \textit{AWS API Gateway} permite definir unos puntos de entrada, o URLs que conformarán la API del servicio. Cuando una de estas direcciones URL es invocada, inmediatamente se ejecuta la 
+Resumiendo la estructura del sistema, \textit{AWS S3} (\url{https://aws.amazon.com/es/s3/?c=ser&sec=srv}) es el sistema de almacenamiento de datos en la red. Un disco duro en la nube, escalable en capacidad y fácilmente accesible para poder recuperar los datos. \textit{AWS Lambda} (\url{https://aws.amazon.com/es/lambda/?c=ser&sec=srv}) permite implementar funciones de código y definir una serie de eventos para lanzar su ejecución, al formar parte del ecosistema AWS es fácil conectar estas funciones con el sistema S3 y API Gateway. Finalmente \textit{AWS API Gateway} permite definir unos puntos de entrada, o URLs que conformarán la API del servicio. Cuando una de estas direcciones URL es invocada, inmediatamente se ejecuta la
 \subsection{Arquitectura de la aplicación}
 
 El sistema está compuesto por dos bloques funcionales tal y como se muestra en \ref{fig:clasesUml}. Tenemos un bloque o paquete que incluye los servicios encargados del registro de datos de los sensores, gestión de entradas y notificación de eventos, implementación del algoritmo de detección y comunicación con el servidor. Este primer bloque contiene a su vez una aplicación de gestión del servicio que permite realizar tareas de mantenimiento y configuración. En un segundo bloque tenemos la interfaz del usuario principal, encargada de lanzar la aplicación, alertar en caso de caída y capturar la respuesta del usuario en caso de necesitarla.

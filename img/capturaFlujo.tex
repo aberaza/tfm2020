@@ -27,10 +27,11 @@
   \draw [arrow] (isRec) |- node[anchor=west] {no} (estaLleno);
   \draw [arrow] (isRec) -| node[near start, anchor=south] {si} (guardarMuestra);
   \draw [arrow] (guardarMuestra) -- (hayActividad);
-  \draw[->] (hayActividad) --++ (0,-8cm) node [near start, anchor=west] {si} -| (accel);
+  \draw[->] (hayActividad) -- ++(0,-8cm) node [near start, anchor=west] {si} -| (accel);
   \draw [arrow] (hayActividad) -- node[anchor=south]{no} (sendSession);
   \draw [arrow] (sendSession) -- (stopRec);
-  \draw[->] (stopRec) --++ (0,-4cm) -| (accel);
+  % \draw[->] (stopRec) -- +(0,-4cm) -| (accel);
+  \draw[->] (stopRec) -- ++(0,-4cm) -| (accel);
   \draw [arrow] (estaLleno) -| node[near start,anchor=south] {no} (accel);
   \draw [arrow] (estaLleno) -- node[anchor=east] {si}(comparar);
   \draw [arrow] (comparar) -- (mayorCota);
@@ -39,7 +40,8 @@
   \draw [arrow] (guardar) -| (accel);
   \draw [arrow] (promedioBuffer) -- (mayorPromedio);
   \draw [arrow] (mayorPromedio) --node[anchor=south] {si}(guardar);
-  \draw [arrow] (mayorPromedio) --++(0, -2.5cm) node[near start, anchor=west]{no} -| (accel)
-  % \draw [arrow] (mayorPromedio) --++(0,-2.5cm) node[near start,anchor=west]{no} +(-10,-2.5cm) -- (accel);
+  % \draw [arrow] (mayorPromedio) -- +(0, -2.5cm) node[near start, anchor=west]{no} -| (accel)
+  \draw [arrow] (mayorPromedio) -- ++(0, -2.5cm)node[near start, anchor=west]{no} -| (accel);
+  % \draw [arrow] (mayorPromedio) -- ++(0,-2.5cm) node[near start,anchor=west]{no} +(-10,-2.5cm) -- (accel);
 \end{tikzpicture}
 \end{document}
