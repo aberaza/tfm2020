@@ -5,51 +5,51 @@
 Aportar detalles del proceso de desarrollo incluyendo fases e hitos del proceso, diagramas representativos de la arquitectura y funcionamiento, capturas de pantalla para ilustrar el funcionamiento, etc.
 \end{comment}
 
-Tras un primer contacto con los componentes escogidos para implementar la aplicación en el capítulo anterior nos enfrentamos al desarrollo de la plataforma final. Empezaremos recuperando la base de datos \sisfall/  como mencionamos en el capítulo de requisitos (Sección \ref{sec:req:bases_datos}) para implementar un prototipo del algoritmo, lo describiremos, analizaremos los resultados y compararemos con otros métodos ya existentes.
+Tras un primer contacto con los componentes escogidos para implementar la aplicación en el capítulo anterior nos enfrentamos al desarrollo de la plataforma final. Empezaremos recuperando la base de datos \sisfall/  como mencionamos en el capítulo de requisitos (Sección \ref{sec:req:bases_datos}) para implementar un prototipo del algoritmo, lo describiremos, analizaremos los resultados y compararemos con otros métodos ya existentes. Con el modelo validado nos centraremos en optimizarlo para mejorar el consumo de recursos de cara al siguiente paso: implementar el sistema final. Explicaremos en la estructura del sistema cliente-servidor escogida y entraremos en detalle en el estudio y análisis de la aplicación para dispositivos llevables presentada. Estudiaremos la arquitectura, interfaz de uso y rendimiento antes de abordar, en el capítulo siguiente la idoneidad y adecuación a los requisitos previamente definidos 
 
-Con el modelo validado nos centraremos en optimizarlo para mejorar el consumo de recursos de cara al siguiente paso: implementar el sistema final. Explicaremos en la estructura del sistema cliente-servidor escogida y entraremos en detalle en el estudio y análisis de la aplicación para dispositivos llevables presentada. Estudiaremos la arquitectura, interfaz de uso y rendimiento antes de abordar, en el capítulo siguiente la idoneidad y adecuación a los requisitos previamente definidos.
+\section{Descripción de la base de datos}
 
-\section{Descripción del Modelo y Algoritmo de \ifell/}\label{sec:imp:model}
-
-Se ha mencionado ya en varios momento que el uso de un dispositivo de medida de la aceleración en la muñeca no resulta idóneo para realizar predicciones sobre la realización de actividades o caídas. Este será el principal escollo al que deberá hacer frente el algoritmo elegido ya que no afectará únicamente a la viabilidad de las medidas. La misma razón que afecta negativamente a la capacidad predictora de las mediciones en la muñeca, la excesiva movilidad de las extremidades, tiene un segundo efecto espúreo: al tener mayor libertad de movimiento, también se generan más eventos de actividad incluso cuando el sujeto se encuentra en reposo. Valga de ejemplo el hecho de que mirar la hora es suficiente para activar el detector de actividad de \accelcapture/ (\autoref{sub:accelcapture:flujo}) mientras que con cualquier otro emplazamiento del sensor no habría habido lectura alguna. Debemos encontrar una solución que permita reducir el número de veces que evaluamos si se ha producido una caída para reducir el consumo del sistema y dotarlo de mayor autonomía.
-
-\subsection{Algoritmo híbrido}\label{sub:imp:model:algoritmo}
-
-Buscando encontrar un equilibrio entre capacidad de detección y requisitos del sistema, optamos por un algoritmo híbrido con dos modelos (uno analítico y otro basado en redes recurrentes), tal y como se presenta en la figura \ref{fig:ifell:algoritmo}. Al utilizar dos etapas permite mantener el costoso modelo neuronal aletargado a la espera de un evento del modelo analítico. Este modelo, más simple, apenas consiste de un comparador, puede ejecutarse sin problema de forma continua sin tener un impacto notable en la duración de la batería del sistema\todo{referencia a la gráfica de consumos de batería}. 
-
-\figura[0.5]{deteccionFlujo}{fig:ifell:algoritmo}{Algoritmo de detección de caídas de iFell}
-
-Si analizamos el algoritmo, apreciamos su similitud con el de la aplicación de captura de datos. En parte por el hecho de que la primera etapa es idéntica: Un sistema generador de eventos cuando se detecta actividad. En este caso este primer sistema generador de eventos es el modelo analítico. El acelerómetro del sistema genera lecturas de los tres ejes de la aceleración a un ratio determinado (25 muestras por segundo). Estas muestras se convierten en el módulo de la aceleración $\|\vec{A}\|=\sqrt{A_x^2 + A_y^2 + A_z^2}$ y se almacenan en una cola de 4 segundos o 100 muestras. Tras cada lectura de una nueva muestra, el modelo analítico elegido procesa su contenido y genera un evento de caída si así lo detecta. De ser así, se envía el contenido de la cola al modelo neuronal que discriminará si efectivamente es una caída o no.
-
-El modelo analítico o generador de eventos usado es un comparador de Bourke, que definiremos en el siguiente punto. El detector basado en redes neuronales a usar puede ser tanto un modelo basado en el error de reconstrucción, o un modelo basado en el error de predicción. Como veremos en la sección \refname{sub:imp:model:rnn} estudiaremos ambos modelos para dilucidar cual se ajusta mejor a los requisitos formulados ya que aunque muy similares en estructura y funcionamiento, tanto la precisión como latencia del modelo varía sensiblemente entre ambos.
-
-\subsection{Modelo Analítico: Bourke2006}\label{sub:imp:model:analitico}
-
-Justificamos ya en la \autoref{sec:req:modelos} la necesidad de usar modelos que no analicen la postura, posición o inclinación del sensor debido a la falta de coherencia entre la posición del sensor respecto la del cuerpo por su situación en la muñeca. Este factor, que tendrá un impacto en la calidad del modelo obtenido infiere a la vez de mayor simplicidad y facilitará su posterior uso en sistemas embebidos por su bajo consumo de recursos.
-
-Elegimos usar un clasificador de Bourke. Presentado por \citeA{Bourke2006} es un algoritmo simple que al no requerir más que del módulo del vector aceleración cumple con los requisitos para ser usado en nuestro sistema. Usando dos cotas de detección consecutivas (una cota inferior para detectar valles en la aceleración y una superior para la detección del posterior pico como se muestra en la figura\ref{fig:bourke_thresholds}) permite identificar caídas basándose en la forma característica que sigue la aceleración del cuerpo en estos eventos. Tradicionalmente se estudian dos variantes adicionales de este clasificador que consisten en modelos que analizan cuando se dan por separado cada una de las condiciones. Al modelo principal que mide las cuotas de pico y valle lo designaremos \textit{BourkeUL}, y \textit{BourkeU} y \textit{BourkeL} a los modelos que estudian únicamente las cotas de pico o valle respectivamente. Estudiaremos el comportamiento de cada variante con la esperanza de poder justificar el uso de una de las variantes parciales por su mayor simplicidad.
-
-Como el resto de modelos analíticos aplicados a la detección de caídas tiene la gran ventaja de ser computacionalmente simple. Su mayor contraprestación es la dificultad de balancear las métricas de Especificidad y Sensibilidad. Al basarse en niveles o cotas, podemos aumentar la sensibilidad situando el nivel de estas de manera que la sensibilidad llegue al 100\%, como requiere el algoritmo por definición, aunque afectará a la especificidad negativamente \cite{Aziz2017} pues cuanto más ajustemos estos niveles de decisión más probable es que incluyamos casos de actividades cotidianas dentro del rango de caídas. Este solapamiento lo podremos estudiar al analizar las densidades de probabilidad e histogramas de los valores para actividades y caídas.
-
-En nuestro algoritmo general, el modelo analítico es similar a una capa de gestión de la atención del modelo RNN. Es por esta razón que la baja especificidad  no resulta un problema de cara a la calidad del detector ya que lo que nos interesa es que esta etapa tenga una sensibilidad próxima al 100\%. Si que nos afectará negativamente en el cumplimiento de los aspectos funcionales y de experiencia de usuario ya que menor especificidad significará que generará falsos eventos con mayor frecuencia, aumentando el consumo de recursos. Por esta razón buscaremos optimizar esta primera etapa para conseguir la mayor especificidad posible, incluso si debemos sacrificar el detectar la totalidad de las caídas. Al mismo tiempo, y como ya hemos introducido, reduciremos la velocidad de lectura de las muestras a $25Hz$ para despertar menos veces el mecanismo. 
-
-Para conseguir maximizar el rendimiento de este módulo y a pesar de que hemos recogido en \autoref{tab:bourke_threshold_values} (en el la sección \refname{sec:req:modelos}) los cálculos para las cotas valle y pico de Bourke (\textit{LFT} y \textit{UFT}) estudiaremos los valores que optimizan el rendimiento de este clasificador usando la base de datos \sisfall/. 
-
-Aunque ya hemos presentado los resultados de diferentes estudios que proporcionan valores para las cotas \textit{LFT} y \textit{UFT} del modelo (tabla \ref{tab:bourke_threshold_values}) también hemos comprobado la alta variabilidad de resultados según el conjunto de datos usado. Por esa razón, al no disponer de un estudio que analizase este modelo sobre la base de datos usada, calcularemos los valores usando las muestras de SisFall y analizaremos el comportamiento del modelo.
+Para la primera etapa de generación y evaluación del algoritmo y modelos analíticos y RNN hemos elegido el conjunto de datos \sisfall/. El conjunto de bases de datos libres para la detección de caídas es todavía muy reducido, y como hemos mencionado a lo largo del estudio, muchas veces estos conjuntos de datos están demasiado centrados en maximizar el rendimiento del modelo para el que fueron creados. En el estudio realizado por \citeA{igual2015} analiza entre otros \textit{MobiFall} \cite{MobiFall}, \textit{tFall} \cite{tfall}. Estudia el impacto en los resultados de usar cada conjunto para el entrenamiento y validación y posteriormente la capacidad de generalizar o de crear mejores modelos de cada uno de ellos, llegando a la misma conclusión: los conjuntos de datos existentes hoy en día están demasiado enfocados a un experimento concreto y por tanto recomienda normalizar y usar varios de ellos. Un segundo resultado de interés es que \citaa[p.~15]{igual2015}{muestrear a 100 Hz no es mejor que hacerlo a 50 Hz} que confirma estudios previos indicando que hasta 25 Hz podrían ser suficientes.
 
 
+\begin{table}[ht]
+% \tablas{tab:id}{Título tabla}{lcccl}{ la tabla propiamente dicha }
+  \subtablal[0.4]{tab:sisfall:population}{Edad, y peso de los sujetos}{lcc}{
+    \textsl{Grupo}  & \textsl{Edad}  & \textsl{Peso (kg)} \\\midrule
+    Adultos & 60-75 & 50 - 102 \\
+    Jóvenes & 19-30 & 42 - 81 \\
+}{2}%
+\hfill
+\subtablar[0.4]{tab:sisfall:tecnicos}{Características de las medidas}{lr}{
+\textsl{Característica}  & \textsl{Valor} \\ \midrule
+Muestreo                & 200 Hz \\
+Rango                   & $\plusminus$ 16 g\\
+Precisión               & 16 bits \\
+Componentes             & 3 ejes \\
+}{2}
 
 
-El dispositivo captura información de la aceleración en 3 ejes con una medida máxima de $9G$ y a una frecuencia de muestreo $f_m=50Hz$ \todo{seguro?}. Esta medida la convertimos en el módulo de la aceleración ($|\vec{A}| = |\sqrt{a_{x}^2+a_{y}^2+a_{z}^2}|$). En concreto, comparamos el valor absoluto de la diferencia de dos mediciones consecutivas de la aceleración y comparamos con un umbral de referencia.
-\[
-ModeloAnalitico\rightarrow |SVTot_n - SVTot_{n-1}|\geq A_{umbral}
-\]
+\subtablac[0.7]{tab:sisfall:caracteristicas}{Especificaciones de la base de datos \sisfall/}{lrl}{
+\textit{Característica} & \textit{Valor} & \textit{Notas} \\ \midrule
+Participantes           & 38            &  15 jóvenes y 45 personas mayores. \\
+Clases de eventos       & 34            &  \\
+Tipos de Caídas         & 15            &  Todas las caídas son simuladas.\\
+Tipos de Actividades    & 19            &  \\
+Total de eventos        & 4504          &  \\
+de las cuales Caídas    & 1798          &  Representan el 40\% de eventos. Claramente sobrerrepresentadas  \\
+de las cuales Actividades & 2706        &  \\
+}{2}
 
+\caption{\label{tab:sisfall:tablas} Características y tratamiento de la base de datos \sisfall/}
+\end{table}
 
-\subsubsection{Preprocesado de la base de datos}
+Estudiando las características de los conjuntos de datos, finalmente optamos por \sisfall/ \cite(Sucerquia2017}. Este conjunto está altamente centrado en la detección de caídas en personas mayores. En el análisis de los resultados obtenidos se sugiere de nuevo que \citaa[p.~9]{Sucerquia2017}{frecuencias de muestreo de tan solo 11 Hz podrían ser suficientes para la detección de caídas}, dado que el estimador que mejor funciona es el módulo del vector aceleración. Destaca el tamaño de la base de datos, la presencia de personas de edad avanzada entre los sujetos de estudio y el énfasis en la detección de caídas, con una clara abundancia de caídas (casí un 40\% del total de eventos) así como la presencia de eventos similares a caídas entre las actividades cotidianas (saltar, sentarse rápidamente, tropezar, caer en una silla al intentar levantarse y otras, totalizando hasta 8 de las 19 categorías de actividad) que suponen el peor escenario al que podemos someter un clasificador. Como afirma el propio estuio y verificaremos en este, usar un conjunto de datos tan centrado en la detección de caídas resultará un reto añadido para el clasificador a desarrollar.
 
-Para acortar las distancias entre los resultados obtenidos en la simulación con los esperados sobre el dispositivo real realizamos un tratamiento previo de los datos para submuestrear a 25KHz.
+Resumismos en las tablas \ref{tab:sisfall:tablas} las principales características de \sisfall/, aunque recomendamos visitar \url{https://github.com/WJMatthew/SisFallAnalysis} por contener un estupendo análisis del mismo con gran variedad de gráficos explicativos.
 
+\subsection{Preprocesado de la base de datos}
+
+Con el fin de reducir el número de eventos producidos, y partiendo de la premisa de que con un ancho de banda de 12Hz en la señal módulo de la aceleración hay suficiente información para realizar la detección de caídas \cite{Liu2018}, submuestrearemos el conjunto de datos \sisfall/ desde los 200Hz originales a 25Hz. Dado que esta será la frecuencia de lectura que usará el dispositivo final, permitirá obtener una evaluación del rendimiento en similares condiciones.
 
 \paragraph{Filtrado IIR}
 
@@ -71,7 +71,7 @@ Donde
 f_c= \frac{1}{2 \pi RC}
 \end{align*}
 
-Dado que posteriormente submuestrearemos la señal a 25Hz y que sabemos que en estos primeros 12Hz hay suficiente información sobre las caídas, tomamos como ya hemos dicho $f_c=12,5Hz$. Hay que tener en cuenta que al ser un filtro paso bajo no afectará a la componente continua de la gravedad. Despejando las ecuación precedentes queda:
+Como posteriormente submuestrearemos la señal a 25Hz y que sabemos que en estos primeros 12Hz hay suficiente información sobre las caídas, tomamos como ya hemos dicho $f_c=12,5Hz$. Hay que tener en cuenta que al ser un filtro paso bajo no afectará a la componente continua de la gravedad, lo cual es necesario para poder utilizar el modelo Bourke. Despejando las ecuación precedentes queda:
 \begin{align*}
   f_m & = 200{Hz}\\
   \delta t & = 1/f_m = 0.005s\\
@@ -85,7 +85,7 @@ Dado que posteriormente submuestrearemos la señal a 25Hz y que sabemos que en e
 %https://en.wikipedia.org/wiki/Low-pass_filter#Simple_infinite_impulse_response_filter
 \end{comment}
 
-El interés de realizar un filtrado prevo al subsampleado puede observarse al compararse los resultados expuestos en la figura \ref{fig:iir} en ella se observa la destrucción de información producida por el muestreado de la señal. Se aprecia claramente como en las curvas de la figura\ref{fig:signalIIRFilter25} en que se ha muestreado la señal sin filtrado previo se ha aplanado en exceso. Resultado especialmente nocivo para nuestro modelo analítico que se basa precisamente en detectar estos picos valles.
+El interés de realizar un filtrado previo al subsampleado puede observarse al compararse los resultados expuestos en la figura \ref{fig:iir} en ella se observa la destrucción de información producida por el muestreado de la señal. Se aprecia claramente como en las curvas de la figura\ref{fig:signalIIRFilter25} en que se ha muestreado la señal sin filtrado previo se ha aplanado en exceso. Resultado especialmente nocivo para nuestro modelo analítico que se basa precisamente en detectar estos picos valles. En el propio trabajo de \citeauthorNP{Sucerquia2017} se recomienda usar un filtrado ya que según sus resultados en promedio mejora la capacidad de detección de los modelos entrenados y otros estudios \cite{Xiao2016,Tian2019,Liu2020} demuestran la efectividad de un filtrado previo de los conjuntos de entrenamiento para mejorar la precisión de los modelos.
 
 \begin{figure}[htb!]
   \centering
@@ -115,31 +115,48 @@ El interés de realizar un filtrado prevo al subsampleado puede observarse al co
 
 \paragraph{Submuestreado a 25Hz}
 
-La base de datos SisFall usa un muestreado a 200Hz, el reloj elegido como soporte admite únicamente un muestreado a 50Hz como máximo. Sin embargo a raíz del ya expuesto resultado de \todo{falta referencia de los 12KHz} decidimos reducir el muestreado hasta los 25Hz, que por Nyquist debería ser suficiente para no destruir la información de las caídas de la señal.
-
-El sub-muestreado se realiza tomando una muestra de cada n con $n=\frac{f_m}{f_o}=\frac{25}{200}=8$. En la figura \ref{fig:downsample} se aprecia la degradación que sufre la señal original al aplicarle el filtrado y posterior reducción de muestras. Se observa un doble efecto del filtrado: un suavizado de la señal resultante y un desfase no lineal. El suavizado enmascara parcialmente los valores pico y valle, sin embargo garantiza mayor fidelidad del resultado a la señal original: si bien se pierde la información en picos y valles, la señal mantiene mejor la estructura general. En el fondo se ha reducido el ruido de la señal ya que el filtro en la práctica actúa como un ponderador.
-
-%\figura{FilterAndDownsample}{fig:downsample}{Efecto de filtrar y submuestrear la señal)
+La base de datos \sisfall/ usa un muestreado a 200Hz, el reloj elegido como soporte admite únicamente un muestreado a 50Hz como máximo. Sin embargo reduciremos la frecuencia de lectura a 25 Hz para reducir el número de cáclulos a realizar ya que los experimentos previos demuestran que es posible detectar caídas incluso con 11 Hz. El sub-muestreado se realiza tomando una muestra de cada n con $n=\frac{f_m}{f_o}=\frac{25}{200}=8$. En la figura \ref{fig:downsample} se aprecia la degradación que sufre la señal original al aplicarle el filtrado y posterior reducción de muestras. Se observa un doble efecto del filtrado: un suavizado de la señal resultante y un desfase no lineal. El suavizado enmascara parcialmente los valores pico y valle, sin embargo garantiza mayor fidelidad del resultado a la señal original: si bien se pierde la información en picos y valles, la señal mantiene mejor la estructura general. En el fondo se ha reducido el ruido de la señal ya que el filtro en la práctica actúa como un ponderador.
 
 
+\section{Descripción del Modelo y Algoritmo de \ifell/}\label{sec:imp:model}
+
+Se ha mencionado ya en varios momento que el uso de un dispositivo de medida de la aceleración en la muñeca no resulta idóneo para realizar predicciones sobre la realización de actividades o caídas. Este será el principal escollo al que deberá hacer frente el algoritmo elegido ya que no afectará únicamente a la viabilidad de las medidas. La misma razón que afecta negativamente a la capacidad predictora de las mediciones en la muñeca, la excesiva movilidad de las extremidades, tiene un segundo efecto espúreo: al tener mayor libertad de movimiento, también se generan más eventos de actividad incluso cuando el sujeto se encuentra en reposo. Valga de ejemplo el hecho de que mirar la hora es suficiente para activar el detector de actividad de \accelcapture/ (\autoref{sub:accelcapture:flujo}) mientras que con cualquier otro emplazamiento del sensor no habría habido lectura alguna. Debemos encontrar una solución que permita reducir el número de veces que evaluamos si se ha producido una caída para reducir el consumo del sistema y dotarlo de mayor autonomía.
+
+\subsection{Algoritmo híbrido}\label{sub:imp:model:algoritmo}
+
+Buscando encontrar un equilibrio entre capacidad de detección y requisitos del sistema, optamos por un algoritmo híbrido con dos modelos (uno analítico y otro basado en redes recurrentes), tal y como se presenta en la figura \ref{fig:ifell:algoritmo}. Al utilizar dos etapas permite mantener el costoso modelo neuronal aletargado a la espera de un evento del modelo analítico. Este modelo, más simple, apenas consiste de un comparador, puede ejecutarse sin problema de forma continua sin tener un impacto notable en la duración de la batería del sistema\todo{referencia a la gráfica de consumos de batería}. 
+
+\figura[0.5]{deteccionFlujo}{fig:ifell:algoritmo}{Algoritmo de detección de caídas de iFell}
+
+Si analizamos el algoritmo, apreciamos su similitud con el de la aplicación de captura de datos. En parte por el hecho de que la primera etapa es idéntica: Un sistema generador de eventos cuando se detecta actividad. En este caso este primer sistema generador de eventos es el modelo analítico. El acelerómetro del sistema genera lecturas de los tres ejes de la aceleración a un ratio determinado (25 muestras por segundo). Estas muestras se convierten en el módulo de la aceleración $\|\vec{A}\|=\sqrt{A_x^2 + A_y^2 + A_z^2}$ y se almacenan en una cola de 4 segundos o 100 muestras. Tras cada lectura de una nueva muestra, el modelo analítico elegido procesa su contenido y genera un evento de caída si así lo detecta. De ser así, se envía el contenido de la cola al modelo neuronal que discriminará si efectivamente es una caída o no.
+
+El modelo analítico o generador de eventos usado es un comparador de Bourke, que definiremos en el siguiente punto. El detector basado en redes neuronales a usar puede ser tanto un modelo basado en el error de reconstrucción, o un modelo basado en el error de predicción. Como veremos en la sección \refname{sub:imp:model:rnn} estudiaremos ambos modelos para dilucidar cual se ajusta mejor a los requisitos formulados ya que aunque muy similares en estructura y funcionamiento, tanto la precisión como latencia del modelo varía sensiblemente entre ambos.
+
+\subsection{Modelo Analítico: Bourke}\label{sub:imp:model:analitico}
+
+Justificamos ya en la \autoref{sec:req:modelos} la necesidad de usar modelos que no analicen la postura, posición o inclinación del sensor debido a la falta de coherencia entre la posición del sensor respecto la del cuerpo por su situación en la muñeca. Este factor, que tendrá un impacto en la calidad del modelo obtenido infiere a la vez de mayor simplicidad y facilitará su posterior uso en sistemas embebidos por su bajo consumo de recursos.
+
+Elegimos usar un clasificador de Bourke. Presentado por \citeA{Bourke2006} es un algoritmo simple que al no requerir más que del módulo del vector aceleración cumple con los requisitos para ser usado en nuestro sistema. Usando dos cotas de detección consecutivas (una cota inferior para detectar valles en la aceleración y una superior para la detección del posterior pico como se muestra en la figura\ref{fig:bourke_thresholds}) permite identificar caídas basándose en la forma característica que sigue la aceleración del cuerpo en estos eventos. Tradicionalmente se estudian dos variantes adicionales de este clasificador que consisten en modelos que analizan cuando se dan por separado cada una de las condiciones. Al modelo principal que mide las cuotas de pico y valle lo designaremos \textit{BourkeUL}, y \textit{BourkeU} y \textit{BourkeL} a los modelos que estudian únicamente las cotas de pico o valle respectivamente. Estudiaremos el comportamiento de cada variante con la esperanza de poder justificar el uso de una de las variantes parciales por su mayor simplicidad.
+
+Como el resto de modelos analíticos aplicados a la detección de caídas tiene la gran ventaja de ser computacionalmente simple. Su mayor contraprestación es la dificultad de balancear las métricas de Especificidad y Sensibilidad. Al basarse en niveles o cotas, podemos aumentar la sensibilidad situando el nivel de estas de manera que la sensibilidad llegue al 100\%, como requiere el algoritmo por definición, aunque afectará a la especificidad negativamente \cite{Aziz2017} pues cuanto más ajustemos estos niveles de decisión más probable es que incluyamos casos de actividades cotidianas dentro del rango de caídas. Este solapamiento lo podremos estudiar al analizar las densidades de probabilidad e histogramas de los valores para actividades y caídas.
+
+En nuestro algoritmo general, el modelo analítico es similar a una capa de gestión de la atención del modelo RNN. Es por esta razón que la baja especificidad  no resulta un problema de cara a la calidad del detector ya que lo que nos interesa es que esta etapa tenga una sensibilidad próxima al 100\%. Si que nos afectará negativamente en el cumplimiento de los aspectos funcionales y de experiencia de usuario ya que menor especificidad significará que generará falsos eventos con mayor frecuencia, aumentando el consumo de recursos. Por esta razón buscaremos optimizar esta primera etapa para conseguir la mayor especificidad posible, incluso si debemos sacrificar el detectar la totalidad de las caídas. Al mismo tiempo, y como ya hemos introducido, reduciremos la velocidad de lectura de las muestras a $25Hz$ para despertar menos veces el mecanismo. 
+
+Para conseguir maximizar el rendimiento de este módulo y a pesar de que hemos recogido en \autoref{tab:bourke_threshold_values} (en el la sección \refname{sec:req:modelos}) los cálculos para las cotas valle y pico de Bourke (\textit{LFT} y \textit{UFT}) estudiaremos los valores que optimizan el rendimiento de este clasificador usando la base de datos \sisfall/. 
 
 
 
-\begin{comment}
-Los estudios siguientes demuestran que el filtrado de ruido mejora la capacidad de tratamiento posterior
-Tian, T.; Sun, S.; Lin, H. Distributed fusion filter for multi-sensor systems with finite-step correlated noises. Inf. Fusion 2019, 46, 128-140.
 
-Luego, para el caso de natación
-Xiao, D.; Yu, Z.; Yi, F.; Wang, L.; Tan, C.C.; Guo, B. Smartswim: An infrastructure-free swimmer localization system based on smartphone sensors. In Proceedings of the International Conference on Smart Homes and Health Telematics, Wuhan, China, 25-27 May 2016; pp. 222-234.
 
-decide que una promediado por ventana flotante de tamaño M es el que mejores resultados da: $G_{filter}=\frac{1}{M}\sum_{i=0}^{M}G_i$. (Explicado en Liu \cite{Liu2020} que usa este método con una DeepNN basada en capas CNN + 2xLSTM + Fully Connected + Softmax).
-
-% \figura{capturaFlujo}{fig:capturaFlow}{Flujo de trabajo de la aplicación de captura de datos}
-\end{comment}
+\warn{Mover a otra sección}
+El dispositivo captura información de la aceleración en 3 ejes con una medida máxima de $9G$ y a una frecuencia de muestreo $f_m=50Hz$ \todo{seguro?}. Esta medida la convertimos en el módulo de la aceleración ($|\vec{A}| = |\sqrt{a_{x}^2+a_{y}^2+a_{z}^2}|$). En concreto, comparamos el valor absoluto de la diferencia de dos mediciones consecutivas de la aceleración y comparamos con un umbral de referencia.
+\[
+ModeloAnalitico\rightarrow |SVTot_n - SVTot_{n-1}|\geq A_{umbral}
+\]
 
 \subsubsection{Cálculo de parámetros para el modelo Bourke}
 
-Realizamos una primera iteración por todas las secuencias incluidas en el conjunto de datos buscando el valor de valle y de pico para cada una y agrupamos los resultados en dos categorías: \textit{actividad normal} o \textit{caída}. Posteriormente analizamos los histogramas resultantes para obtener la función de densidad de la distribución de ambos valores. Si se observa la figura \ref{fig:bourke:hist} a primera vista la capacidad de segregación entre caídas y actividades de la distribución de los picos de aceleración es mayor que la de los valles. En parte previsible dado lo compacto del rango ( 1g) comparado con el de los valores de pico que es potencialmente ilimitada, o limitado únicamente por la capacidad del sensor. Analizando los datos, en el caso de los valores de pico, el percentil 0\% de las caídas se sitúa en 4,5g que se corresponde con el percentil 23\% de las actividades: si establezco la cota de pico en 4,5g conseguimos detectar el 100\% de la caídas aunque detectemos también como tales el 73\% de las actividades normales. Este porcentaje baja hasta el 59\% si aceptamos no detectar el 1\% de las caídas poniendo la cota en 5.7g. Para el caso de los valles si queremos detectar el 100\% de las caídas debemos situar la cota en 0,97g lo que apenas filtraría el 4\% de las actividades normales, aunque mejora hasta el 27\% si aceptamos no identificar el 1\% de las caídas.
+Realizamos una primera iteración por todas las secuencias incluidas en el conjunto de datos buscando el valor de valle y de pico para cada una y agrupamos los resultados en dos categorías: \textit{actividad normal} o \textit{caída}. Posteriormente analizamos los histogramas resultantes para obtener la función de densidad de la distribución de ambos valores. Si se observa la figura \ref{fig:bourke:hist} a primera vista la capacidad de segregación entre caídas y actividades de la distribución de los picos de aceleración es mayor que la de los valles. En parte previsible dado lo compacto del rango [0-1]g comparado con el de los valores de pico que es potencialmente ilimitada, o limitado únicamente por la capacidad del sensor. Analizando los datos, en el caso de los valores de pico, el percentil 0\% de las caídas se sitúa en 4,5g que se corresponde con el percentil 23\% de las actividades: si establezco la cota de pico en 4,5g conseguimos detectar el 100\% de la caídas aunque detectemos también como tales el 73\% de las actividades normales. Este porcentaje baja hasta el 59\% si aceptamos no detectar el 1\% de las caídas poniendo la cota en 5.7g. Para el caso de los valles si queremos detectar el 100\% de las caídas debemos situar la cota en 0,97g lo que apenas filtraría el 4\% de las actividades normales, aunque mejora hasta el 27\% si aceptamos no identificar el 1\% de las caídas.
 
 \begin{figure}[htb!]
   \centering
@@ -159,8 +176,7 @@ Realizamos una primera iteración por todas las secuencias incluidas en el conju
   \caption{\label{fig:bourke:hist} Histogramas de valores pico y valle}
 \end{figure}
 
-Es evidente a la luz de estos datos que los resultados del clasificador sobre SisFall son mediocres. Sin embargo dada su función de mecanismo atencional y la particularidad del conjunto de datos, enfocado al estudio de caídas y con muchos eventos similares a caídas etiquetados como actividades, es un resultado esperable.
-
+Es evidente a la luz de estos datos que los resultados del clasificador sobre \sisfall/ son mediocres. Algo previsible dada la especificidad de la base de datos elegida, la gran cantidad de caídas (que añaden variabilidad a los resultados obligando a poner cotas muy bajas para conseguir la sensibilidad del 100\%) y \textit{quasi-caidas} que contiene (ampliando el rango de valores de pico y valle de las actividades ordinarias, reduciendo todavía más la eficacia de un clasificador analítico). Si bien es de esperar que al reducimos el requisito de detectar la totalidad de las caídas la sensibilidad se reduzca más lentamente que la especificidad.
 
 \subsubsection{Evaluación del modelo Bourke sobre SisFall}
 
@@ -175,91 +191,188 @@ Tomando el conjunto de datos de entrenamiento previamente filtrado y submuestrea
     LFT  & \textbf{0,97g} & 0,86g  & 0,81g  & 0,68g\\
   }{3}
 
-Este modelo tiene la desventaja de tener una especificidad muy baja. Los resultados sobre SisFall nos arrojan un valor para las cotas de 0,971g para el valle y 4,164g para el pico (en la tabla \ref{tab:bourke:valores} se presentan los resultados para otros percentiles). Con estos valores se consigue una especificidad de tan solo el 28,7\% mientras que la sensibilidad se queda en 97,2\% usando Bourke estándar (lo designaremos como modelo \textit{BourkeUL} en adelante). Repetimos el experimento iterando sobre dos variaciones del modelo de Bourke: \textit{BourkeU} que busca únicamente los casos que superan la cota de pico y \textit{BourkeL} que hace lo propio con los valles. También variamos el valor de las cotas según el porcentaje de caídas que cumplen dicha cuota en cada caso. En la figura \ref{fig:bourke_cfmatrix} se muestran las matrices de confusión y los valores de sensibilidad y especificidad para cada combinación.
+  Este modelo tiene la desventaja de tener una especificidad muy baja. Los resultados sobre SisFall nos arrojan un valor para las cotas de 0,971g para el valle y 4,164g para el pico (en la tabla \ref{tab:bourke:valores} se presentan los resultados para otros percentiles). Con estos valores se consigue una especificidad de tan solo el 28,7\% mientras que la sensibilidad se queda en 97,2\% usando Bourke estándar o \textit{BourkeUL}. Repetimos el experimento sobre las variantes \textit{BourkeU} y \textit{BourkeL} y para varios percentiles de las cotas para observar la variación de la Especificidad al reducir la Sensibilidad. En la \autoref{fig:bourke_cfmatrix} se recogen los resultados de los diversos experimentos en forma de sus matrices de confusión y métricas de Sensibilidad y Especificidad.  
 
 \figura[0.9]{BourkeCONF_Matrix}{fig:bourke_cfmatrix}{Matrices de confusión para modelos Bourke}
 
-Al interpretar los resultados obtenidos interesa entender principalmente la causa por la que \textit{BourkeUL} no alcanza el 100\% de sensibilidad. Lo achacamos al hecho de que para ser detectado por el modelo implementado, la caída ha de cumplir ambas cotas en una ventana deslizante de 200 muestras. El siguiente resultado, y de mayor interés para el trabajo es el buen resultado obtenido por la variante \textit{BourkeU}: Alcanza el 100\% de sensibilidad y la especificidad es la mejor de todos los modelos a igual sensibilidad (por ejemplo, si bajamos la sensibilidad hasta el 97,2\% tiene una especificidad del 43,6\%, mucho mayor que el 28,7\% de \textit{BourkeUL}). Al aunar simplicidad y resultados, optaremos por el modelo BourkeU con un valor de cota de 4,16g para el algoritmo. 
-
-
+Al interpretar los resultados obtenidos interesa entender principalmente la causa por la que \textit{BourkeUL} no alcanza el 100\% de sensibilidad. Lo achacamos al hecho de que para ser detectado por el modelo implementado, la caída ha de cumplir ambas cotas en una ventana deslizante de 200 muestras. El siguiente resultado, y de mayor interés para el trabajo es el buen resultado obtenido por la variante \textit{BourkeU}: Alcanza el 100\% de sensibilidad y la especificidad es la mejor de todos los modelos a igual sensibilidad (por ejemplo, si bajamos la sensibilidad hasta el 99,2\% tiene una especificidad del 43,6\%, mucho mayor que el 28,7\% de \textit{BourkeUL} con una sensibilidad menor). Al aunar simplicidad y resultados, optaremos por el modelo BourkeU con un valor de cota \textit{UFT} de 4,16g para el análisis del algoritmo. Sin embargo, de cara a la implementación final en el dispositivo tomaremos el valor de \textit{UFT} de 5,77g por entender que ofrece un mejor equilibrio entre especificidad y sensibilidad a la vez que garantiza que las caídas no detectadas son aquellas con menor energía.
 
 \subsection{Modelo con Redes Neuronales Recurrentes}\label{sub:imp:model:rnn}
 
-La principal novedad de este trabajo es el uso de una red recurrente con una arquitectura codificador/decodificador para la detección de anomalías, o caídas en este caso. La detección de caídas pretende realizarse mediante un modelo de detección de anomalías. Dada una secuencia de medidas de la aceleración $X=\{x_1,x_2,\cdots,x_n\}$ de longitud $n$, definimos la secuencia $Y=\{y_1, y_2, \cdots,y_m\}$ de longitud $m$ como el resultado de aplicar el modelo RNN $RNN()$ sobre la secuencia $X$: $Y=RNN(X)$. Dado un operador $distancia(a,b)$ la detección de anomalía se realiza si la distancia entre la entrada y salida es mayor que un determinado nivel. 
+La principal novedad de este trabajo es el uso de una red recurrente con una arquitectura codificador/decodificador para la detección de anomalías, o caídas en este caso. Dada una secuencia de medidas de la aceleración $X=\{x_1,x_2,\cdots,x_n\}$ de longitud $n$, definimos la secuencia $Y=\{y_1, y_2, \cdots,y_m\}$ de longitud $m$ como el resultado de aplicar el modelo RNN $RNN()$ sobre la secuencia $X$: $Y=RNN(X)$. Dado un operador $distancia(a,b)$ la detección de anomalía se realiza si la distancia entre la salida del modelo y la señal real capturada por el sensor supera un determinado nivel. Analizaremos dos posibilidades:
+\begin{itemize}
+  \item \textsl{Reconstrucción} Caso en el que la señal de entrada y salida del modelo tienen la misma longitud temporal y la salida es una estimación del valor de la entrada. $Y_n =\ \hat{X}_n$.
+  \item \textsl{Predicción} La salida de la red es una predicción del valor futuro de la señal de entrada. En este caso la longitud de la predicción no es obligatorio que sea idéntica a la señal de entrada.
+\end{itemize}
+
+Podemos formular ambos casos de la siguiente manera:
 \[
   isFall(X)=\left\{
     \begin{array}{lcl}
-      cierto & si & distancia(X,Y) > \lambda \\
-      falso & si & distancia(X,Y) \leq  \lambda
+      cierto & si & distancia(X_n,Y_n) > \lambda \\
+      falso & si & distancia(X_n,Y_n) \leq  \lambda
     \end{array}
     \right.
 \]
 \\
 Donde:\\
-$Y = RNN(X)$ : Salida de la red recurrente codificador/decodificador al tomar $X$ como entrada.
-Al contrario que la mayoría de sistemas existentes para la detección de caídas, iFell no se basa en la clasificación de actividades, dado que dicho método requiere de extensos corpus con gran cantidad de instancias de las actividades y caídas a detectar y clasificar. Si bien existen otros algoritmos \todo{citar referencia} para la detección de caídas usando ya sea clasificadores de categoría única o técnicas de agrupamiento (KNN por ejemplo) que requieren de bases de datos extensas y bien etiquetadas para su entrenamiento, que para el el caso que aquí aplica, no están disponibles. Al usar una técnica de codificador/decodificador para comprimir la señal de entrada y luego reconstruirla, reducimos las necesidades del conjunto de datos para generar el modelo a secuencias no etiquetadas de secuencias de actividad que no contengan caídas para conseguir un codificador/decodificador eficiente en esta tarea, pero que no lo sea cuando la secuencia comprimida y reconstruida sea una caída, para la cual no ha sido entrenado y por tanto competa un mayor error en la tarea.
+$Y_n = RNN(X)$ : \textsl{Reconstrucción}, la salida de la red estima el valor actual de $X$.\\
+$Y_n = RNN(X_{n-1})$ : \textsl{Predicción}, la salida de la red genera una estimación de la evolución de $X$.\\
 
-\subsubsection{Modelo Recurrente basado en codificador/decodificador}
+Al contrario que la mayoría de sistemas existentes para la detección de caídas, \ifell/ no se basa en la clasificación de actividades, dado que dicho método requiere de extensos corpus con gran cantidad de instancias de las actividades y caídas a detectar y clasificar. Si bien existen otros algoritmos \todo{citar referencia} para la detección de caídas usando ya sea clasificadores de categoría única o técnicas de agrupamiento (KNN por ejemplo) que requieren de bases de datos extensas y bien etiquetadas para su entrenamiento, que para el el caso que aquí aplica, no están disponibles. Al usar una técnica de codificador/decodificador para comprimir la señal de entrada y luego generar la señal reconstruida o predicha, reducimos las necesidades del conjunto de datos para generar el modelo a secuencias no etiquetadas de actividad que no contengan caídas para conseguir un codificador/decodificador eficiente en esta tarea, pero que no lo sea cuando la secuencia comprimida y reconstruida sea una caída, para la cual no ha sido entrenado y por tanto cometa un mayor error en la tarea.
 
-Los modelos codificador/decodificador (véase la figura \ref{fig:modelo:encoderdecoder}), también referidos a veces como secuencia-a-secuencia se pueden entender como dos sistemas independientes: el \textit{codificador} y el \textit{decodificador}. El codificador realiza una conversión y reducción del espacio dimensional de una secuencia de entrada, intentando mantener intacta la información presente. Realiza por tanto una extracción de características de la secuencia de entrada. Evidentemente, a mayor reducción en las dimensiones del espacio de salida del codificador, mayor será la pérdida de información. Por su parte, el decodificador realiza la tarea inversa. Tomando como secuencia de entrada una de las representaciones obtenidas realiza una interpretación de las características para generar una secuencia de salida en otro espacio de resultados. Las aplicaciones son muy variadas, desde el análisis de sentimiento, compresión de series o traducción del lenguaje, a la generación de espacios de representación multimodo (por ejemplo, la descripción de una imagen o la generación de una imagen desde una descripción). 
+\begin{figure}[!ht]
+  \centering
+  \begin{subfigure}[b]{0.48\textwidth}
+      \centering
+      \pincludegraphics[1.0]{Prediction_reconstruction}
+      \caption{\footnotesize \label{fig:reconstruccionAceleracion}Reconstrucción del módulo de la aceleración por \textit{RNN-reconstrucción}}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+      \centering
+      \pincludegraphics[1.0]{Prediction_prediction.png}
+      \caption{\footnotesize \label{fig:prediccionAceleracion}Predicción del módulo de la aceleración por \textit{RNN-predicción}}
+  \end{subfigure}
+  \caption{\small \label{fig:predict:vs:reconst} Resultados de los modelos \textit{RNN-reconstrucción} y \textit{RNN-predicción} sobre actividad normal y caídas}
+\end{figure}
 
-En nuestro caso optamos por una estructura en que el espacio de entrada y salida de la red es el mismo, y por tanto realizamos una compresión y descompresión de la señal. A partir de la serie de muestras $X$de longitud $n$, obtenemos un vector de características $C=codificador(X)=\{c_1,\cdots,c_l\}$ de longitud $l<n$. Posteriormente inyectamos este vector de características como entrada a una segunda red recurrente, el decodificador, que reconstruye una aproximación de la secuencia original $Y=decodificador(C)=\hat{X}$.
+\subsubsection{Modelos Recurrentes basados en codificador/decodificador}
 
-% \figura[0.65]{modeloRNNencoderdecoder}{fig:modelo:encoderdecoder}{Esquema de una red RNN codificador/decodificador}
+Los modelos codificador/decodificador (véase la figura \ref{fig:modelo:encoderdecoder}), también referidos a veces como \textit{secuencia-a-secuencia} se pueden entender como dos sistemas independientes: el \textit{codificador} y el \textit{decodificador}. El codificador realiza una conversión y reducción del espacio dimensional de una secuencia de entrada, intentando mantener intacta la información presente. Realiza por tanto una extracción de características de la secuencia de entrada. Evidentemente, a mayor reducción en las dimensiones del espacio de salida del codificador, mayor será la pérdida de información. Por su parte, el decodificador realiza la tarea inversa. Tomando como secuencia de entrada una de las representaciones obtenidas realiza una interpretación de las características para generar una secuencia de salida en otro espacio de resultados. Las aplicaciones son muy variadas, desde el análisis de sentimiento, compresión de series o traducción del lenguaje, a la generación de espacios de representación multimodo (por ejemplo, la descripción de una imagen o la generación de una imagen desde una descripción). 
 
-Los principales parámetros a determinar para nuestro modelo son las longitudes de las secuencias de entrada y salida, así como la de la secuencia codificada o vector de características. Este ratio entre la longitud de la señal a reconstruir y la dimensión del espacio de características es determinante para definir la capacidad del sistema de detectar anomalías. Un ratio demasiado alto, y el error de reconstrucción será tan alto que no servirá como estimador. Un ratio demasiado bajo por contra permitiría a la red enviar toda la información de la entrada y de nuevo resultar poco apta para la detección de anomalías. Los valores tomados finalmente son:
+En nuestro caso optamos por dos estructuras en que el espacio de entrada y salida de la red es el mismo. En el modelo \textit{RNN-reconstrucción} entenderemos el proceso como una compresión y descompresión con pérdida de la señal mientras en el modelo \textit{RNN-predicción} es similar a un generador de señal secuencia-a-secuencia. En ambos casos, a partir de la serie de muestras $X$de longitud $l$, obtenemos un vector de características $C=codificador(X)=\{c_1,\cdots,c_m\}$ de longitud $m$ que cumple. Posteriormente inyectamos este vector de características como entrada a una segunda red recurrente, el decodificador, que reconstruye una aproximación de la secuencia original $Y_{1\cdots l}=decodificador_{rec}(C)=\hat{X_{1\cdots l}}$ en el caso del \textit{RNN-reconstrucción} o generar una señal de longitud $n$ aproximación de la evolución futura de la señal de entrada $Y_{1\cdots n}=decodificador_{pred}(C)=\hat{X}_{l\cdots l+n}$. Como veremos en el apartado de arquitectura y entrenamiento de los modelos, ambos modelos son prácticamente idénticos y la mayor diferencia es la generación de los pares $X:Y$ usados durante el entrenamiento.
+
+Los principales parámetros a determinar para ambos modelos son las longitudes de las secuencias de entrada y salida, así como la de la secuencia codificada o vector de características. Este ratio entre la longitud de la señal a reconstruir y la dimensión del espacio de características es determinante para definir la capacidad del sistema de detectar anomalías. Un ratio demasiado alto, y el error de reconstrucción será tan alto que no servirá como estimador. Por contra, aumentar en exceso el las dimensiones del espacio intermedio podría llevar a la red a la sobreadaptación, especialmente en el caso del modelo \textit{RNN-reconstrucción}. Los valores elegidos para los modelos son:
+
 \begin{itemize}
-  \item $n=m=100$ Tomamos una ventana de entrada y salida de 100 muestras o 4 segundos. La mayoría de las caídas tienen una duración de $\plusminus1s$ centrado en el pico del impacto. Los dos segundos extra permiten añadir contexto a la señal.
-  \item $l=20$ La dimensión del espacio de características intermedio de 1/5 parte del tamaño del espacio de entrada y salida. Como veremos en el apartado siguiente, experimentalmente demuestra ser suficiente para la reconstrucción de la señal sin caer en la sobreadaptación.
+  \item Longitud de la secuenciad e entrada $l=100$ Tomamos una ventana de entrada de 100 muestras o 4 segundos. La mayoría de las caídas tienen una duración de $\plusminus1s$ \cite{Sucerquia2017,Liu2018,Hassan2019} alrededor del instante del impacto principal. Duplicamos el tamaño de la ventana para favorecer al modelo \textit{RNN-predicción} para incluir más contexto de la señal que ayude a generar una buena estimación.
+  \item $l=50$ La dimensión del espacio de características intermedio de 1/2 parte del tamaño del espacio de entrada y salida. Como veremos en el apartado siguiente, experimentalmente demuestra ser suficiente para la reconstrucción de la señal sin caer en la sobreadaptación tanto en los modelos de predicción como de reconstrucción, y ofrece un estimador mucho más preciso que si usamos vectores de características de menores dimensiones.
 \end{itemize}
 
-\paragraph{Estructura de la red}
-En una primera instancia optamos por el uso de capas bidireccionales\cite{Schuster1997}. Estas capas son en realizad una composición de dos capas recurrentes de igual tamaño. Una procesa la entrada en un sentido y la otra en el inverso y se pondera el resultado de ambas para obtener la salida. Estas capas han demostrado en varios estudios \cite{Zaho2017, Su2018} su mayor eficiencia procesando series temporales, llegando a mejorar en un 30\% a las capas recurrentes que procesan en un único sentido. Su uso fue finalmente descartado por el soporte inestable de TensorFlow Lite de este tipo de capas, como trataremos en el punto \ref{par:desc:modelo:rnn:limitaciones}.
+\paragraph{Estructuras de red}
+En una primera instancia optamos por el uso de capas bidireccionales\cite{Schuster1997}. Estas capas son en realizad una composición de dos capas recurrentes de igual tamaño. Una procesa la entrada en un sentido y la otra en el inverso y se pondera el resultado de ambas para obtener la salida. Estas capas han demostrado en varios estudios \cite{Zaho2017, Su2018} su mayor eficiencia procesando series temporales, llegando a mejorar en un 30\% a las capas recurrentes que procesan en un único sentido. Su uso fue finalmente descartado por el soporte inestable de \tensorflow/ Lite de este tipo de capas, como trataremos en el punto \ref{par:desc:modelo:rnn:limitaciones}.
 
-Descartadas las capas bidireccionales, optamos por una arquitectura de red simétrica para codificador y decodificador, con tres capas unidireccionales de celdas GRU de 300 unidades cada una. Como hemos mencionado, la dimensión del espacio o vector de características intermedio es 20 y es el resultado de recuperar el estado interno de una última capa GRU con 20 unidades (una por característica) al codificador. Este vector se utiliza para alimentar la red del decodificador que tiene una estructura reflejo de la del codificador, con tres capas GRU de 300 unidades que reconstruyen una señal de 100 elementos.
+Descartadas las capas bidireccionales, optamos por una arquitectura de red simétrica para codificador y decodificador, con tres capas unidireccionales de celdas GRU de 300 unidades cada una. Como hemos mencionado, la dimensión del espacio o vector de características intermedio es 50 y es el resultado de recuperar el estado interno de una última capa GRU con 50 unidades (una por característica) al codificador. Este vector se utiliza para alimentar la red del decodificador que tiene una estructura reflejo de la del codificador, con tres capas GRU de 350 unidades que reconstruyen una señal de 100 muestras o predicen una señal de 2 segundos (50 muestras) tal y como se observa en los diagramas \ref{fig:modelo:rnnFinal:recon} y \ref{fig:modelo:rnnFinal:predict}.
 
-La elección de cada componente y parámetro se realiza buscando maximizar el rendimiento de la red resultante. Así pues se escogen celdas GRU por tener capacidades similares a las celdas LSTM a la hora de tratar con series temporales \cite{Chung2014} siendo menos complejas que estas. Usamos RELU como función de activación. Dado que estamos usando el módulo de la aceleración sin normalizar a la entrada, y que el valor del mismo es siempre positivo, es una elección aceptable. Además, su simplicidad facilita tanto el entrenamiento como su optimización y ejecución posterior.  
+La elección de cada componente y parámetro se realiza buscando maximizar el rendimiento de la red resultante. Así pues se escogen celdas GRU por tener capacidades similares a las celdas LSTM a la hora de tratar con series temporales \cite{Chung2014} siendo menos complejas que estas. Usamos RELU como función de activación. Dado que estamos usando el módulo de la aceleración sin normalizar a la entrada, y que el valor del mismo es siempre positivo, es una elección aceptable. Además, su simplicidad facilita tanto el entrenamiento como su optimización y ejecución posterior.
 
-\figura[0.4]{modeloRNNFinal}{fig:modelo:rnnFinal}{Modelo RNN de iFell}
+\begin{figure}[!ht]
+  \centering
+  \begin{subfigure}[b]{0.48\textwidth}
+      \centering
+      \pincludegraphics[1.0]{modeloRNNFinal}
+      \caption{\label{fig:modelo:rnnFinal:recon}Modelo RNN Reconstrucción de \ifell/}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+      \centering
+      \pincludegraphics[1.0]{modeloRNNPredict}
+      \caption{\label{fig:modelo:rnnFinal:predict}Modelo RNN Predicción de \ifell/}
+  \end{subfigure}
+  \caption{\label{fig:rnnFinal} Variantes de los modelos RNN de \ifell/}
+\end{figure}
 
-\paragraph{Limitaciones de la plataforma TensorFlow Lite}\label{par:desc:modelo:rnn:limitaciones}
-Para generar, entrenar y ejecutar el modelo de redes neuronales recurrentes optamos por la biblioteca TenorFlow/TensorFlow Lite por ser de uso generalizado y disponer de un intérprete de modelos para plataformas llevables sobre WearOS. Este cliente tiene sin embargo ciertas limitaciones que imponen restricciones a la estructura de la red entrenada. Los dos más notables es la ausencia de compatibilidad con celdas GRU\cite{tfliteGru}, que están soportadas parcialmente en la versión experimental del intérprete. Incluso así, la red recurrente generada tiene que ser una red sin estado, no podríamos implementar una red que leyese de forma contínua las muestras de la aceleración. Como nuestro modelo es episódico, esta limitación no supone un gran problema, mas allá del tener que usar un intérprete poco estable para la implementación. 
-La segunda limitación por contra si tuvo un impacto: TensorFlow Lite no soporta las redes bidireccionales directamente\cite{tfliteBidir} ni pueden usarse posteriormente técnicas de \textit{pruning} para reducir su tamaño\cite{tfPruneBidir}. Sin embargo es posible realizar implementaciones personalizadas para suplir estas carencias. Con ese fin se implementan las soluciones propuestas, siendo las más destacable el uso de una capa personalizada para simular una capa bidireccional que implemente las interfaz \textit{Prunable} y consista de dos capas GRU, una normal y otra regresiva. El código de esta solución, sugerida en los foros citados, se recoge en el apéndice  \ref{app:code:ifell:prunebidir}. Sin embargo el resultado obtenido es poco satisfactorio dado lo aleatorio de los resultados obtenidos: mientras que aplicar pruning parece funcionar sin problemas, la cuantización y conversión a TensorFlow Lite arrojaba errores de forma aleatoria resultando en modelos inutilizables tras realizar el entrenamiento. Por esta razón y dado que su uso se justificaba paradójicamente en función de la optimización de rendimiento del modelo se descartó su uso y se optó por capas progresivas tradicionales pero con una arquitectura más compleja para compensar la pérdida en la capacidad de inferencia.
+
+\paragraph{Limitaciones de la plataforma \tflite/}\label{par:desc:modelo:rnn:limitaciones}
+Para generar, entrenar y ejecutar el modelo de redes neuronales recurrentes optamos por la biblioteca \tensorflow//\tflite/ por ser de uso generalizado y disponer de un intérprete de modelos para plataformas llevables sobre WearOS. Este cliente tiene sin embargo ciertas limitaciones que imponen restricciones a la estructura de la red entrenada. Los dos más notables es la ausencia de compatibilidad con celdas GRU\cite{tfliteGru}, que están soportadas parcialmente en la versión experimental del intérprete. Incluso así, la red recurrente generada tiene que ser una red sin estado, no podríamos implementar una red que leyese de forma continua las muestras de la aceleración. Como nuestro modelo es episódico, esta limitación no supone un gran problema, mas allá del tener que usar un intérprete poco estable para la implementación. 
+La segunda limitación por contra si tuvo un impacto: \tflite/ no soporta las redes bidireccionales directamente\cite{tfliteBidir} ni pueden usarse posteriormente técnicas de \textit{pruning} para reducir su tamaño\cite{tfPruneBidir}. Sin embargo es posible realizar implementaciones personalizadas para suplir estas carencias. Con ese fin se implementan las soluciones propuestas, siendo las más destacable el uso de una capa personalizada para simular una capa bidireccional que implemente las interfaz \textit{Prunable} y consista de dos capas GRU, una normal y otra regresiva. El código de esta solución, sugerida en los foros citados, se recoge en el apéndice \ref{app:code:ifell:prunebidir}. Sin embargo el resultado obtenido es poco satisfactorio dado lo aleatorio de los resultados obtenidos: mientras que aplicar pruning parece funcionar sin problemas, la cuantización y conversión a \tflite/ arrojaba errores de forma aleatoria resultando en modelos inutilizables tras realizar el entrenamiento. Por esta razón y dado que su uso se justificaba paradójicamente en función de la optimización de rendimiento del modelo se descartó su uso y se optó por capas progresivas tradicionales pero con una arquitectura más compleja para compensar la pérdida en la capacidad de inferencia.
 
 \subsubsection{Entrenamiento}
 
-Antes de iniciar el entrenamiento debemos preprocesar la base de datos. Aislamos todas las secuencias de actividades que no sean caídas del conjunto SisFall. De estas, Separamos un 20\% para validación y usaremos el 80\% restante para entrenar el modelo. Entrenamos durante un máximo de 100 iteraciones sobre el conjunto reservado para ello. Usaremos una tasa de aprendizaje variable, que nos permitirá realizar las primeras iteraciones con un valor alto para acelerar el aprendizaje. Tras cada iteración, si el error RMSE entre la entrada y salida del modelo es no se ha reducido respecto a la iteración precedente, reduciremos la tasa de aprendizaje. Así mismo usamos un mecanismo de parada anticipada del aprendizaje si durante 5 iteraciones seguidas no se consigue reducir el error RMSE. Usamos Adam como optimizador y normalización por \textit{dropout} en cada capa. 
+Antes de iniciar el entrenamiento debemos preprocesar la base de datos. Aislamos todas las secuencias de actividades que no sean caídas del conjunto SisFall. De estas, Separamos un 20\% para validación y usaremos el 80\% restante para entrenar el modelo. Entrenamos durante un máximo de 100 iteraciones sobre el conjunto reservado para ello. Usaremos una tasa de aprendizaje variable, que nos permitirá realizar las primeras iteraciones con un valor alto para acelerar el aprendizaje. Tras cada iteración, si el error RMSE entre la entrada y salida del modelo es no se ha reducido respecto a la iteración precedente, reduciremos la tasa de aprendizaje. Así mismo usamos un mecanismo de parada anticipada del aprendizaje si durante 5 iteraciones seguidas no se consigue reducir el error RMSE. Usamos Adam como optimizador y normalización por \textit{dropout} (20\%) en cada capa. 
 
 \figura{evolucionLR}{fig:LRvariable}{Evolución del valor LR exponencial}
-\todo{gráfica de la evolución del entrenamiento}
 
-\todo{comentario sobre el resultado obtenido}
+\begin{figure}[h!t]
+  \centering
+  \begin{subfigure}[b]{0.48\textwidth}
+      \centering
+      \pincludegraphics[0.95]{trainingModeloRNNReconBIDIR200-40}
+      \caption{\footnotesize \label{fig:rnnTrain:recon:bidir:40}Evolución RMSE para RNN-Reconstrucción 2xBIDIR GRU(200), 40 Atributos}
+  \end{subfigure}
+\hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+      \centering
+      \pincludegraphics[0.95]{trainingModeloRNNPred350-25}
+      \caption{\footnotesize \label{fig:rnnTrain:predict:25}Evolución RMSE para RNN-Predicción 3xGRU(350), 25 Atributos\\}
+  \end{subfigure}
+  
+  \begin{subfigure}[b]{0.49\textwidth}
+      \centering
+      \pincludegraphics[1.0]{trainingModeloRNN}
+      \caption{\footnotesize \label{fig:rnnTrain:recon:50}Evolución RMSE para RNN-Reconstrucción 3xGRU(350), 50 Atributos}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.49\textwidth}
+      \centering
+      \pincludegraphics[1.0]{trainingModeloRNNPred350-50}
+      \caption{\footnotesize \label{fig:modelo:rnnTrain:predict:50}Evolución RMSE para RNN-Predicción 3xGRU(350), 50 Atributos}
+  \end{subfigure}
+  \caption{\label{fig:rnn:training} Evolución del error RMSE durante el entrenamiento de los modelos}
+\end{figure}
+
+En \autoref{fig:rnn:training} mostramos alguna de las secuencias de evolución de la función de pérdida (RMSE) durante el entrenamiento de varios modelos. Podemos observar como el modelo que usa 3 capas bidireccionales de 200 elementos y un espacio intermedio de 40 dimensiones(\autoref{fig:rnnTrain:recon:bidir:40}) alcanza un rendimiento similar al modelo con 3 capas GRU de 350 unidades y 50 atributos en el espacio intermedio a pesar de su mayor complejidad y menor compresión. Además, analizando la degradación entre los modelos basados en \textit{RNN-predicción} con espacios intermedios de 50 (\autoref{fig:modelo:rnnTrain:predict:50}) y 25 (\autoref{fig:rnnTrain:predict:25}) dimensiones podemos achacar la mayoría de la pérdida de la pérdida de capacidad de reconstrucción a la disminución del espacio intermedio. Es más, esta variación entre la función de pérdida entre los conjuntos de entrenamiento y validación es el principio sobre el que se basa el funcionamiento del detector: la mayor capacidad de reconstruir o predecir las señales conocidas (actividades ordinarias) de las no entrenadas (caídas). Sin embargo vemos que con únicamente 25 dimensiones no es capaz de generalizar el entrenamiento al resto de actividades.
+Aunque podríamos comparar los resultados de la función de pérdida sobre el conjunto de validación (que recordemos no contiene caídas), este resltado no es relevante para el estudio dado que lo que nos interesa es analizar la variación entre el RMSE sobre el conjunto de actividades y el RMSE sobre el conjunto de caídas. Así, a pesar de que como se ve en las gráficas \ref{fig:rnn:training} aparentemente el ajuste del modelo \textit{RNN-reconstrucción} es mejor que el del modelo predictivo, por si solo ese dato no aporta información relevante para el resultado final.
 
 \subsubsection{Optimización del modelo}
 
 En la sección \ref{sec:req:optimizacion} hemos hablado ya de las técnicas de pruning y cuantización. Aplicaremos ambas, primero haciendo pruning del modelo entrenado, reentrenaremos el modelo con el mismo subconjunto usado para el primer entrenamiento para reajustar los pesos y corregir el error introducido al eliminar los nodos de menor interés. Con este modelo ya aligerado convertiremos el modelo para su uso en TensorFlow Lite. Realizaremos 4 conversiones: 1 sin aplicar cuantización y otras 3 usando diferentes técnicas (Conversión a enteros, dinámica y conversión a float16). Analizaremos las posibles variaciones en la precisión de la red, mejoras en el tiempo de procesado y en consumo de memoria.
 
 \paragraph{Pruning}
-Para realizar el cribado de nodos superfluos de la red usaremos el módulo \texttt{tfmot} de Keras que ofrece herramientas para realizar la evaluación y eliminación de nodos. Internamente genera un contador para cada nodo entrenable de la red donde se almacena el valor, impacto o importancia de dicho nodo en el resultado final usando algoritmos basados en el gradiente. Así pues es necesario añadir varios ciclos de entrenamiento para poder evaluar y eliminar nodos.
+Para realizar el cribado de nodos superfluos de la red usaremos el módulo \texttt{tfmot} de Keras que ofrece herramientas para realizar la evaluación y eliminación de nodos. Internamente genera un contador para cada nodo entrenable de la red donde se almacena el valor, impacto o importancia de dicho nodo en el resultado final usando algoritmos basados en el gradiente. Así pues es necesario añadir varios ciclos de entrenamiento para poder evaluar y eliminar nodos. 
 
-Realizamos 10 ciclos extra de entrenamiento sobre el total del conjunto de datos. Usamos, al igual que en el entrenamiento una tasa de aprendizaje con decaimiento no lineal. La eliminación de nodos se realizará también de forma no lineal, decreciente. Tras una primera época para analizar la importancia de cada neurona, realizamos un cribado del 30\% de ellos, y batch por batch y de forma decreciente vamos eliminando pesos durante 4 épocas hasta llegar a eliminar el 50\% de ellos. El interés de usar una tasa de aprendizaje decreciente sirve a la tarea de poder realizar grandes correcciones en la red en las primeras etapas, cuando las modificaciones en su morfología son mayores e ir reduciendo la brusquedad de los ajustes, especialmente durante las últimas 5 iteraciones durante la cuales no se elimina ningún nodo.
+Realizamos 10 ciclos extra de entrenamiento sobre el total del conjunto de datos, de los cuales:
+\begin{itemize}
+  \item \textsl{Época 1} Entrenamiento sobre todo el conjunto para evaluar las influencias de los nodos en la salida.
+  \item \textsl{Épocas 2 a 5} Cribado de nodos de forma progresiva. En cada \textit{batch} se criba un nuevo conjunto de nodos.
+  \item \textsl{Épocas 6 a 10} Reajuste y re-entrenamiento de la red para recomponer los pesos y corregir el error introducido en el cribado.
+\end{itemize}
 
-Como puede apreciarse en la gráfica de la función RMSE durante el entrenamiento de pruning, a pesar de la reducción de complejidad de la red, el comportamiento o error de la misma permanece prácticamente inalterado.
+Salvo por la etapa adicional del cribado de nodos, este proceso es idéntico al entrenamiento y por lo tanto usaremos los mismos valores y conjunto de datos salvo por la tasa de aprendizaje que a pesar de mantener el mismo esquema de decaimiento no lineal del entrenamiento, el valor inicial se situará en $LR=0,0001$. La eliminación de nodos se realizará también de forma decreciente no lineal. Tras una primera época para analizar la importancia de cada neurona, realizamos un cribado del 30\% de ellos, y batch por batch y de forma decreciente vamos eliminando pesos durante 4 épocas hasta llegar a eliminar el 50\% de ellos al final de la quinta época de entrenamiento. El interés de usar una tasa de aprendizaje decreciente sirve a la tarea de poder realizar grandes correcciones en la red en las primeras etapas, cuando la tasa de aprendizaje es mayor y permite una mayor capacidad de reajuste cuando las modificaciones en su morfología son de mayor calado,  e ir reduciendo la brusquedad de los ajustes a medida que los cambios en la red son cada vez menores. Finalmente, las últimas 5 épocas son de nuevo un entrenamiento normal para seguir con el reajuste de la red. 
 
-\todo{falta gráfica del entrenamiento/pruning}
+\begin{figure}[!ht]
+  \centering
+  \begin{subfigure}[b]{0.48\textwidth}
+      \centering
+      \pincludegraphics[1.0]{pruningModeloRNNRecon400_50}
+      \caption{\footnotesize \label{fig:pruning:recon}Cribado del Modelo RNN Reconstrucción de \ifell/}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+      \centering
+      \pincludegraphics[1.0]{pruningModeloRNNPred400_50}
+      \caption{\footnotesize \label{fig:pruning:predict}Cribado del Modelo RNN Predicción}
+  \end{subfigure}
+  \caption{\label{fig:pruning:rmse} Evolución del RMSE durante el cribado y re-entrenamiento de los modelos RNN}
+\end{figure}
+
+Observando la evolución del error RMSE de la \autoref{fig:pruning:rmse} apreciamos el impacto negativo de la primera iteración de entrenamiento con una tasa de aprendizaje alta sobre la precisión del modelo. Vemos como el \textit{pruning} o cribado de nodos afecta negativamente en la evaluaciónde la función de pérdida en el momento que entra y prácticamente hasta que en la época 5 termina la eliminación de neuronas. Finalmente las épocas de re-entrenamiento y reajuste devuelven la red a un estado similar al original. Entrando en detalle hay un segundo efecto de esta técnica sobre el modelo: si analizamos la diferencia en la evaluación del RMSE sobre el conjunto de validación y de entrenamiento durante las épocas en que se realiza el cribado se observa como la distancia entre ambas se reduce. Interpretamos esta variación como una mejora en la capacidad de generalización del modelo. Sin embargo la brecha entre ambas medidas vuelve a ensancharse rápidamente, especialmente en el caso del modelo \textit{RNN-reconstrucción}, claro indicador de que el modelo realiza un sobreajuste y por tanto está sobredmensionado.
+
+\todo{tabla con resultados rmse sobre el conjutno apartado, y si es posible sobre las caídas también}
+\todo{tabla sobre la reducción de los tamamños de la red, aunque quizás lo pongamos tras los modelos cuantizados.}
+
+\tablan[0.6\textwidth]{tab:pruning:rmse}{Efecto del proceso en tamaño y RMSE de aplicar pruning por modelo}{lrrrr}{
+                              & \multicolumn{2}{c}{\textit{Original}}   & \multicolumn{2}{c}{\textit{Pruned}} \\ \cmidrule[0.3pt](lr){2-3}\morecmidrules\cmidrule[0.3pt](lr){4-5}
+ \textit{Modelo (Atributos)}  & {\small Sparsity}   & {\small RMSE}     & {\small Sparsity}   & {\small RMSE }  \\ \midrule
+ \textit{RNN-predicción}(50)  &     &   &   &   \\
+ \textit{RNN-predicción}(30)  &     &   &   &   \\
+ \textit{RNN-reconstrucción}(50) &  &   &   &   \\ 
+ \textit{RNN-reconstrucción}(30) &  &   &   &   \\
+}{}{3}
 
 \paragraph{Cuantización y conversión a TensorFlow Lite}
 El modelo ya comprimido es no sirve para convertirlo en un modelo TensorFlow Lite. Para ello hemos de recuperar la estructura del modelo original y aplicar los pesos del modelo comprimido, poniendo a 0 los pesos de los nodos y uniones eliminados. Este cambio parece anular los beneficios de aplicar pruning, pero como veremos en las pruebas, no es así. 
 Con la estructura original restituida, convertimos el modelo a TensorFlow Lite con y sin cuantización. En las tablas \ref{tab:tflite_weights_activations, tab:tflite_quantization}  introducimos los diferentes tipos de cuantización, su efecto en la representación de pesos y activaciones, velocidad, precisión y tamaño de la red. Analizamos los modelos usando la conversión a enteros (con rango dinámico y estático) y la reducción en la precisión decimal a \texttt{Float16} o 16bits.
 
-\tablan{tab:quant:resultados}{Resultados de los modelos optimizados}{lrrrrr}{
-            &             &       & \multicolumn{3}{c}{Latencia}  \\ \cmidrule(lr){4-6}
-  Modelo    &  Tamaño(MB) & RMSE  &  CPU  &  GPU  & Wearable  \\ \midrule
-  Base      & 11,1        & 0,532 & -     &       &           \\
-  Sparse\tnote{1} & 8.1   & 0,725 & -     &       &           \\
-  Int8      & 3.9         & 1.121 & -     &       &           \\
-  Float16   & 7,6         & 0,726 & -     &       &           \\
-  Dynamic   & 3.9         & 1.110 & -     &       &           \\
+\tablan[0.6\textwidth]{tab:quant:resultados}{Resultados de los modelos optimizados}{lrrrrr}{
+                  &                       &               & \multicolumn{3}{c}{\textit{Latencia}}  \\ \cmidrule[0.3pt](lr){4-6}
+  \textit{Modelo} &  \textit{Tamaño (MB)} & \textit{RMSE} &  CPU  &  GPU  & Wearable  \\ \midrule
+  Base            & 11,1                  & 0,532         & -     &       &           \\
+  Sparse\tnote{1} & 8.1                   & 0,725         & -     &       &           \\
+  Int8            & 3.9                   & 1.121         & -     &       &           \\
+  Float16         & 7,6                   & 0,726         & -     &       &           \\
+  Dynamic         & 3.9                   & 1.110         & -     &       &           \\
 }{
 \item [1] Tras restitución de la red.
 }{3}
@@ -392,9 +505,7 @@ El modelo predictivo, se basa en la capacidad de las redes RNN y particularmente
 
 
 
-\figura{trainingModeloRNN}{fig:rnnTrainAlt}{Evolución de RMSE durante el entrenamiento}
 
-\figura{prediction.png}{fig:prediccionAceleracion}{Predicción de la aceleración}
 
 \paragraph*{Detección}
 

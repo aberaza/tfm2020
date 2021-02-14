@@ -57,7 +57,7 @@ vec/.style={
 }
 
 %Salidas
-\foreach \output [count=\outpos from 1] in { {$y_1$}, {$y_2$}, {$\cdots$}, {$y_{100}$}} {
+\foreach \output [count=\outpos from 1] in { {$y_1$}, {$y_2$}, {$\cdots$}, {$y_{50}$}} {
   \node[inout=pink] (in\outpos) at (\outpos, 9.5) {\output};
   \draw[arrows=->] (enc8\outpos) -- (in\outpos);
 }

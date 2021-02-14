@@ -47,10 +47,11 @@
       \resizebox{\scale\linewidth}{!}{
         \input{\pgffigure}
         %\includestandalone{\pgffigure}
-        %\includegraphics[width=0.9\textwidth]{\pgffigure}
+        %\includegraphics[width=\scale\linewidth]{\pgffigure}
       }
     }{
-      \includegraphics[scale=\scale]{\graphname}
+      % \includegraphics[scale=\scale]{\graphname}
+      \includegraphics[width=\scale\linewidth]{\graphname}
     }
   }
 }
@@ -62,7 +63,7 @@
   \def\pgffigure{img/#2.pgf}
   \def\figid{#3}
   \def\captiontext{#4}
-    \begin{figure}[!ht]
+    \begin{figure}[h!t]
         \centering
         \IfFileExists{\texfigure}{
           \resizebox{\scale\linewidth}{!}{
@@ -73,10 +74,11 @@
               \resizebox{\scale\linewidth}{!}{
                 \input{\pgffigure}
                 %\includestandalone{\pgffigure}
-                %\includegraphics[width=0.9\textwidth]{\pgffigure}
+                %\includegraphics[width=\scale\linewidth]{\pgffigure}
               }
            }{
-               \includegraphics[scale=\scale]{\graphname}
+               % \includegraphics[scale=\scale]{\graphname}
+               \includegraphics[width=\scale\linewidth]{\graphname}
            }
         }
         \caption{\label{\figid} \captiontext}
@@ -84,6 +86,7 @@
 }
 
 % SOME HELPERS
+\usepackage{multirow}
 \usepackage{makecell}
 \newcolumntype{G}{>{\columncolor{Gray!30}}l}
 \newcolumntype{g}{>{\columncolor{Gray!30}}c}
@@ -117,9 +120,9 @@
     \resizebox{\myscale}{!}{
       \begin{threeparttable}
         \begin{tabular}{@{}#4@{}}
-          \toprule
+          \toprule[1.5pt]
           #5
-          \bottomrule
+          \bottomrule[1.5pt]
         \end{tabular}
 
         \begin{tablenotes}
@@ -131,19 +134,42 @@
   \caption{\label{\mytableid} \mycaptiontext}
   \end{table*}
 }
-
+\hspace{\fill}
 \newcommand\tabCap[4]{
+  \centering
   \begin{tabular}{@{}#3@{}}
-    \toprule
+    \toprule[1.5pt]
     #4
-    \bottomrule
+    \bottomrule[1.5pt]
   \end{tabular}
   \caption{\label{#1} #2}
 }
-\newcommand\subtabla[7][0.48]{
-  \begin{subtable}[h]{0.45\textwidth}
-    \rowcolors{#7}{white}{Gray!20}
+\newcommand\subtablal[6][0.45]{
+  \begin{subtable}{#1\textwidth}
+    \rowcolors{#6}{white}{Gray!20}
+    \flushleft
+    \tabCap{#2}{#3}{#4}{#5}
+  \end{subtable}
+}
+\newcommand\subtablar[6][0.45]{
+  \begin{subtable}{#1\textwidth}
+    \rowcolors{#6}{white}{Gray!20}
+    \flushright
+    \tabCap{#2}{#3}{#4}{#5}
+  \end{subtable}
+}
+\newcommand\subtablac[6][0.45]{
+  \begin{subtable}{#1\textwidth}
+    \rowcolors{#6}{white}{Gray!20}
     \centering
+    \tabCap{#2}{#3}{#4}{#5}
+  \end{subtable}
+}
+
+\newcommand\subtabla[7][0.45]{
+  \begin{subtable}{#1\textwidth}
+    \rowcolors{#7}{white}{Gray!20}
+    % \centering
     \ifthenelse{
       \equal{#6}{}
       }{
@@ -180,9 +206,9 @@
     \centering
     \scalebox{#1}{
         \begin{tabular}{@{}#4@{}}
-            \toprule
+          \toprule[3pt]
         #5
-            \bottomrule
+        \bottomrule[2pt]
         \end{tabular}
     }
     \caption{\label{#2} #3}
@@ -206,6 +232,7 @@
 % Texto citado
 \usepackage[autostyle=true,spanish=spanish]{csquotes}
 \newcommand{\cita}[2][]{\textquote[{#1}]{#2}}
+\newcommand{\citaa}[3][]{\textquote[{\citeNP[#1]{#2}}]{#3}}
 
 %%% ToDo notes
 \usepackage{xargs}                      % Use more than one optional parameter in a new commands
@@ -335,7 +362,13 @@
 %% Vocabulario y palabrejos especiales
 
 \def\accelcapture/{\textsl{\textsf{Accel}}\textsf{Capture}}
+\newcommand{\accelcapture}{\textsl{\textsf{Accel}}\textsf{Capture}}
+
 \def\ifell/{\textsl{\textsf{i}}\textsf{Fell}}
 \def\sisfall/{\textsc{SisFALL}}
+
 \def\tflow/{\textsf{TensorFlow}}
-\def\tflite/{\textsf{TensorFlow}~{\footnotesize\texttt{Lite}}}
+\def\tensorflow/{\textsf{TensorFlow}}
+\newcommand{tflow}{\textsf{TensorFlow}}
+\def\tflite/{\textsf{TensorFlow~{\footnotesize Lite}}}
+\newcommand{\tflite}{\textsf{TensorFlow~{\footnotesize Lite}}
