@@ -115,7 +115,7 @@ El interés de realizar un filtrado previo al subsampleado puede observarse al c
 
 \paragraph{Submuestreado a 25Hz}
 
-La base de datos \sisfall/ usa un muestreado a 200Hz, el reloj elegido como soporte admite únicamente un muestreado a 50Hz como máximo. Sin embargo reduciremos la frecuencia de lectura a 25 Hz para reducir el número de cáclulos a realizar ya que los experimentos previos demuestran que es posible detectar caídas incluso con 11 Hz. El sub-muestreado se realiza tomando una muestra de cada n con $n=\frac{f_m}{f_o}=\frac{25}{200}=8$. En la figura \ref{fig:downsample} se aprecia la degradación que sufre la señal original al aplicarle el filtrado y posterior reducción de muestras. Se observa un doble efecto del filtrado: un suavizado de la señal resultante y un desfase no lineal. El suavizado enmascara parcialmente los valores pico y valle, sin embargo garantiza mayor fidelidad del resultado a la señal original: si bien se pierde la información en picos y valles, la señal mantiene mejor la estructura general. En el fondo se ha reducido el ruido de la señal ya que el filtro en la práctica actúa como un ponderador.
+La base de datos \sisfall/ usa un muestreado a 200 Hz, el reloj elegido como soporte admite únicamente un muestreado a 50Hz como máximo. Sin embargo reduciremos la frecuencia de lectura a 25 Hz para reducir el número de cáclulos a realizar ya que los experimentos previos demuestran que es posible detectar caídas incluso con 11 Hz. El sub-muestreado se realiza tomando una muestra de cada n con $n=\frac{f_m}{f_o}=\frac{25}{200}=8$. En la figura \ref{fig:downsample} se aprecia la degradación que sufre la señal original al aplicarle el filtrado y posterior reducción de muestras. Se observa un doble efecto del filtrado: un suavizado de la señal resultante y un desfase no lineal. El suavizado enmascara parcialmente los valores pico y valle, sin embargo garantiza mayor fidelidad del resultado a la señal original: si bien se pierde la información en picos y valles, la señal mantiene mejor la estructura general. En el fondo se ha reducido el ruido de la señal ya que el filtro en la práctica actúa como un ponderador.
 
 
 \section{Descripción del Modelo y Algoritmo de \ifell/}\label{sec:imp:model}
@@ -243,17 +243,15 @@ Los modelos codificador/decodificador (véase la figura \ref{fig:modelo:encoderd
 
 En nuestro caso optamos por dos estructuras en que el espacio de entrada y salida de la red es el mismo. En el modelo \textit{RNN-reconstrucción} entenderemos el proceso como una compresión y descompresión con pérdida de la señal mientras en el modelo \textit{RNN-predicción} es similar a un generador de señal secuencia-a-secuencia. En ambos casos, a partir de la serie de muestras $X$de longitud $l$, obtenemos un vector de características $C=codificador(X)=\{c_1,\cdots,c_m\}$ de longitud $m$ que cumple. Posteriormente inyectamos este vector de características como entrada a una segunda red recurrente, el decodificador, que reconstruye una aproximación de la secuencia original $Y_{1\cdots l}=decodificador_{rec}(C)=\hat{X_{1\cdots l}}$ en el caso del \textit{RNN-reconstrucción} o generar una señal de longitud $n$ aproximación de la evolución futura de la señal de entrada $Y_{1\cdots n}=decodificador_{pred}(C)=\hat{X}_{l\cdots l+n}$. Como veremos en el apartado de arquitectura y entrenamiento de los modelos, ambos modelos son prácticamente idénticos y la mayor diferencia es la generación de los pares $X:Y$ usados durante el entrenamiento.
 
-Los principales parámetros a determinar para ambos modelos son las longitudes de las secuencias de entrada y salida, así como la de la secuencia codificada o vector de características. Este ratio entre la longitud de la señal a reconstruir y la dimensión del espacio de características es determinante para definir la capacidad del sistema de detectar anomalías. Un ratio demasiado alto, y el error de reconstrucción será tan alto que no servirá como estimador. Por contra, aumentar en exceso el las dimensiones del espacio intermedio podría llevar a la red a la sobreadaptación, especialmente en el caso del modelo \textit{RNN-reconstrucción}. Los valores elegidos para los modelos son:
+Los principales parámetros a determinar para ambos modelos son las longitudes de las secuencias de entrada y salida, así como la de la secuencia codificada o vector de características. Este ratio entre la longitud de la señal a reconstruir y la dimensión del espacio de características junto con el número de unidades de cada capa GRU seran determinante para definir la capacidad del sistema de generalizar o sobreajustarse a los datos de entrenamiento. Por esa razón estudiaremos varios modelos con diferentes espacios de dimensiones intermedios y número de unidades tanto para la modelos de reconstrucción como de predicción. En lo referente a al espacio de dimensiones intermedio analizamos variantes con $m=30$ y $m=50$ atributos. Tomar espacios de menor dimensionalidad ocasiona que los modelos de predicción sean totalmente ineficaces mientras que aumentar más allá de 50 en el caso de los modelos de reconstrucción hace que sean capaces de reconstruir las caídas con casi la misma fiabilidad que las acciones cotidianas. En cuanto al tamaño de cada capa optaremos por analizar variantes con 175 y 350 unidades, siempre en arquitecturas de 3 capas. Todos los modelos comparten la misma longitud de la secuencia de entrada $l=100$ o el equivalente a 4 segundos a 25 Hz. Esta ventana de eventos se elige ya que la mayoría de las caídas tienen una duración de $\plusminus1s$ \cite{Sucerquia2017,Liu2018,Hassan2019} alrededor del instante del impacto principal. Duplicamos el tamaño de la ventana para favorecer al modelo \textit{RNN-predicción} para incluir más contexto de la señal que ayude a generar una buena estimación.
 
-\begin{itemize}
-  \item Longitud de la secuenciad e entrada $l=100$ Tomamos una ventana de entrada de 100 muestras o 4 segundos. La mayoría de las caídas tienen una duración de $\plusminus1s$ \cite{Sucerquia2017,Liu2018,Hassan2019} alrededor del instante del impacto principal. Duplicamos el tamaño de la ventana para favorecer al modelo \textit{RNN-predicción} para incluir más contexto de la señal que ayude a generar una buena estimación.
   \item $l=50$ La dimensión del espacio de características intermedio de 1/2 parte del tamaño del espacio de entrada y salida. Como veremos en el apartado siguiente, experimentalmente demuestra ser suficiente para la reconstrucción de la señal sin caer en la sobreadaptación tanto en los modelos de predicción como de reconstrucción, y ofrece un estimador mucho más preciso que si usamos vectores de características de menores dimensiones.
 \end{itemize}
 
 \paragraph{Estructuras de red}
 En una primera instancia optamos por el uso de capas bidireccionales\cite{Schuster1997}. Estas capas son en realizad una composición de dos capas recurrentes de igual tamaño. Una procesa la entrada en un sentido y la otra en el inverso y se pondera el resultado de ambas para obtener la salida. Estas capas han demostrado en varios estudios \cite{Zaho2017, Su2018} su mayor eficiencia procesando series temporales, llegando a mejorar en un 30\% a las capas recurrentes que procesan en un único sentido. Su uso fue finalmente descartado por el soporte inestable de \tensorflow/ Lite de este tipo de capas, como trataremos en el punto \ref{par:desc:modelo:rnn:limitaciones}.
 
-Descartadas las capas bidireccionales, optamos por una arquitectura de red simétrica para codificador y decodificador, con tres capas unidireccionales de celdas GRU de 300 unidades cada una. Como hemos mencionado, la dimensión del espacio o vector de características intermedio es 50 y es el resultado de recuperar el estado interno de una última capa GRU con 50 unidades (una por característica) al codificador. Este vector se utiliza para alimentar la red del decodificador que tiene una estructura reflejo de la del codificador, con tres capas GRU de 350 unidades que reconstruyen una señal de 100 muestras o predicen una señal de 2 segundos (50 muestras) tal y como se observa en los diagramas \ref{fig:modelo:rnnFinal:recon} y \ref{fig:modelo:rnnFinal:predict}.
+Descartadas las capas bidireccionales, optamos por una arquitectura de red simétrica para codificador y decodificador, con tres capas unidireccionales de celdas GRU de 175 o 350 unidades cada una. Como hemos mencionado, la dimensión del espacio o vector de características intermedio varía entre 30 y 50 y es el resultado de recuperar el estado interno de una última capa GRU con el mismo número de unidades que dimensiones o características tenga el espacio intermedio. Este vector se utiliza para alimentar la red del decodificador que tiene una estructura reflejo de la del codificador, con tres capas GRU de de igual cantidad de unidades que reconstruyen una señal de 100 muestras o predicen una señal de 2 segundos (50 muestras) tal y como se observa en los diagramas \ref{fig:modelo:rnnFinal:recon} y \ref{fig:modelo:rnnFinal:predict}.
 
 La elección de cada componente y parámetro se realiza buscando maximizar el rendimiento de la red resultante. Así pues se escogen celdas GRU por tener capacidades similares a las celdas LSTM a la hora de tratar con series temporales \cite{Chung2014} siendo menos complejas que estas. Usamos RELU como función de activación. Dado que estamos usando el módulo de la aceleración sin normalizar a la entrada, y que el valor del mismo es siempre positivo, es una elección aceptable. Además, su simplicidad facilita tanto el entrenamiento como su optimización y ejecución posterior.
 
@@ -262,13 +260,13 @@ La elección de cada componente y parámetro se realiza buscando maximizar el re
   \begin{subfigure}[b]{0.48\textwidth}
       \centering
       \pincludegraphics[1.0]{modeloRNNFinal}
-      \caption{\label{fig:modelo:rnnFinal:recon}Modelo RNN Reconstrucción de \ifell/}
+      \caption{\label{fig:modelo:rnnFinal:recon}Modelo RNN Reconstrucción GRU(350) y 50 atributos}
   \end{subfigure}
   \hfill
   \begin{subfigure}[b]{0.48\textwidth}
       \centering
       \pincludegraphics[1.0]{modeloRNNPredict}
-      \caption{\label{fig:modelo:rnnFinal:predict}Modelo RNN Predicción de \ifell/}
+      \caption{\label{fig:modelo:rnnFinal:predict}Modelo RNN Predicción GRU(350) y 50 atributos}
   \end{subfigure}
   \caption{\label{fig:rnnFinal} Variantes de los modelos RNN de \ifell/}
 \end{figure}
@@ -280,7 +278,7 @@ La segunda limitación por contra si tuvo un impacto: \tflite/ no soporta las re
 
 \subsubsection{Entrenamiento}
 
-Antes de iniciar el entrenamiento debemos preprocesar la base de datos. Aislamos todas las secuencias de actividades que no sean caídas del conjunto SisFall. De estas, Separamos un 20\% para validación y usaremos el 80\% restante para entrenar el modelo. Entrenamos durante un máximo de 100 iteraciones sobre el conjunto reservado para ello. Usaremos una tasa de aprendizaje variable, que nos permitirá realizar las primeras iteraciones con un valor alto para acelerar el aprendizaje. Tras cada iteración, si el error RMSE entre la entrada y salida del modelo es no se ha reducido respecto a la iteración precedente, reduciremos la tasa de aprendizaje. Así mismo usamos un mecanismo de parada anticipada del aprendizaje si durante 5 iteraciones seguidas no se consigue reducir el error RMSE. Usamos Adam como optimizador y normalización por \textit{dropout} (20\%) en cada capa. 
+Antes de iniciar el entrenamiento debemos preprocesar la base de datos. Aislamos todas las secuencias de actividades que no sean caídas del conjunto SisFall. De estas, Separamos un 20\% para validación y usaremos el 80\% restante para entrenar el modelo. Entrenamos durante un máximo de 200 iteraciones sobre el conjunto reservado para ello. Usaremos una tasa de aprendizaje variable, que nos permitirá realizar las primeras iteraciones con un valor alto para acelerar el aprendizaje. Tras cada iteración, si el error RMSE entre la entrada y salida del modelo es no se ha reducido respecto a la iteración precedente, reduciremos la tasa de aprendizaje. Así mismo usamos un mecanismo de parada anticipada del aprendizaje si durante 5 iteraciones seguidas no se consigue reducir el error RMSE. Usamos Adam como optimizador y normalización por \textit{dropout} (20\%) en cada capa. 
 
 \figura{evolucionLR}{fig:LRvariable}{Evolución del valor LR exponencial}
 
@@ -295,12 +293,26 @@ Antes de iniciar el entrenamiento debemos preprocesar la base de datos. Aislamos
   \begin{subfigure}[b]{0.48\textwidth}
       \centering
       \pincludegraphics[0.95]{trainingModeloRNNPred350-25}
-      \caption{\footnotesize \label{fig:rnnTrain:predict:25}Evolución RMSE para RNN-Predicción 3xGRU(350), 25 Atributos\\}
+      \caption{\footnotesize \label{fig:rnnTrain:predict:25}Evolución RMSE para RNN-Predicción 3xGRU(350), 25 Atributos}
   \end{subfigure}
   
+
+  \begin{subfigure}[b]{0.48\textwidth}
+      \centering
+      \pincludegraphics[0.95]{trainingModeloRNNRecon175-50}
+      \caption{\footnotesize \label{fig:rnnTrain:recon:175}Evolución RMSE para RNN-Reconstrucción 3xGRU(175), 50 Atributos}
+  \end{subfigure}
+\hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+      \centering
+      \pincludegraphics[0.95]{trainingModeloRNNPred175-50}
+      \caption{\footnotesize \label{fig:rnnTrain:predict:175}Evolución RMSE para RNN-Predicción 3xGRU(175), 50 Atributos}
+  \end{subfigure}
+
+
   \begin{subfigure}[b]{0.49\textwidth}
       \centering
-      \pincludegraphics[1.0]{trainingModeloRNN}
+      \pincludegraphics[1.0]{trainingModeloRNN.png}
       \caption{\footnotesize \label{fig:rnnTrain:recon:50}Evolución RMSE para RNN-Reconstrucción 3xGRU(350), 50 Atributos}
   \end{subfigure}
   \hfill
@@ -309,7 +321,7 @@ Antes de iniciar el entrenamiento debemos preprocesar la base de datos. Aislamos
       \pincludegraphics[1.0]{trainingModeloRNNPred350-50}
       \caption{\footnotesize \label{fig:modelo:rnnTrain:predict:50}Evolución RMSE para RNN-Predicción 3xGRU(350), 50 Atributos}
   \end{subfigure}
-  \caption{\label{fig:rnn:training} Evolución del error RMSE durante el entrenamiento de los modelos}
+  \caption{\label{fig:rnn:training} Evolución del error RMSE durante el entrenamiento de varios de los modelos estudiados}
 \end{figure}
 
 En \autoref{fig:rnn:training} mostramos alguna de las secuencias de evolución de la función de pérdida (RMSE) durante el entrenamiento de varios modelos. Podemos observar como el modelo que usa 3 capas bidireccionales de 200 elementos y un espacio intermedio de 40 dimensiones(\autoref{fig:rnnTrain:recon:bidir:40}) alcanza un rendimiento similar al modelo con 3 capas GRU de 350 unidades y 50 atributos en el espacio intermedio a pesar de su mayor complejidad y menor compresión. Además, analizando la degradación entre los modelos basados en \textit{RNN-predicción} con espacios intermedios de 50 (\autoref{fig:modelo:rnnTrain:predict:50}) y 25 (\autoref{fig:rnnTrain:predict:25}) dimensiones podemos achacar la mayoría de la pérdida de la pérdida de capacidad de reconstrucción a la disminución del espacio intermedio. Es más, esta variación entre la función de pérdida entre los conjuntos de entrenamiento y validación es el principio sobre el que se basa el funcionamiento del detector: la mayor capacidad de reconstruir o predecir las señales conocidas (actividades ordinarias) de las no entrenadas (caídas). Sin embargo vemos que con únicamente 25 dimensiones no es capaz de generalizar el entrenamiento al resto de actividades.
@@ -319,10 +331,8 @@ Aunque podríamos comparar los resultados de la función de pérdida sobre el co
 
 En la sección \ref{sec:req:optimizacion} hemos hablado ya de las técnicas de pruning y cuantización. Aplicaremos ambas, primero haciendo pruning del modelo entrenado, reentrenaremos el modelo con el mismo subconjunto usado para el primer entrenamiento para reajustar los pesos y corregir el error introducido al eliminar los nodos de menor interés. Con este modelo ya aligerado convertiremos el modelo para su uso en TensorFlow Lite. Realizaremos 4 conversiones: 1 sin aplicar cuantización y otras 3 usando diferentes técnicas (Conversión a enteros, dinámica y conversión a float16). Analizaremos las posibles variaciones en la precisión de la red, mejoras en el tiempo de procesado y en consumo de memoria.
 
-\paragraph{Pruning}
-Para realizar el cribado de nodos superfluos de la red usaremos el módulo \texttt{tfmot} de Keras que ofrece herramientas para realizar la evaluación y eliminación de nodos. Internamente genera un contador para cada nodo entrenable de la red donde se almacena el valor, impacto o importancia de dicho nodo en el resultado final usando algoritmos basados en el gradiente. Así pues es necesario añadir varios ciclos de entrenamiento para poder evaluar y eliminar nodos. 
-
-Realizamos 10 ciclos extra de entrenamiento sobre el total del conjunto de datos, de los cuales:
+\paragraph{Pruning}\\
+El proceso de \textit{pruning}, o cribado nos va a permitir obtener un modelo ralo, es decir, un modelo donde un porcentaje elevado de sus valores son nulos. Este acercamiento tiene dos objetivos: por un lado reducir el tamaño del modelo (los valores nulos no hace falta guardarlos) y por otro acelerar la ejecución del modelo aplicando técnicas de multiplicación de matrices ralas. Llamaremos \textit{sparse} a la familia de los modelos ralos obtenidos al aplicar \textit{pruning} sobre el modelo original. Para realizar el cribado de nodos superfluos de la red usaremos el módulo \texttt{tfmot} de Keras que ofrece herramientas para realizar la evaluación y eliminación de nodos. Internamente genera un contador para cada nodo entrenable de la red donde se almacena el valor, impacto o importancia de dicho nodo en el resultado final usando algoritmos basados en el gradiente. Así pues es necesario añadir varios ciclos de entrenamiento para poder evaluar y eliminar nodos. Para cada modelo realizamos 10 ciclos extra de entrenamiento sobre el total del conjunto de datos, de los cuales:
 \begin{itemize}
   \item \textsl{Época 1} Entrenamiento sobre todo el conjunto para evaluar las influencias de los nodos en la salida.
   \item \textsl{Épocas 2 a 5} Cribado de nodos de forma progresiva. En cada \textit{batch} se criba un nuevo conjunto de nodos.
@@ -335,16 +345,16 @@ Salvo por la etapa adicional del cribado de nodos, este proceso es idéntico al 
   \centering
   \begin{subfigure}[b]{0.48\textwidth}
       \centering
-      \pincludegraphics[1.0]{pruningModeloRNNRecon400_50}
+      \pincludegraphics[1.0]{pruningModeloRNNRecon175_50}
       \caption{\footnotesize \label{fig:pruning:recon}Cribado del Modelo RNN Reconstrucción de \ifell/}
   \end{subfigure}
   \hfill
   \begin{subfigure}[b]{0.48\textwidth}
       \centering
-      \pincludegraphics[1.0]{pruningModeloRNNPred400_50}
+      \pincludegraphics[1.0]{pruningModeloRNNPred17550}
       \caption{\footnotesize \label{fig:pruning:predict}Cribado del Modelo RNN Predicción}
   \end{subfigure}
-  \caption{\label{fig:pruning:rmse} Evolución del RMSE durante el cribado y re-entrenamiento de los modelos RNN}
+  \caption{\label{fig:pruning:rmse}Dos muestras de la evolución del RMSE durante el cribado y re-entrenamiento de los modelos RNN}
 \end{figure}
 
 Observando la evolución del error RMSE de la \autoref{fig:pruning:rmse} apreciamos el impacto negativo de la primera iteración de entrenamiento con una tasa de aprendizaje alta sobre la precisión del modelo. Vemos como el \textit{pruning} o cribado de nodos afecta negativamente en la evaluaciónde la función de pérdida en el momento que entra y prácticamente hasta que en la época 5 termina la eliminación de neuronas. Finalmente las épocas de re-entrenamiento y reajuste devuelven la red a un estado similar al original. Entrando en detalle hay un segundo efecto de esta técnica sobre el modelo: si analizamos la diferencia en la evaluación del RMSE sobre el conjunto de validación y de entrenamiento durante las épocas en que se realiza el cribado se observa como la distancia entre ambas se reduce. Interpretamos esta variación como una mejora en la capacidad de generalización del modelo. Sin embargo la brecha entre ambas medidas vuelve a ensancharse rápidamente, especialmente en el caso del modelo \textit{RNN-reconstrucción}, claro indicador de que el modelo realiza un sobreajuste y por tanto está sobredmensionado.
@@ -353,7 +363,7 @@ Observando la evolución del error RMSE de la \autoref{fig:pruning:rmse} aprecia
 \todo{tabla sobre la reducción de los tamamños de la red, aunque quizás lo pongamos tras los modelos cuantizados.}
 
 \tablan[0.6\textwidth]{tab:pruning:rmse}{Efecto del proceso en tamaño y RMSE de aplicar pruning por modelo}{lrrrr}{
-                              & \multicolumn{2}{c}{\textit{Original}}   & \multicolumn{2}{c}{\textit{Pruned}} \\ \cmidrule[0.3pt](lr){2-3}\morecmidrules\cmidrule[0.3pt](lr){4-5}
+                              & \multicolumn{2}{c}{\textit{Original}}   & \multicolumn{2}{c}{\textit{Pruned}} \\ \cmidrule[0.3pt](lr){2-3}\cmidrule[0.3pt](lr){4-5}
  \textit{Modelo (Atributos)}  & {\small Sparsity}   & {\small RMSE}     & {\small Sparsity}   & {\small RMSE }  \\ \midrule
  \textit{RNN-predicción}(50)  &     &   &   &   \\
  \textit{RNN-predicción}(30)  &     &   &   &   \\
@@ -361,31 +371,126 @@ Observando la evolución del error RMSE de la \autoref{fig:pruning:rmse} aprecia
  \textit{RNN-reconstrucción}(30) &  &   &   &   \\
 }{}{3}
 
-\paragraph{Cuantización y conversión a TensorFlow Lite}
-El modelo ya comprimido es no sirve para convertirlo en un modelo TensorFlow Lite. Para ello hemos de recuperar la estructura del modelo original y aplicar los pesos del modelo comprimido, poniendo a 0 los pesos de los nodos y uniones eliminados. Este cambio parece anular los beneficios de aplicar pruning, pero como veremos en las pruebas, no es así. 
-Con la estructura original restituida, convertimos el modelo a TensorFlow Lite con y sin cuantización. En las tablas \ref{tab:tflite_weights_activations, tab:tflite_quantization}  introducimos los diferentes tipos de cuantización, su efecto en la representación de pesos y activaciones, velocidad, precisión y tamaño de la red. Analizamos los modelos usando la conversión a enteros (con rango dinámico y estático) y la reducción en la precisión decimal a \texttt{Float16} o 16bits.
+\paragraph{Cuantización y conversión a \tflite/}\\
 
-\tablan[0.6\textwidth]{tab:quant:resultados}{Resultados de los modelos optimizados}{lrrrrr}{
-                  &                       &               & \multicolumn{3}{c}{\textit{Latencia}}  \\ \cmidrule[0.3pt](lr){4-6}
-  \textit{Modelo} &  \textit{Tamaño (MB)} & \textit{RMSE} &  CPU  &  GPU  & Wearable  \\ \midrule
-  Base            & 11,1                  & 0,532         & -     &       &           \\
-  Sparse\tnote{1} & 8.1                   & 0,725         & -     &       &           \\
-  Int8            & 3.9                   & 1.121         & -     &       &           \\
-  Float16         & 7,6                   & 0,726         & -     &       &           \\
-  Dynamic         & 3.9                   & 1.110         & -     &       &           \\
+Recordemos que el proceso de optimización de la cuantización afecta a la precisión de representación de pesos reduciéndola para ya sea optimizar los valores al procesador de cómputo, para reducir el tamaño en memoria del modelo o ambos. El modelo ralo no sirve para convertirlo en un modelo \tflite/. Para ello hemos de recuperar la estructura del modelo original y aplicar los pesos del modelo previamente cribado, poniendo a 0 los pesos de los nodos y uniones eliminados. Este cambio parece anular los beneficios de aplicar pruning, pero como ya hemos comentado únicamente impacta al tamaño del modelo ya que el beneficio de poder usar técnicas de multiplicación de matrices ralas sigue siendo aplicable, así como la mejora en la capacidad de generalización obtenida en el proceso.
+
+Con la estructura original restituida, convertimos el modelo a \tflite/ aplicando diferentes niveles de cuantización. Analizamos los modelos usando la conversión tanto de pesos como de funciones de activación a enteros de 8 bits (con rango dinámico y estático) y la reducción la precisión decimal de los pesos a \texttt{Float16} o 16bits. La conversión a enteros consigue la mayor tasa de reducción de memoria y favorece la ejecución en modelos sin unidades de cómputo en coma flotante aumentando por contra el error del modelo. Por su parte la reducción de la precisión decimal logra unos resultados más modestos del tamaño pero con una penalización prácticamente inexistente en el error del modelo y una ligera mejoría en los tiempos de ejecución sobre unidades GPU.
+
+
+\paragraph{Resultados de la optimización}\\
+Finalmente, y tras obtener 5 variaciones (original, ralo, cuantizado a \texttt{Float16} y cuantizado a entero estático y dinámico tomamos una serie de medidas para analizar o reducir los mejores candidatos para la plataforma \ifell/. Estudiaremos el tamaño de los modelos obtenidos, y el valor RMSE sobre el conjunto de datos de test que usamos únicamente para la obtención de estos valores: el conjunto de test no se utiliza en ningún momento durante la generación de los modelos. Además, este conjunto de datos contiene por primera vez eventos de caídas. Calcularemos el promedio de RMSE sobre las actividades, caídas y el promedio total y finalmente mediremos el tiempod e ejecución en un sistema con GPU y en otro sin ella, y por tanto usando la CPU.
+
+  Recogemos los datos resultantes en la \autoref{tab:quant:resultados}. Las tecnicas de cribado de nodos de la red demuestran una gran eficiencia en la reducción de la complejidad del modelo. Recordemos que estamos obteniendo un modelo con la mitad de sus pesos anulados y que mantiene el mismo nivel de precisión del modelo original o incluso llega a mejorarlo. De igual forma, los procesos de cuantizado de pesos y funciones de activación resulta en su mayoría satisfactorio, más por la optimización del tamaño y tiempo de ejecución en CPUs que por la penalización de la precisión del modelo, escesiva en el caso de la conversión a enteros sobre algunos modelos. Estudiando los valores de RMSE sobre el conjunto de test, queda claro que los modelos de 350 unidades están sobredimensionados sobe los mucho más modestos equivalentes de 175. Por contra el uso de 30 atributos en el espacio intermedio del codificador/decodificador solo sería justificable en el caso de modelos \textit(RNN-Reconstrucción} pues se observa como los resultados de \textit{RNN-Predicción} son considerablemente más pobres que su equivalente de mayor dimensionalidad.
+
+
+\vtablan[1.0\textwidth]{tab:quant:resultados}{Efecto de las diferentes técnicas de optimización de modelos en el peso, precisión y latencia de de los mismos}{lrrrrrrrrrrrrrrrrrrrr}{
+    & \multicolumn{5}{c}{\textit{Base}} & \multicolumn{5}{c}{\textit{Sparse}} & \multicolumn{5}{c}{\textit{Full/Dynamic Int8}} & \multicolumn{5}{c}{\textit{Float16}} \\ \cmidrule[0.3pt](lr){2-6}\cmidrule[0.3pt](lr){7-11}\cmidrule[0.3pt](lr){12-16}\cmidrule[0.3pt](lr){17-21} 
+  \textit{Modelo} &  {\footnotesize Peso (MB)} & {\footnotesize $RMSE$} &  {\footnotesize $RMSE_{A}$} & {\footnotesize $RMSE_{C}$} & {\footnotesize GPU(ms)} & %
+  {\footnotesize Peso (MB)} & {\footnotesize $RMSE$} &  {\footnotesize $RMSE_{A}$} & {\footnotesize $RMSE_{C}$} &  {\footnotesize GPU(ms)} & %
+  {\footnotesize Peso (MB)} & {\footnotesize $RMSE$} &  {\footnotesize $RMSE_{A}$} & {\footnotesize $RMSE_{C}$} &  {\footnotesize GPU(ms)} & %
+  {\footnotesize Peso (MB)} & {\footnotesize $RMSE$} &  {\footnotesize $RMSE_{A}$} & {\footnotesize $RMSE_{C}$} &  {\footnotesize GPU(ms)} \\ \midrule
+
+  RNN-R(350)[50]\tnote{1} & 15,2 & 0,7347 &        &        &       & 15,2 & 0,7353 &         &       &      &  ?  & 1,1499 &        &        &      &  ?  & 0,7350 &        &        &    \\
+  RNN-P(350)[50]\tnote{2} & 15,2 & 2,8695 & 3,4420 & 6.9980  & 43,2 & 15,2 & 2,8463 & 3,4390 & 7,0188 & 42,9 & 4,0 & 2,8772 & 3,4339 & 7,0225 & 44,1 & 7,7 & 2,8463 & 3,4345 & 7,0268 & 51 \\
+
+  RNN-R(350)[30]\tnote{3} & 15,0 & 0,8822 & 0,5405 & 1,3990 &       & 15,0 & 2,8463 & 0,6146 & 1,5329 &      & 3.9 & 2,8772 & 0,6566 & 1,5969 &      & 7,6 & 2,8463 & 0,6647 & 1,6143 &     \\
+  RNN-P(350)[30]\tnote{4} & 15,0 & 2,8695 & 3,4597 & 6,9651 & 43,2  & 15,0 & 2,4494 & 3.4411 & 6,9608 & 42,2 & 3,9 & 2,4885 & 3,4358 & 6,9589 & 44,3 & 7,6 & 2,4947 & 3.4325 & 6,9577 & 50,5 \\ 
+
+  RNN-R(175)[50]\tnote{5} &  4,0 & 0,7478 & 0,4319 & 1,1330 & 40,8  & 4,0   & 0,7573& 0,4281 & 1,1198 & 40,4& 1,1  & 1,0355 & 0,4410 & 1,1298 & 34,7 & 2,1 & 0,7656 & 0,4372 & 1,1204 & 33,8  \\
+  RNN-P(175)[50]\tnote{6} &  4,0 & 2,9063 & 3,4437 & 7,0251 & 48,6  & 4,0   & 2,8463& 3,4433 & 7,0058 & 47,0& 1,1  & 2,8843 & 3,4408 & 7,0089 & 47,2 & 2,1 & 2,8493 & 3,4403 & 7,0141 & 50,3  \\
+  % Sparse\tnote{1} & 8.1                   & 0,725         & -     &       &           \\
+  % Int8            & 3.9                   & 1.121         & -     &       &           \\
+  % Float16         & 7,6                   & 0,726         & -     &       &           \\
+  % Dynamic         & 3.9                   & 1.110         & -     &       &           \\
 }{
-\item [1] Tras restitución de la red.
+\item [1] Reconstrucción, 3xGRU(350), 50 Atributos
+\item [2] Predicción, 3xGRU(350), 50 Atributos
+\item [3] Reconstrucción, 3xGRU(350), 30 Atributos
+\item [4] Predicción, 3xGRU(350), 30 Atributos
+\item [5] Reconstrucción, 3xGRU(175), 50 Atributos
+\item [6] Predicción, 3xGRU(175), 50 Atributos
 }{3}
 
 Como se observa en los resultados de la tabla \ref{ŧab:quant:resultados}, podemos obtener modelos con menos de la mitad del tamaño de la red original,con un impacto controlado y mínimo en la capacidad predictiva de la red y una mejora de un orden de magnitud en el tiempo de ejecución. Si bien esta mejora depende de la presencia o no de una unidad GPU o de cálculo en coma flotante. Si se da alguno de estos supuestos, los modelos con cuantización a coma flotante de precisión reducida mantienen las ventajas de la aceleración de estas unidades de cálculo con una degradación mínima de la precisión a costa de una menor compresión en tamaño. De no poseer de estas unidades especializadas de cálculo, los dos modelos con conversión de parámetros a enteros de 8 bits ofrecen el mejor rendimiento, aunque la degradación en la precisión del modelo puede ser excesiva según la aplicación. 
 
-\section{Desarrollo de iFell}
 
-\subsection{Arquitectura del Sistema}
+\section{Desarrollo de \ifell/}
+
+  El desarrollo de la aplicación de detección de caídas, bautizada como \ifell/, se realiza a continuación del de la aplicación para formar el dataset \accelcapture/. Ambas aplicaciones comparten una estructura similar y algunos componentes. Con esta idea en mente el código de \accelcapture/ se programó para poder intercambiar fácilmente algunos componentes, por ejemplo los modelos de detección de actividad o generación de eventos. De la misma manera, la arquitectura del sistema es heredera directa de su aplicación hermana.
+
+La aplicación en si es poco más que un armazón construido sobre el algoritmo y modelos generados en la sección anterior. Podemos definir las atribuciones principales de la aplicación como:
+\begin{itemize}
+  \item Proveer de información procedente de los sensores al modelo.
+  \item Lanzar una alerta como consecuencia de un evento del modelo.
+\end{itemize}
+
+Como veremos en el \autoref{chap:eval}, el impacto de cada una de las decisiones tomadas en cualquiera de las etapas precedentes sobre la capacidad de la aplicación de detectar caídas será mucho mayor que cualquier factor de la propia aplicación en si. Aparte de alimentar al modelo y recibir sus alertas, la aplicación tiene como objetivo el ser usada por un conjunto de la población que no tiene experiencia de uso con herramientas informáticas. Por esta razón uno de los pilares del desarrollo es lograr un sistema usable por un público que no solo no tiene conocimientos en el uso de computadoras sino que incluso las rehuyen.
+
+
+\subsection{Flujo y Arquitectura del Sistema}
+Hasta la fecha, los sistemas de detección de caídas se basan en arquitecturas cliente servidor para disociar el módulo de cómputo del de captura y conseguir que el dispositivo a llevar en si sea del menor tamaño posible. Este acercamiento que permite solventar el problema que derivaría de tener que llevar un obtrusivo sistema sobre si añade el problema de la necesidad de un enlace o comunicación con el módulo de cálculo. Ganamos en usabilidad pero perdemos en portabilidad. El principal problema de la conectividad radica en el hecho de que a pérdida de comunicación entre ambos módulos deriva en un sistema con ninguna capacidad. El módulo de cálculo, privado de datos no es capaz de realizar ninguna detección. Por su parte el aparato de captura, por si mismo, no tiene capacidad alguna para realizar nada más que la lectura.
+
+El sistema implementado opta por una arquitectura cliente pesado y servidor ligero. El cliente tiene suficiente capacidad para realizar captura, cómputo y capacidad de alerta como para funcionar de forma aislada. El servidor realiza funciones de expansión de la capacidad de alerta de la plataforma, y en futuras evoluciones podría realizar tareas de distribución de actualizaciones o mejoras en modelos y parámetros, pero de ninguna manera resulta imprescindible para el funcionamiento del dispositivo. Este es el principio básico y director de este trabajo: implementar una plataforma autónoma de detección de caídas capaz de ejecutarse en un dispositibo vestible.
+
+De nuevo optamos para el servidor por la misma arquitectura implementada en \accelcapture/, con microservicios corriendo sobre AWS Lambda programados en \textit{JavaScript}, almacenamiento en S3. Para el cliente, mantenemos el mismo dispositivo Fossil Sport Gen. 3 con WearOS por su fácil manejo y smilitud con un reloj mecánico tradicional, sus capacidades para ejecutar la aplicación implementada y su precio asequible.
+
+\subsubsection{Funcionamiento de la aplicación}
+
+La aplicación realiza una lectura constante de las muestras de la aceleración a 25 muestras por segundo, que almacena en una cola circular. La longitud de esta cola varía según el tipo de modelo usado. Si usamos un modelo \textit{RNN-reconstrucción} la cola tiene las últimas 50 muestras (equivalente a 2 segundos de duración) en todo momento, mientras que si usamos un modelo \textit{RNN-predicción} el tamaño aumenta hasta las 125 muestras (5 segundos). La razón de esta varianza se debe al mecanismo de alimentación del modelo neuronal que varía para cada caso.
+
+Al usar como modelo analítico \textit{BourkeU} únicamente necesitamos analizar la última muestra leída y compararla con el nivel de la cota de detección. Si la supera, consideramos esa muestra $t_0$. Como puede observarse en la \autoref{fig:ifell:windowing}en un modelo de reconstrucción recuperamos los dos segundos previos de muestras y capturamos durante otros dos segundos hasta obtener una ventana de 4 segundos entre $t_0-50$ y $t_0+50$. Por contra si se trata de un modelo de predicción desde el momento de detección del pico $t_0$ grabaremos todavía un segudno más de actividad a añadir a los 5 segundos almacenados en la cola hasta un total de 6 segundos de ventana. 
+
+\begin{figure}[hbt!]
+  \centering
+  \begin{subfigure}[b]{0.48\textwidth}
+    \pincludegraphics[0.98]{IfellWindow}\caption{\label{fig:ifell:detect:window} Enventanado para modelos de reconstrucción}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+    \pincludegraphics[1.0]{IfellWindowPred}\caption{\label{fig:ifell:predict:window} Enventanado para modelos de predicción}
+  \end{subfigure}
+  \caption{\label{fig:ifell:windowing} Mecanismo de enventanado según el modelo de detección}
+\end{figure}
+
+\paragraph{Enventanado para modelos de reconstrucción}\\
+La principal característica de los modelos de reconstrucción es que la salida del modelo es una estimación de la señal a la entrada:
+\[
+\begin{align*}
+  & \vec{X} = \vec{Y}\\
+  & \hat{Y} = f(\vec{X})\\
+  & RMSE(\vec{Y},\hat{Y}) &= \frac{1}{n}\sqrt{\sum_{i=\frac{-n}{2}}^\frac{n}{2}(y_i-\hat{y}_i)^2 }
+\end{align*}
+\]\\
+Donde:\\
+$n$ es el número de muestras de la ventana, 100 en nuestro caso.
+
+Esta ventana de 100 muestras la centramos en el instante en que el comparador de bourke detecta que se ha producido una caída. La elección de centrar la ventana la jusfiticamos experimentalmente en el último apartado de este capítulo pero repetimos que el objetivo es contener  la caída dentro de esta ventana, y como ya hemos visto en la mayoría de los casos esta se centra en el segundo inmediato y posterior al punto principal de impacto. Aunque con dos segundos de ventana sería suficiente, se mantiene en 4s para añadir iformación de contexto de la actividad que estuviese realizando el usuario.  
+
+paragraph{Enventanado para modelos de predicción}\\
+Este caso es más complejo pues usamos dos ventanas ya que en este caso la señal de salida del modelo no es una estimación de la entrada:
+\[
+  \begin{align*}
+    &\vec{X} = X[1:n] \\
+    &\vec{Y} = X[n+1:n+m] \\
+    &\hat{Y} = f(\vec{X})\\
+    &RMSE(\vec{Y},\hat{Y})=\frac{1}{m}\sqrt{\sum_{i=1}^m(\hat{y}_i+X_{n+i})^2 }
+  \end{align*}
+\]\\
+Donde:\\
+$n$ Es la longitud de la ventana de entrada, 100 muestras.\\
+$m$ Longitud de la ventana de salida, 50 muestras.
+
+La primera ventana, de tamaño $n$ es de igual longitud que en el modelo anterior, aunque esta vez se toma \emph{antes} del impacto. Si admitimos que la duración de un impacto es de 2 segundos centrados en el punto de detección $t_0$, la ventana de entrada contiene cuatro segundos previos al inicio del impacto mientras que la segunda ventana, de tamaño $m$, contiene los dos segundos del impacto. Así pues, el modelo recibe la señal $\vec{X}$ de cuatro segundos y realiza una estimación de los dos segundos siguientes o $\vec{Y}$.
+
+Si bien los modelos de reconstrucción se mostraron más precisos en la detección de caídas, al requerir centrar la ventana en el instante de detección por el modelo de Bourke añaden un retardo de ejecución de 2 segundos constante. Este problema no existe en los modelos de predicción pues en el momento de la pre-detección por el modelo de Bourke, la cola de lectura tiene ya todos los datos para ejecutar el modelo neuronal mientras en paralelo acaba de recopilar el segundo de muestras que falta para completar la segunda ventana (la de la señal $Y$ a predecir). Es decir, en este caso, en el mejor de los casos el retardo de la predicción será poco mayor de 1 segundo. 
+
 
 \subsection{Arquitectura de la aplicación}
 
-El sistema está compuesto por dos bloques funcionales tal y como se muestra en \ref{fig:clasesUml}. Tenemos un bloque o paquete que incluye los servicios encargados del registro de datos de los sensores, gestión de entradas y notificación de eventos, implementación del algoritmo de detección y comunicación con el servidor. Este primer bloque contiene a su vez una aplicación de gestión del servicio que permite realizar tareas de mantenimiento y configuración. En un segundo bloque tenemos la interfaz del usuario principal, encargada de lanzar la aplicación, alertar en caso de caída y capturar la respuesta del usuario en caso de necesitarla.
+La aplicación desarrollada es una implementación del algoritmo presentado en el diagrama de flujo de la figura \ref{fig:ifell:algoritmo}. Salvo el modelo neuronal, el resto de funcionalidades y comportamientos son ejecutados por la aplicación, como por ejemplo el comparador de Bourke.
+
+El sistema está compuesto por dos bloques funcionales tal y como se muestra en \ref{fig:clasesUml} que se corresponderían con una arquitectura de generador de eventos y consumidor. El bloque principal, que incluye los servicios encargados del registro de datos de los sensores, gestión de entradas, implementación del algoritmo de detección y comunicación con el servidor es un generador de eventos tanto vía Internet hacia el servidor, como internamente mediante \textit{intents}. Estos eventos son consumidos por el segundo bloque funcional que conforma la interfaz de usuario y que entre otros roles tiene el de ejecutar las alertas sobre el dispositivo de forma visual, háptica y sonora, la capacidad de cancelarlas y la de lanzar automáticamente los servicios funcionales del primer bloque en todo momento y de forma automática.
 
 \figura{classUML}{fig:clasesUml}{Diagrama de clases de la aplicación}
 
@@ -394,12 +499,15 @@ El proceso que contiene la lógica principal, descrita en la figura\ref{fig:dete
 \begin{itemize}
   \item Recupera configuración previa
   \item Configurar y leer las muestras del acelerómetro
-  \item Realizar el primer proceso de detección (algoritmo basado en cotas)
-  \item Lanzar el proceso de análisis usando el modelo ML y recuperar el resultado
+  \item Realizar el primer proceso de detección (algoritmo de Bourke)
+  \item Notificar/generar un evento de posible caída
+  \item Recuperar los eventos del modelo neuronal
   \item Alertar y notificar del evento tanto a los clientes locales como a los servidores remotos
 \end{itemize}
 
-El proceso de detección o filtrado usando el modelo implementado basado en redes recurrentes es el único que se exporta a una clase propia: \textit{CrashDetectService}. Toma de nuevo la forma de un servicio asíncrono que es invocado únicamente cuando el modelo analítico ha detectado un positivo. De esta forma se pretende reducir drásticamente las necesidades de cómputo. Este servicio a su vez se subdivide en unos módulos que son los modelos de detección propiamente dichos. Como se aprecia en el diagrama UML de la arquitectura\ref{fig:clasesUml}, es la clase \textit{TFLiteModelDetector} la que provee la cumunicación con el modelo de TFLite previamente generado y entrenado en Colab.
+
+Es un servicio asíncrono que consume los eventos del sensor de aceleración, los procesa, analiza mediante el comparador de bourke y en caso de detectar un candidato a caída, generar un evento con la información necesaria para el modelo de inteligencia artificial. Finalmente, recuperar el resultado de este modelo y actuar en consecuencia generando una petición hacia la API REST del servidor y un evento interno para que la interfaz de usuario pueda alertar de la caída.
+El proceso de detección o filtrado usando el modelo implementado basado en redes recurrentes es el único que se exporta a una clase propia: \textit{CrashDetectService}. Toma de nuevo la forma de un servicio asíncrono que es invocado únicamente cuando el modelo analítico ha detectado un positivo. De esta forma se pretende reducir drásticamente las necesidades de cómputo. Este servicio a su vez se subdivide en módulos que son los modelos de detección propiamente dichos, con el objetivo de poder intercambiar entre varios modelos sin tener que modificar la aplicación. Como se aprecia en el diagrama UML de la arquitectura\ref{fig:clasesUml}, es la clase \textit{TFLiteModelDetector} la que provee la cumunicación con los modelos de \tflite/ que hemos generado e previamente en el apartado \refname{sub:imp:model:rnn}. 
 
 
 \subsection{Interfaz de Usuario}
@@ -438,56 +546,16 @@ En esta aplicación se han reducido al máximo las interacciones requeridas por 
 
 La segunda interfaz que provee la aplicación se encarga de las tareas de administración y configuración. Permite introducir un nombre del usuario y forzar el estado de funcionamiento de los servicios de captura y detección. Si bien ninguno de estos procesos es necesario para el funcionamiento, se ofrece para facilitar la puesta en marcha y prueba del sistema.
 
+\subsubsection{Gestión de alertas}
+
+La aplicación implementada permite alertar tanto desde el propio dispositivo, como mediante mediante una petición sobre HTTP hacia la API \textttt{alertaCaida} que se ejecuta en el servidor. De manera local la aplicación alerta visualmente mediante un mensaje sobreimpreso en la pantalla, y en los dispositivos que lo admitan una vibración rítmica y un pitido. En caso de un falso evento o de querer interrumpir la alarma se puede desactivar tocando una vez la pantalla. 
+
+Hay que recalcar que dada la estructura de módulos con estructura emisor-consumidor asíncronos, el servicio de detección de caídas no deja de funcionar en ningún momento, y podría lanzar un segundo evento de caída incluso durante la alarma del primero. El modelo es capaz de detectar una nueva caída 
+
+El dispositivo utilizado para el estudio no dispone de altavoz para emitir alertas acústicas, pero la vibración es más que suficiente para alertar al usuario de la detección de la caída y de ser necesario desactivar la alarma.
+
 \subsection{Comunicación con el Servidor}
 
-
-% ########################################
-
-El desafío de consolidar en un sistema portable una aplicación autónoma de detección de caídas debe hacer frente a una serie de limitaciones.
-
-\section{Desafíos}
-\todo{esto son requisitos, movel al punto anterior} El objetivo de todo modelo de detección de eventos es lograr un sistema que consiga capturar la totalidad de las realizaciones del mismo con el menos número posible de falsos positivos. En otras palabras, buscamos un sistema con una especificidad y sensibilidad de 100\%\cite{Noury2007}. \todo{Añadir referencias a papers, comentarios sobre sensibilidad y especificidad}.
-
-\subsection{Usabilidad}\todo{de nuevo un requisito, al apartado anterior}
-El primer reto de toda aplicación es conseguir una experiencia de usuario adaptada al cliente final. De nada sirve lograr implementar una plataforma que cumpla perfectamente con todos los requisitos y objetivos funcionales si el producto resultante se utiliza.
-
-\subsubsection{Público objetivo}
-Como se ha mencionado en la introducción del trabajo, los daños relacionados con las caídas son una de las principales causas de mortaldad entre las personas mayores de 65 años \todo{cita requerida}. Es propio de este grupo de población la desafección por la tecnología y la carencia o desinterés por su uso. Esta condición ha de ser tenida en cuenta para el desarrollo de cualquier producto.
-
-Las personas de edad avanzada suelen padecer así mismo de otras condiciones que pueden limitar su grado de movilidad, atención o memoria que impidan o reduzcan la posibilidad de adaptarse o incorporar nuevas rutinas. Los problemas motores y de percepción reducen notablemente la capacidad de mostrar información así como de interactuar con el usuario cuando se necesite una acción por su parte.
-
-Se entiende por tanto que si se ha de realizar un producto para esta población, es requisito que sea lo menos obtrusivo posible \todo{de nuevo un requisito, al punto anterior}, siendo recomendable incorporar la funcionalidad a un objeto de uso cotidiano para evitar la modificación de rutinas o la reticencia a incorporar nuevos procesos o elementos en su vida diaria. La interfaz de usuario debe ser mínima, usando un lenguaje visual que resulte familiar alejado de los estándares de las aplicaciones modernas. Así mismo, reducir o eliminar los procesos de configuración y manipulación, con un sistema que funcione al salir de la caja \todo{mala traducción de \textit{out of the box}}.
-
-\subsubsection{Localización}
-
-Una de las decisiones con mayor impacto sobre la funcionalidad del prototipo es la elección de la posición del dispositivo de captura ya que influencia en gran medida a la capacidad de detección de caídas \cite{Kangas2008}. Diversos estudios muestran que el mejor lugar para posicionar un sistema de medición de la aceleración para detectar caídas es la cintura, seguida de la cabeza siendo posible también usar un medidor en la muñeca\cite{Chen2005, Kangas2008, Noury2007}. Si bien estos resultados se basan en el análisis de métodos analíticos basados en cotas, se desprende de ellos la actitud o posición del cuerpo es un buen indicador para la predicción de actividades, razón por la que realizar la captura en muñecas o tobillos, las extremidades más alejadas del tronco, sufren de mayores penalizaciones para conseguir buenas estimaciones.
-
-Al optarse por un reloj o \textit{pulsera de actividad} como plataforma para la implementación las opciones para posicionar la unidad de medida quedan reducida a una: la muñeca.
-
-\subsection{Conectividad}
-
-Hasta la fecha, los sistemas de detección de caídas se basan en arquitecturas cliente servidor para disociar el módulo de cómputo del de captura y conseguir que el dispositivo a llevar en si sea del menor tamaño posible. Este acercamiento que permite solventar el problema que derivaría de tener que llevar un obtrusivo sistema sobre si añade el problema de la necesidad de un enlace o comunicación con el módulo de cálculo. Ganamos en usabilidad pero perdemos en portabilidad.\todo{Cita y referencias a sistemas comerciales}
-
-El principal problema de la conectividad radica en el hecho de que a pérdida de comunicación entre ambos módulos deriva en un sistema con ninguna capacidad. El módulo de cálculo, privado de datos no es capaz de realizar ninguna detección. Por su parte el aparato de captura, por si mismo, no tiene capacidad alguna para realizar nada más que la lectura.
-
-El sistema implementado opta por una arquitectura cliente-pesado y servidor ligero. El cliente tiene suficiente capacidad para realizar captura, cómputo y capacidad de alerta como para funcionar de forma aislada. El servidor realiza funciones de expansión de la capacidad de alerta de la plataforma, así como de distribución de actualizaciones o mejoras en modelos y parámetros, pero de ninguna manera resulta imprescindible para el funcionamiento del dispositivo portable. Este es el principio básico y director de este trabajo: implementar una plataforma autónoma de detección de caídas capaz de ejecutarse en un dispositibo vestible.
-
-
-\section{Plataforma}
-\todo{justificar cada una de estas decisiones}
-Para el servidor optamos por una arquitectura de microservicios usando la plataforma de AWS Lambda con almacenamiento en S3
-
-Para el dispositivo móvil usamos un reloj inteligente Fossil Sport con sistema operativo WearOS y por tanto compatible con el ecosistema Android.
-
-El la generación, entrenamiento, análisis y evaluación de modelos se realiza usando Keras/Tensorflow corriendo en la plataforma Google Colab.
-
-\section{Arquitectura}\label{desc_archi}
-\warn{según la profe punto muy interesante, a pulir }
-
-\subsection{Arquitectura del sistema}
-
-\warn{hablando de AWS: (ver siguiente páraffo)}
-Resumiendo la estructura del sistema, \textit{AWS S3} (\url{https://aws.amazon.com/es/s3/?c=ser&sec=srv}) es el sistema de almacenamiento de datos en la red. Un disco duro en la nube, escalable en capacidad y fácilmente accesible para poder recuperar los datos. \textit{AWS Lambda} (\url{https://aws.amazon.com/es/lambda/?c=ser&sec=srv}) permite implementar funciones de código y definir una serie de eventos para lanzar su ejecución, al formar parte del ecosistema AWS es fácil conectar estas funciones con el sistema S3 y API Gateway. Finalmente \textit{AWS API Gateway} permite definir unos puntos de entrada, o URLs que conformarán la API del servicio. Cuando una de estas direcciones URL es invocada, inmediatamente se ejecuta la 
 
 
 
@@ -501,9 +569,6 @@ Si se sobrepasa el umbral en $t=0$. El sistema envía instantáneamente al sigui
 
 
 El modelo predictivo, se basa en la capacidad de las redes RNN y particularmente las basadas en celdas LSTM y GRU para generar modelos predictivos de calidad para series temporales de señales estacionarias \cite{Qin2019}.
-
-
-
 
 
 

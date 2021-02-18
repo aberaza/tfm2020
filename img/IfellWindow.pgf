@@ -1,0 +1,32 @@
+
+\begin{tikzpicture}
+  \begin{axis}[domain =-10:110,
+              xmin = -10,
+              xmax = 110,
+              ymin = 0,
+              ymax = 60,
+              xlabel = {Muestras},
+              ylabel = {Aceleración($m/s^2$)}
+              ]
+
+      \fill[color=black!15]
+        (0,60)--(100,60)--(100,0)--(0,0)--cycle;
+      \fill[color=black!10]
+        (0,0.7)--(7.1,0.7)--(7.1,0)--(0,0)--cycle;
+    \addplot[blue,line width=2pt,smooth] coordinates
+      {(0,10.1) (10, 10.2) (20,9.5) (27,9.8) (31,11) (35,4.5) (40, 0.66) (45, 8.5) (50, 32.0) (58, 18.0) (65, 9.0) (70,3.3) (78, 18) (85,12.5) (92,17.2) (100, 9.8)};
+    \addplot[black!50,line width=1pt,smooth] coordinates
+      {(-10,9.8) (-5, 10) (0, 10.1)};
+    \addplot[black!50,line width=1pt,smooth] coordinates
+      {(100,9.8) (105, 5.8) (110, 12.1)};
+
+    %\draw[thin] (axis cs: 0,1) -- (axis cs: 5,1);
+    \draw[thin,dashed] (axis cs: 50,0) -- (axis cs: 50,60);
+    \node[anchor=west] at (axis cs:50,35) {$t_0$};
+
+    \draw[<-,thin,dotted] (100,40) -> (50,40);
+    \draw[<-,thin,dotted] (0,40) -- (50,40);
+    \node[anchor=south west] at (0,40) {{\footnotesize $t_0-50$}};
+    \node[anchor=south east] at (100,40) {{\footnotesize $t_0+50$}};
+  \end{axis}
+\end{tikzpicture}

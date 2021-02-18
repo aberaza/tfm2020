@@ -80,3 +80,43 @@ Tiempo (s)    & 0     & 2,5     & 0       & \\
 \todo{Validar la mejora del acercamiento en cuanto a especificidad respecto a Bourke simple. Comparar con los resultados de la tabla anterior}
 
 
+% ########################################
+
+El desafío de consolidar en un sistema portable una aplicación autónoma de detección de caídas debe hacer frente a una serie de limitaciones.
+
+\section{Desafíos}
+\todo{esto son requisitos, movel al punto anterior} El objetivo de todo modelo de detección de eventos es lograr un sistema que consiga capturar la totalidad de las realizaciones del mismo con el menos número posible de falsos positivos. En otras palabras, buscamos un sistema con una especificidad y sensibilidad de 100\%\cite{Noury2007}. \todo{Añadir referencias a papers, comentarios sobre sensibilidad y especificidad}.
+
+\subsection{Usabilidad}\todo{de nuevo un requisito, al apartado anterior}
+El primer reto de toda aplicación es conseguir una experiencia de usuario adaptada al cliente final. De nada sirve lograr implementar una plataforma que cumpla perfectamente con todos los requisitos y objetivos funcionales si el producto resultante se utiliza.
+
+\subsubsection{Público objetivo}
+Como se ha mencionado en la introducción del trabajo, los daños relacionados con las caídas son una de las principales causas de mortaldad entre las personas mayores de 65 años \todo{cita requerida}. Es propio de este grupo de población la desafección por la tecnología y la carencia o desinterés por su uso. Esta condición ha de ser tenida en cuenta para el desarrollo de cualquier producto.
+
+Las personas de edad avanzada suelen padecer así mismo de otras condiciones que pueden limitar su grado de movilidad, atención o memoria que impidan o reduzcan la posibilidad de adaptarse o incorporar nuevas rutinas. Los problemas motores y de percepción reducen notablemente la capacidad de mostrar información así como de interactuar con el usuario cuando se necesite una acción por su parte.
+
+Se entiende por tanto que si se ha de realizar un producto para esta población, es requisito que sea lo menos obtrusivo posible \todo{de nuevo un requisito, al punto anterior}, siendo recomendable incorporar la funcionalidad a un objeto de uso cotidiano para evitar la modificación de rutinas o la reticencia a incorporar nuevos procesos o elementos en su vida diaria. La interfaz de usuario debe ser mínima, usando un lenguaje visual que resulte familiar alejado de los estándares de las aplicaciones modernas. Así mismo, reducir o eliminar los procesos de configuración y manipulación, con un sistema que funcione al salir de la caja \todo{mala traducción de \textit{out of the box}}.
+
+\subsubsection{Localización}
+
+Una de las decisiones con mayor impacto sobre la funcionalidad del prototipo es la elección de la posición del dispositivo de captura ya que influencia en gran medida a la capacidad de detección de caídas \cite{Kangas2008}. Diversos estudios muestran que el mejor lugar para posicionar un sistema de medición de la aceleración para detectar caídas es la cintura, seguida de la cabeza siendo posible también usar un medidor en la muñeca\cite{Chen2005, Kangas2008, Noury2007}. Si bien estos resultados se basan en el análisis de métodos analíticos basados en cotas, se desprende de ellos la actitud o posición del cuerpo es un buen indicador para la predicción de actividades, razón por la que realizar la captura en muñecas o tobillos, las extremidades más alejadas del tronco, sufren de mayores penalizaciones para conseguir buenas estimaciones.
+
+Al optarse por un reloj o \textit{pulsera de actividad} como plataforma para la implementación las opciones para posicionar la unidad de medida quedan reducida a una: la muñeca.
+
+
+\section{Plataforma}
+\todo{justificar cada una de estas decisiones}
+Para el servidor optamos por una arquitectura de microservicios usando la plataforma de AWS Lambda con almacenamiento en S3
+
+Para el dispositivo móvil usamos un reloj inteligente Fossil Sport con sistema operativo WearOS y por tanto compatible con el ecosistema Android.
+
+El la generación, entrenamiento, análisis y evaluación de modelos se realiza usando Keras/Tensorflow corriendo en la plataforma Google Colab.
+
+\section{Arquitectura}\label{desc_archi}
+\warn{según la profe punto muy interesante, a pulir }
+
+\subsection{Arquitectura del sistema}
+
+\warn{hablando de AWS: (ver siguiente páraffo)}
+Resumiendo la estructura del sistema, \textit{AWS S3} (\url{https://aws.amazon.com/es/s3/?c=ser&sec=srv}) es el sistema de almacenamiento de datos en la red. Un disco duro en la nube, escalable en capacidad y fácilmente accesible para poder recuperar los datos. \textit{AWS Lambda} (\url{https://aws.amazon.com/es/lambda/?c=ser&sec=srv}) permite implementar funciones de código y definir una serie de eventos para lanzar su ejecución, al formar parte del ecosistema AWS es fácil conectar estas funciones con el sistema S3 y API Gateway. Finalmente \textit{AWS API Gateway} permite definir unos puntos de entrada, o URLs que conformarán la API del servicio. Cuando una de estas direcciones URL es invocada, inmediatamente se ejecuta la 
+

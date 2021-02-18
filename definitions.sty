@@ -229,6 +229,37 @@
 \end{sidewaystable*}
 }
 \newcommand{\tabitem}{~~\llap{\textbullet}~~}
+
+\newcommand\vtablan[7][\linewidth]{
+  \def\myscale{#1}
+  \def\mytableid{#2}
+  \def\mycaptiontext{#3}
+  \def\mycolumnstyles{#4}
+  \def\mytablecontent{#5}
+  \def\tablenote{#6}
+
+  \begin{sidewaystable*}
+    \rowcolors{#7}{white}{Gray!20}
+    \centering
+    \resizebox{\myscale}{!}{
+      \begin{threeparttable}
+        \begin{tabular}{@{}#4@{}}
+          \toprule[1.5pt]
+          #5
+          \bottomrule[1.5pt]
+        \end{tabular}
+
+        \begin{tablenotes}
+          \small
+          #6
+        \end{tablenotes}
+      \end{threeparttable}
+    }
+  \caption{\label{\mytableid} \mycaptiontext}
+  \end{sidewaystable*}
+}
+
+
 % Texto citado
 \usepackage[autostyle=true,spanish=spanish]{csquotes}
 \newcommand{\cita}[2][]{\textquote[{#1}]{#2}}
