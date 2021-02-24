@@ -4,6 +4,8 @@
 \usepackage{subcaption} % conflicto con subfig
 % diagramas simples
 \usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.16}
 \usetikzlibrary{shapes.geometric, arrows}
 \usepackage{tikz-uml}
 \tikzumlset{fill class=white!20, fill template=white!15,font=\bfseries\footnotesize}
@@ -145,17 +147,10 @@ Las técnicas de optimización de modelos basados en redes neuronales inician su
 \section{OBJETIVOS Y METODOLOGÍA}
 Con este trabajo abordamos la implementación de un sistema de detección de caídas llevable, autónomo e independiente que aúne en una unidad la captura de datos y la detección de caídas que a su vez esté orientado al uso por parte de personas mayores con edades superiores a 65 años.
 
-Para lograrlo requerimos primero generar una base de datos de entrenamiento que servirá a crear el modelo que capturaremos usando la misma plataforma sobre la que realizaremos el desarrollo final mediante una aplicación desarrollada para la ocasión. Para validar el correcto funcionamiento del algoritmo y modelo así como para evaluar y comparar con otras implementaciones usaremos la base de datos de actividad humana Sisfall\cite{Sucerquia2017}. Analizaremos la viabilidad de un codificador/decodificador RNN para la detección de anomalías en actividad humana.
+\subsection{Bases de datos de actividad}
+El número de bases de datos de actividad humana y caídas disponible públicamente es muy reducido \cite{igual2015} y la mayoría están orientados al experimento para el que fueron creadas. De todos,  UMAFall\cite{Edu/UMA/2017} es el único que se ajusta a este trabajo por contener capturas desde la muñeca. Sin embargo no está lo suficientemente extendido para realizar una evaluación comparativa. Optamos por generar un conjunto de datos propio para el entrenamiento y usar SisFall\cite{Sucerquia2017} para definir los umbrales de decisión y validar el algoritmo y modelos. SisFall está especialmente orientada a la detección de caídas con 4504 eventos de los cuales 1798 pertenecen a caídas, grabados por 38 participantes, de los cuales 23 con edades comprendidas entre los 60 y 75 años, ajustándose a los requisitos de este trabajo. Incluye información de la aceleración capturada desde la cintura, así que en debemos validar que hay una correlación entre los valores de la aceleración capturados en muñeca y cintura para poder combinar ambos resultados.
 
-Una vez confirmada la validez del modelo, aplicaremos diferentes técnicas de optimización y reducción de modelos neuronales para lograr un menos consumo de memoria y recursos y adaptarlo a la plataforma elegida reduciendo la latencia y consumo con el fin de lograr un sistema con autonomía suficiente para más de un día de uso, con el fin de lograr un símil entre el recargar la plataforma presentada y el remontuar un reloj mecánico con el que el público objetivo estaría familiarizado y lograr por tanto realizarlo a intervalos similares.
-
-Finalmente implementaremos una aplicación para el sistema orientada siempre a la facilidad de uso intentando mantener las mismas sinergias de sus homólogos mecánicos y en última instancia evaluaremos el grado de satisfacción con el sistema logrado tras dos meses de uso.
-
-\section{CONTRIBUCIÓN}
-Este trabajo presenta por primera vez un sistema híbrido con una etapa analítica simple y un modelo de redes neuronales recurrentes corriendo sobre un sistema llevable manteniendo una autonomía superior a las 24 horas de uso continuo de forma consistente. Así mismo aplica la arquitectura RNN Codificador/decodificador por primera vez a la detección de anomalías en la actividad humana permitiendo detectar caídas como anomalías usando entrenamiento no supervisado.
-
-\subsection{Adquisición de la base de datos}
-Usando la misma plataforma para la que realizaremos la aplicación final, creamos una primera para capturar una serie de secuencias de actividad para entrenar el sistema posteriormente. Este dispositivo, un reloj inteligente Fossil Sport Gen 3, es capaz de leer muestras del sensor de aceleración 50 veces por segundo de forma sostenida como se aprecia en el resumen de características recogido en la tabla \ref{tab:watch:specs}.
+Para generar la base de datos de actividad \accelcapture/ usamos reloj inteligente Fossil Sport Gen 3 (\ref{tab:watch:specs}), la misma plataforma sobre la que realizaremos el desarrollo final. Este dispositivo contiene un sensor triaxial para medir la aceleración, siendo capaz de leer a 50 muestras por segundo. Mediante una aplicación desarrollada para la ocasión: \accelcapture/.
 
 \begin{table}\caption{\label{tab:watch:specs} Especificaciones de la plataforma Fossil Sport Gen 3 reportadas por el Sistema Operativo}
 	\begin{tabular}{lc}\toprule
@@ -200,26 +195,101 @@ Finalmente se conforma una base de datos con presencia únicamente de secuencias
   \end{tabular}
 \end{table}
 
-\subsection{Modelo híbrido}
-
-Proponemos el modelo con dos etapas. La primera etapa basada en un modelo analítico de Bourke \cite{Bourke2006}. Este modelo es adecuado para esta implementación por requerir únicamente de la norma de la aceleración. Al usar la muñeca como posición de los sensores no es posible utilizar la postura del cuerpo para optimizar a capacidad de detección.
-%TODO Insrtar imagen de la onda y las cotas
-Bourke es un modelo de dos cotas: una cota de valle y una de pico. Si la aceleración desciende de la cota valle y/o supera la cota de pico el algoritmo supone que se producido una caída. Usando la base de datos Sisfall recalculamos las cotas (4,16\g/ para picos y 0,97\g/ para valles) y el rendimiento de Bourke en base a su especificidad, pues por construcción su sensibilidad es del 100\%. Obtenemos que para el caso de analizar las dos cotas la especificidad es del 22,7\%. Aunque pobre por si mismo va a ser únicamente un filtro ya que la decisión final la realizará el modelo RNN, aumentando la especificidad total del sistema. Cuando este primer modelo detecte una caída en el instante $t_0$ generará un evento con una ventana de señal de 4 segundo a procesar por el modelo RNN, y una segunda ventana de 2 o 4 segundos para verificar la predicción o reconstrucción mediante el error RMSE (raíz del error cuadrático medio). 
+Finalmente de cara al entrenamiento y validación debemos submuestrear ambos conjuntos. Para reducir el consumo, el reloj muestreará a únicamente 25Hz que es suficiente para permitir realizar la detección de actividades\cite{Liu2018}, por lo que será necesario reducir el número de lecturas de las basos de datos: para Sisfall, capturada a 200Hz mantendremos una de cada 8 muestras mientras que para \accelcapture/ tomaremos muestras alternas. Este proceso lo realizamos tras filtrar con un filtro IIR paso bajo de primer orden ($H(z) = \frac{\alpha}{1-(1-\alpha)z^{-1}}$) con frecuencia de corte a 12,5Hz ya que es el máximo ancho de banda permitido por Nyquist. 
 
 \begin{figure}
-  \pincludegraphics{deteccionFlujo}
-  \caption{\label{fig:ifell:algorithm} Diagrama del algoritmo híbrido de \ifell/}
+  \pincludegraphics{capturaFlujo}
+  \caption{\label{fig:accelcapture:flow} Diagrama de flujo de la aplicación \accelcapture/}
+\end{figure}
+
+Para comprobar la similitud entre las distribuciones de la aceleración de ambos conjuntos analizamos los histogramas de valores de pico en la figura \ref{fig:accelcapture:hitogram}. Finalmente separamos de SisFall dos conjuntos: el 80\% de las muestras en el conjunto de entrenamiento  y un 20\% para el de validación ($SF_{test}$ y $SF_{val}$ respectivamente). A su vez de ambos grupos extraemos el subconjunto de eventos de actividad ($SFA_{test}$ y  $SFA_{val}$) que serán usados para calcular los umbrales de decisión finales. 
+\begin{figure}
+  \centering
+  \begin{subfigure}[b]{0.49\columnwidth}
+      \centering
+      \pincludegraphics{AccData_histoLow}
+      \caption{\footnotesize Valores valle SisFall y \accelcapture/}
+      \label{fig:accelcapture:hitogram:low}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.49\columnwidth}
+      \centering
+      \pincludegraphics{AccData_histoUp}
+      \caption{\footnotesize Valores pico SisFall y \accelcapture/}
+      \label{fig:accelcapture:hitogram:high}
+  \end{subfigure}
+  \caption{\label{fig:accelcapture:hitogram} Histogramas de valores pico y valle}
 \end{figure}
 
 
+\subsection{Generación de modelos}
+Nuestro desarrollo hace uso de dos modelos, uno analítico y otro basado en redes neuronales recurrentes. El modelo analítico elegido es Bourke \cite{Bourke2006}. Un modelo que por construcción garantiza el 100\% de sensibilidad sobre el conjunto de datos elegido y que de acuerdo con las limitaciones de nuestro sistema, no requiere de información de la posición del individuo ni del sensor pues procesa únicamente el vector suma de la aceleración (la norma del mismo): $SVA = \|\vec{A}\|=\sqrt{A_x^2 + A_y^2 + A_z^2}$. 
+
+\subsubsection{Modelo de Bourke}
+Para configurar el modelo de Bourke realizamos un análisis de los valor pico y valle de la aceleración en cada instancia del conjunto $SF_{test}$. Tal y como define el algoritmo definiremos una cota superior establecida de manera que todas las muestras de caídas tengan un pico que supere dicho valor y a la inversa con el valor de valle, asegurando que toda caída tiene un valor de valle inferior. Para este ejercicio usaremos un comparador \textit{Bourke U} que únicamente mira que se supere el umbral de pico ya que es el que mejor capacidad de segregar caídas de actividad dispone. Analizando los percentiles de la distribución de valores máximo de la aceleración en una caída obtenemos un valor de cota de 4,16\g/ y una especificidad del 22\% que crece rápidamente si aceptamos reducir ligeramente la sensibilidad tal y como se observa en la tabla \ref{tab:umbrales}.
+
+\begin{figure}
+  \pincludegraphics{BourkeThresholds}
+  \caption{\label{fig:bourke:thresholds} Cotas pico y valle de Bourke}
+\end{figure}
+
+\subsubsection{Modelos RNN}
+Generaremos varios modelos para analizar el impacto de la estructura de la red y tamaño de las celdas GRU usadas en el estimador obtenido. Principalmente generaremos dos familias de de modelos: los modelos basados en la predicción de la caída y los modelos que realizarán una reconstrucción de la misma. En el fondo son estructuras casi idénticas pero que han sido entrenadas para obtener resultados diferentes. Partiendo de la secuencia de datos de la aceleración, calculamos la norma en cada instante a partir de sus componentes y generamos dos ventanas: $W^{in} = $ y $W^{out}$ que se corresponden con el valor de entrada y el valor esperado de salida del modelo a entrenar: $X = W^{in}, Y=W^{out}$.
+
+\paragraph{Modelos RNN-Reconstrucción}
+La señal de entrada y la esperada de salida son las mismas: $X=Y=W^{in}=^{out}$. De longitud 100 muestras ambas.
+\paragraph{Modelos RNN-Predicción}
+La señal de entrada y salida son una la continuación de la otra, y además de diferente tamaño. $W^{in}$ mantiene las 100 muestras mientras que $W^{out}$ se reduce a 50. Lo denominamos de predicción por que la secuencia contenida en $W^{out}$ es la continuación de la señal de entrada: $W^{in} =[x_0, x_1,\cdots,x_{99}]$ y $W^{out}=[x_100, x_101, \cdots,x_149]$.
+
+\begin{figure}
+  \pincludegraphics{Prediction_reconstruction}
+  \caption{\label{fig:ifell:reconstrucion} Predicción de la aceleración por un modelo RNN Codificador/Decodificador}
+\end{figure}
+
+Generamos los modelos usando TensorFlow y los entrenaremos durante un máximo de 250 épocas con un sistema de parada temprana y tasa de aprendizaje decreciente de forma polinómica, con incrementos relativos menores al principio para acelerar el aprendizaje y mayores al final para conseguir un ajuste fino de los mismos. En este punto apreciamos una clara tendencia alsobreajuste de los modelos basados en la predicción como se aprecia en la figura \ref{fig:rnn:predict:train}.
+
+\begin{figure}
+  \centering
+  \begin{subfigure}[t]{0.49\columnwidth}
+    \centering
+
+    \pincludegraphics{trainingModeloRNNPred350-25}
+    \caption{\label{fig:rnn:predict:train} RMSE en entrenamiento de un modelo de predicción}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[t]{0.49\columnwidth}
+    \centering
+    \pincludegraphics{trainingModeloRNNRecon350-50}
+    \caption{\label{fig:rnn:reconstrucion:train} RMSE en entrenamiento de un modelo de reconstrucción}
+  \end{subfigure}
+  \caption{\label{fig:rnn:train} Función de pérdida durante el entrenamiento de los modelos}
+\end{figure}
+
+Haremos dos tipos de experimentos con estos modelos. Entrenarlos y validarlos con SisFall, mediantes los conjuntos $SF_{test}$ y $SF_{val}$ y entrenarlos con \accelcapture/ y validarlos con SisFall. Denominaremos a estos modelos $RNN\_<tipo>(<uds>)[<atr>]$ y a los modelos entrenados con SisFall y $IFALL\_<tipo>(<uds>)[<atr>]$ los modelos entrenados con \accelcapture/, donde \textit{<tipo>} puede ser "P" para predicción y "R" para reconstrucción, \textit{<uds>} son las unidades de las celdas y \textit{<atr>} el número de atributos del espacio intermedio.
+
+Una vez confirmada la validez del modelo, aplicaremos diferentes técnicas de optimización y reducción de modelos neuronales para lograr un menos consumo de memoria y recursos y adaptarlo a la plataforma elegida reduciendo la latencia y consumo con el fin de lograr un sistema con autonomía suficiente para más de un día de uso, con el fin de lograr un símil entre el recargar la plataforma presentada y el remontuar un reloj mecánico con el que el público objetivo estaría familiarizado y lograr por tanto realizarlo a intervalos similares.
+
+Finalmente implementaremos una aplicación para el sistema orientada siempre a la facilidad de uso intentando mantener las mismas sinergias de sus homólogos mecánicos y en última instancia evaluaremos el grado de satisfacción con el sistema logrado tras dos meses de uso.
+
+\section{CONTRIBUCIÓN}
+Este trabajo presenta por primera vez un sistema híbrido con una etapa analítica simple y un modelo de redes neuronales recurrentes corriendo sobre un sistema llevable manteniendo una autonomía superior a las 24 horas de uso continuo de forma consistente. Así mismo aplica la arquitectura RNN Codificador/decodificador por primera vez a la detección de anomalías en la actividad humana permitiendo detectar caídas como anomalías usando entrenamiento no supervisado.
 
 
-\subsubsection{Sisfall}
-El número de bases de datos de actividad humana y caídas disponible públicamente es muy reducido \cite{igual2015} y la mayoría están orientados al experimento para el que fueron creadas. SisFall\cite{Sucerquia2017} está especialmente orientada a la detección de caídas con 4504 eventos de los cuales 1798 pertenecen a caídas, grabados por 38 participantes, de los cuales 23 con edades comprendidas entre los 60 y 75 años, ajustándose a los requisitos de este trabajo.
+\subsection{Modelo híbrido}
 
-Para reducir el consumo, el reloj muestreará a únicamente 25Hz que es suficiente para permitir realizar la detección de actividades\cite{Liu2018}, por lo que será necesario submuestrear la base de datos Sisfall, capturada a 200Hz. Este proceso lo realizamos tras filtrar con un filtro IIR paso bajo de primer orden ($H(z) = \frac{\alpha}{1-(1-\alpha)z^{-1}}$) con frecuencia de corte a 12,5Hz. Tras filtrar la señal realizamos el proceso de tomar una de cada 8 muestras para obtener las 25 muestras por segundo deseadas.
+Proponemos el modelo con dos etapas definido por el diagrama de la figura \ref{fig:ifell:algorithm}. La primera etapa basada en un modelo analítico \textit{BourkeU}. Este modelo funciona como un filtro o generador de eventos. Se encarga de dejar pasar únicamente los eventos mejores candidatos a caídas. Una vez detectada la caída en un un instante $t_0$, conforma las ventanas $W^{in}$ y $W^{out}$ que enviar al modelo RNN posterior. Estas ventanas cambian según el tipo de modelo:
+\begin{itemize}
+  \item \textit{Predicción} $W^{in} = [x_{t_0 - 125},\cdots, x_{t_0-25}]$ y $W^{out}=[x_{t_0-24},\cdots,x_{t_0},\cdots,x_{t_0+50}]$
+  \item \textit{Reconstrucción} $W^{in} = W^{out} = [x_{t_0-49},\cdots,x_{t_0},\cdots,x_{t_0+50}]$
+\end{itemize}
 
-Finalmente separamos dos conjuntos: el 80\% de las muestras en el conjunto de entrenamiento y un 20\% para el de validación. A su vez de ambos grupos extraemos el subconjunto de eventos de actividad (sin caídas) que serán usados para entrenar modelos previos a la implementación final.
+\begin{figure}
+  \centering
+  \pincludegraphics[0.6]{deteccionFlujo}
+  \caption{\label{fig:ifell:algorithm} Diagrama del algoritmo híbrido de \ifell/}
+\end{figure}
+
+Estas ventanas se entregan al modelo RNN Codificador/Decodificador que es el encargado de procesarlas y mediante la comparación del error RMSE entre la salida generada y la esperada decide si se ha producido una anomalía o caída.
 
 
 \subsubsection{RNN Codificador/Decodificador}
@@ -227,18 +297,8 @@ Proponemos por primera vez un sistema codificador/decodificador RNN para detecta
 
 \begin{figure}
   \pincludegraphics{modeloRNNarticulo}
-  \caption{\label{fig:} Arquitectura de la red RNN Codficador/Decodificador \ifell/}
+  \caption{\label{fig:ifell:archi} Arquitectura de la red RNN Codficador/Decodificador Reconstrucción \ifell/}
 \end{figure}
-\begin{figure}
-  \pincludegraphics{Prediction_reconstruction}
-  \caption{\label{fig:ifell:reconstrucion} Predicción de la aceleración por un modelo RNN Codificador/Decodificador}
-\end{figure}
-
-Usando TensorFlow, generamos varios modelos usando una estructura RNN episódica con una ventana de 4 segundos de señal (100 muestras) a la entrada y una de 4 o 2 segundos a la salida según si el modelo haga reconstrucción o predicción en cada caso.
-\begin{itemize}
-  \item \textbf{Codificador} 100 muestras de entrada, 3 capas GRU de $m$ unidades cada una y una cuarta capa con $l$ unidades
-  \item \textbf{Decodificador} Partiendo del vector de $l$ unidades reconstruir una señal de duración 2 o 4 segundos mediante 3 capas GRU de $m$ unidades.
-\end{itemize}
 
 Entrenamos variaciones de modelos tanto de reconstrucción como de predicción de señal variando el tamaño de las celdas GRU como el número de atributos obtenidos por el codificador para estudiar el tamaño óptimo de la red que maximice la capacidad de detección manteniendo unos tiempos de ejecución por debajo del segundo en el reloj.
 
@@ -247,19 +307,21 @@ Entrenamos variaciones de modelos tanto de reconstrucción como de predicción d
 \paragraph{Optimización de los modelos}
 Los modelos obtenido no pueden ser usados directamente. Es necesario convertirlos a TensorFlow Lite, para el que existe un intérprete compatible con el dispositivo usado. Además, para maximizar el rendimiento aplicamos pruning para obtener un modelo ralo: Eliminar el 50\% de los pesos de la red de forma progresiva. Este proceso se puede entender como una normalización similar a la técnica de \textit{Dropout} con la salvedad de que la eliminación de nodos no se realiza de forma aleatoria sino por su aportación a la respuesta final y por que esta eliminación es definitiva. Bien configurado los efectos son similares pues mediante entrenamiento adicional la red resultante puede llegar a mejorar la capacidad de generalización del modelo original\cite{Cai2020}, aunque en nuestras muestras la mayoría de los casos ha resultado en una ligera pérdida de calidad de los modelos.
 
-El modelo ralo resultante es cuantizaado para reducir todavía más su tamaño según la tabla \ref{tab:model:optim}. Cuantizar reduce la precisión de la representación de los pesos de la red. Además, en la conversión a enteros se consigue mejorar el rendimiento en sistemas sin unidades de cálculo de coma flotante. Nuestro caso las latencias de los modelos GRU de 175 unidades y 50 atributos se reducía de 2,611 segundos con cuantizado a coma flotante de 16 bits a 1,200 con conversión a enteros de 8 bits.
+El modelo ralo resultante es cuantizado para reducir todavía más su tamaño según la tabla \ref{tab:model:optim}. Cuantizar reduce la precisión de la representación de los pesos de la red. Además, en la conversión a enteros se consigue mejorar el rendimiento en sistemas sin unidades de cálculo de coma flotante. Nuestro caso las latencias de los modelos GRU de 175 unidades y 50 atributos se reducía de 2,611 segundos con cuantizado a coma flotante de 16 bits a 1,200 con conversión a enteros de 8 bits.
 
-% \begin{table}\caption{\label{tab:model:optim} Reducción del tamaño del modelo en MBytes con cada técnica de optmización}
-%   \begin{tabular}{lccc}\toprule
-% \emph{Modelo}       & \emph{Orig.}  & \emph{C. Enteros}  & \emph{C. Float16} \\ \midrule
-% 350U,50A            & 15,2          & 4,0                   & 7,7 \\
-% 175U,50A            & 4,0           & 1,1                   & 2,0 \\ \bottomrule
-%   \end{tabular}
-% \end{table}
+\begin{table}\caption{\label{tab:model:optim} Reducción del tamaño del modelo en MBytes con cada técnica de optmización}
+  \resizebox{\columnwidth}{!}{
+    \begin{tabular}{lccc}\toprule
+      \emph{Modelo}       & \emph{Orig.}  & \emph{C. Enteros}  & \emph{C. Float16} \\ \midrule
+      RNN-(350)[50]            & 15,2          & 4,0                   & 7,7 \\
+      RNN-(175)[50]            & 4,0           & 1,1                   & 2,0 \\ \bottomrule
+    \end{tabular}
+  }
+\end{table}
 
 \paragraph{Aplicación \ifell/}
 
-\ifell/, la apliación resultante de este trabajo es un armazón en torno al algoritmo y modelos ya definidos encargado de proveer de datos a los mismos y de reaccionar a los eventos de detección de caída generando una alarma (que activa una respuesta visual, háptica y acústica en el dispositivo mismo y envía una notificación con detalles del evento a un servidor en internet para notificar a terceras personas que puedan ofrecer asistencia.
+\ifell/, la aplicación resultante de este trabajo es un armazón en torno al algoritmo y modelos ya definidos encargado de proveer de datos a los mismos y de reaccionar a los eventos de detección de caída generando una alarma (que activa una respuesta visual, háptica y acústica en el dispositivo mismo y envía una notificación con detalles del evento a un servidor en internet para notificar a terceras personas que puedan ofrecer asistencia.
 
 \begin{figure}[!ht]
   \centering
@@ -307,8 +369,8 @@ De cara a le evaluación final, generamos los mejores modelos candidato y los en
     \begin{tabular}{lcccc}\toprule
       \emph{Umbral}   & p.0\% & p.1\%  & p.3\%  & p.5\%  \\ \midrule
       Bourke Pico  & 4,16\g/ & 5,77\g/ & 6,67\g/ & 7,40 \g/ \\
-      (175u,50a,Pred) & 0,6956 & 1,6145 & 1,9264 & 2,2176  \\
-      (175u,50a,Recons) & 0,0701 & 0,1404 & 0,2358 & 0,2822 \\ \bottomrule
+      IFELL-P(175)[50] & 0,6956 & 1,6145 & 1,9264 & 2,2176  \\
+      IFELL-R(175)[50] & 0,0701 & 0,1404 & 0,2358 & 0,2822 \\ \bottomrule
     \end{tabular}
   }
 \end{table}
@@ -334,13 +396,13 @@ Estas métricas son ampliamente utilizadas en los estudios relacionados \cite{No
 El modelo de Bourke es el punto de partida del modelo propuesto y por tanto el más simple de estudiar: toda variación en la capacidad de detección es acción directa del algoritmo y tratamientos aplicados por este trabajo. comparamos los modelos RNN-Predicción 175 unidades, 50 atributos y RNN-Reconstrucción 175 unidades, 50 atributos obteniendo una mejoría del 41\% en la especificidad a igual sensibilidad.
 
 \begin{table}\caption{\label{tab:ifell:vs:bourke} Especificidad por modelos para $Sens. \geq 99\%$}
-%   \begin{tabular}{lrr}
-%   \tablas{lrr}{\toprule
-%     \emph{Modelo}     & \emph{Sens.} & \emph{Esp.} \\\midrule
-%     Bourke U          & 99,0\%    & 41,3 \% \\                
-%     IFELL-R(175)[50]    & 99,0\%  & 58,5 \% \\
-%     IFELL-P(175)[50]    & 99,0\%  & 48,9 \% \\\bottomrule
-%   \end{tabular}
+  \centering
+  \begin{tabular}{lrr}\toprule
+    \emph{Modelo}     & \emph{Sens.} & \emph{Esp.} \\\midrule
+    Bourke U          & 99,0\%    & 41,3 \% \\                
+    IFELL-R(175)[50]    & 99,0\%  & 58,5 \% \\
+    IFELL-P(175)[50]    & 99,0\%  & 48,9 \% \\\bottomrule
+  \end{tabular}
 \end{table}
 
 \paragraph{Respecto a modelos de aprendizaje automático}
