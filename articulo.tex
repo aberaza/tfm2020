@@ -1,5 +1,7 @@
 \documentclass[11pt,a4paper,spanish,twocolumn]{article}
 \usepackage{estilo_unir_articulo}
+\usepackage{standalone}
+\usepackage{subcaption} % conflicto con subfig
 % diagramas simples
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, arrows}
@@ -13,13 +15,14 @@
 \tikzstyle{decision} = [diamond, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=green!30]
 \tikzstyle{arrow} = [thick,->,>=stealth]
 
-
+\usepackage{tabularx}
+\usepackage[flushleft]{threeparttable}
 \usepackage{multirow}
 
 \usepackage{ifthen}
 \newcommand\pincludegraphics[2][0.98]{
   \def\scale{#1}
-  \def\graphname{img/#2.png}
+  \def\graphname{img/#2}
   \def\texfigure{img/#2.tex}
   \def\pgffigure{img/#2.pgf}
   \IfFileExists{\texfigure}{
@@ -45,7 +48,7 @@
 \def\g/{~\textsl{g}}
 
 
-\newcommand\tablan[7][\linewidth]{
+\newcommand\tablan[7][\columnwidth]{
   \def\myscale{#1}
   \def\mytableid{#2}
   \def\mycaptiontext{#3}
@@ -53,10 +56,12 @@
   \def\mytablecontent{#5}
   \def\tablenote{#6}
 
-  \begin{table*}
-    \rowcolors{#7}{white}{Gray!20}
+  \begin{table}
+    \caption{\label{\mytableid} \mycaptiontext}
+    % \rowcolors{#7}{white}{Gray!20}
     \centering
     \resizebox{\myscale}{!}{
+    % \scalebox{0.5}{
       \begin{threeparttable}
         \begin{tabular}{@{}#4@{}}
           \toprule[1.5pt]
@@ -70,8 +75,7 @@
         \end{tablenotes}
       \end{threeparttable}
     }
-    \caption{\label{\mytableid} \mycaptiontext}
-  \end{table*}
+  \end{table}
 }
 
 
@@ -222,8 +226,12 @@ Finalmente separamos dos conjuntos: el 80\% de las muestras en el conjunto de en
 Proponemos por primera vez un sistema codificador/decodificador RNN para detectar caídas como anomalías en la actividad cotidiana. Esta arquitectura realiza una primera extracción de características mediante una red neuronal recurrente y posteriormente mediante una segunda red recurrente alimentada por este vector de características realizar bien una predicción bien una reconstrucción de la señal original. Comparando el error cometido en la reconstrucción o en la señal predicha podemos establecer un umbral de decisión entre actividad ordinaria o anomalía (entre las que se incluirian las caídas). 
 
 \begin{figure}
+  \pincludegraphics{modeloRNNarticulo}
+  \caption{\label{fig:} Arquitectura de la red RNN Codficador/Decodificador \ifell/}
+\end{figure}
+\begin{figure}
   \pincludegraphics{Prediction_reconstruction}
-  \caption{\label{fig:accel} Diagrama de flujo de la aplicación \accelcapture/}
+  \caption{\label{fig:ifell:reconstrucion} Predicción de la aceleración por un modelo RNN Codificador/Decodificador}
 \end{figure}
 
 Usando TensorFlow, generamos varios modelos usando una estructura RNN episódica con una ventana de 4 segundos de señal (100 muestras) a la entrada y una de 4 o 2 segundos a la salida según si el modelo haga reconstrucción o predicción en cada caso.
@@ -241,13 +249,13 @@ Los modelos obtenido no pueden ser usados directamente. Es necesario convertirlo
 
 El modelo ralo resultante es cuantizaado para reducir todavía más su tamaño según la tabla \ref{tab:model:optim}. Cuantizar reduce la precisión de la representación de los pesos de la red. Además, en la conversión a enteros se consigue mejorar el rendimiento en sistemas sin unidades de cálculo de coma flotante. Nuestro caso las latencias de los modelos GRU de 175 unidades y 50 atributos se reducía de 2,611 segundos con cuantizado a coma flotante de 16 bits a 1,200 con conversión a enteros de 8 bits.
 
-\begin{table}\caption{\label{tab:model:optim} Reducción del tamaño del modelo en MBytes con cada técnica de optmización}
-  \begin{tabular}{lccc}\toprule
-\emph{Modelo}       & \emph{Orig.}  & \emph{C. Enteros}  & \emph{C. Float16} \\ \midrule
-350U,50A            & 15,2          & 4,0                   & 7,7 \\
-175U,50A            & 4,0           & 1,1                   & 2,0 \\ \bottomrule
-  \end{tabular}
-\end{table}
+% \begin{table}\caption{\label{tab:model:optim} Reducción del tamaño del modelo en MBytes con cada técnica de optmización}
+%   \begin{tabular}{lccc}\toprule
+% \emph{Modelo}       & \emph{Orig.}  & \emph{C. Enteros}  & \emph{C. Float16} \\ \midrule
+% 350U,50A            & 15,2          & 4,0                   & 7,7 \\
+% 175U,50A            & 4,0           & 1,1                   & 2,0 \\ \bottomrule
+%   \end{tabular}
+% \end{table}
 
 \paragraph{Aplicación \ifell/}
 
@@ -255,29 +263,29 @@ El modelo ralo resultante es cuantizaado para reducir todavía más su tamaño s
 
 \begin{figure}[!ht]
   \centering
-  \begin{subfigure}[b]{0.4\textwidth}
+  \begin{subfigure}[b]{0.48\columnwidth}
       \centering
-      \includegraphics[width=\linewidth]{appActivity.png}
+      \includegraphics[width=\linewidth]{img/appActivity.png}
       \caption{\footnotesize Aplicación de gestión}
       \label{fig:uiActivity}
   \end{subfigure}
   \hfill
-  \begin{subfigure}[b]{0.4\textwidth}
+  \begin{subfigure}[b]{0.48\columnwidth}
       \centering
-      \includegraphics[width=\linewidth]{appWatchface.png}
-      \caption{\footnotesize \textit{Watchface}, Interfaz esfera de reloj}
+      \includegraphics[width=\linewidth]{img/appWatchface.png}
+      \caption{\footnotesize Interfaz esfera de reloj}
       \label{fig:uiWatchface}
   \end{subfigure}
-  \begin{subfigure}[b]{0.4\textwidth}
+  \begin{subfigure}[b]{0.48\columnwidth}
       \centering
-      \includegraphics[width=\linewidth]{appAlerta.png}
+      \includegraphics[width=\linewidth]{img/appAlerta.png}
       \caption{\footnotesize Pantalla de alerta de caída}
       \label{fig:uiAlerta}
   \end{subfigure}
   \hfill
-  \begin{subfigure}[b]{0.4\textwidth}
+  \begin{subfigure}[b]{0.48\columnwidth}
       \centering
-      \includegraphics[width=\linewidth]{appAlertaFalsa.png}
+      \includegraphics[width=\linewidth]{img/appAlertaFalsa.png}
       \caption{\footnotesize Pantalla en caso de predetección de caída}
       \label{fig:uiAlertaFalsa}
   \end{subfigure}
@@ -295,12 +303,14 @@ La aplicación toma el aspecto visual de una esfera de reloj analógica que a su
 De cara a le evaluación final, generamos los mejores modelos candidato y los entrenamos con la base de datos \accelcapture/ durante un máximo de 250 épocas con un mecanismo de parada temprana si el error RMSE deja de descender durante 5 iteraciones seguidas. Posteriormente usaremos el subconjunto de test de SisFall para calcular los umbrales de decisión de Bourke y RMSE  validación que separamos previamente para estudiar las estadísticas del modelo. En la tabla \ref{tab:umbrales} se listan los umbrales de decisión según el percentil de caídas que dejan de detectar. Tomamos en este punto la decisión de sacrificar 0,6\% de sensibilidad del algoritmo de Bourke para mejorar su especificidad hasta el 30\%.
 
 \begin{table}\caption{\label{tab:umbrales}Umbrales de decisión para Bourke y Modelos RNN}
-  \begin{tabular}{lcccc}\toprule
-    \emph{Umbral}   & p.0\% & p.1\%  & p.3\%  & p.5\%  \\ \midrule
-    Bourke Pico  & 4,16\g/ & 5,77\g/ & 6,67\g/ & 7,40 \g/ \\
-    RMSE(175u,50a,Pred) & 0,6956 & 1,6145 & 1,9264 & 2,2176  \\
-    RMSE(175u,50a,Recons) & 0,0701 & 0,1404 & 0,2358 & 0,2822 \\ \bottomrule
-  \end{tabular}
+  \resizebox{\columnwidth}{!}{
+    \begin{tabular}{lcccc}\toprule
+      \emph{Umbral}   & p.0\% & p.1\%  & p.3\%  & p.5\%  \\ \midrule
+      Bourke Pico  & 4,16\g/ & 5,77\g/ & 6,67\g/ & 7,40 \g/ \\
+      (175u,50a,Pred) & 0,6956 & 1,6145 & 1,9264 & 2,2176  \\
+      (175u,50a,Recons) & 0,0701 & 0,1404 & 0,2358 & 0,2822 \\ \bottomrule
+    \end{tabular}
+  }
 \end{table}
 
 Al ser un clasificador usaremos para este fin las métricas:
@@ -324,13 +334,13 @@ Estas métricas son ampliamente utilizadas en los estudios relacionados \cite{No
 El modelo de Bourke es el punto de partida del modelo propuesto y por tanto el más simple de estudiar: toda variación en la capacidad de detección es acción directa del algoritmo y tratamientos aplicados por este trabajo. comparamos los modelos RNN-Predicción 175 unidades, 50 atributos y RNN-Reconstrucción 175 unidades, 50 atributos obteniendo una mejoría del 41\% en la especificidad a igual sensibilidad.
 
 \begin{table}\caption{\label{tab:ifell:vs:bourke} Especificidad por modelos para $Sens. \geq 99\%$}
-  \begin{tabular}{lrr}
-  \tablas{lrr}{\toprule
-    \emph{Modelo}     & \emph{Sens.} & \emph{Esp.} \\\midrule
-    Bourke U          & 99,0\%    & 41,3 \% \\                
-    IFELL-R(175)[50]    & 99,0\%  & 58,5 \% \\
-    IFELL-P(175)[50]    & 99,0\%  & 48,9 \% \\\bottomrule
-  \end{tabular}
+%   \begin{tabular}{lrr}
+%   \tablas{lrr}{\toprule
+%     \emph{Modelo}     & \emph{Sens.} & \emph{Esp.} \\\midrule
+%     Bourke U          & 99,0\%    & 41,3 \% \\                
+%     IFELL-R(175)[50]    & 99,0\%  & 58,5 \% \\
+%     IFELL-P(175)[50]    & 99,0\%  & 48,9 \% \\\bottomrule
+%   \end{tabular}
 \end{table}
 
 \paragraph{Respecto a modelos de aprendizaje automático}
@@ -338,7 +348,7 @@ Analizamos los resultados de otros estudios recientes que han usado SisFall como
 
 Recogemos en la tabla \ref{tab:eval:resultados} los resultados de sensibilidad, especificidad y la exactitud promediada calculada a partir de las dos anteriores. Incluimos, en caso de estar disponible las latencias de los modelos. 
 
-\tablan{tab:eval:resultados}{Métricas de detectores de caídas usando \sisfall/}{llccccc}{
+\tablan{tab:eval:resultados}{Métricas de detectores de caídas usando SisFall}{llccccc}{
   \emph{Estudio} & \emph{Modelo} & \emph{Sens}. & \emph{Especif.} & \emph{Exactitud} & \emph{Exact. Pond.} & \emph{Tiempo (s)} \\ \midrule
   \multirow{5}{*}{\ifell/} & RNN-R(175)[50] & 97,2  & 65,6  &     & 81,4 & 0,035 \\ 
                            & RNN-P(175)[50] & 94,4  & 63,0  &     & 78,7 & 0,031 \\
@@ -360,7 +370,7 @@ Recogemos en la tabla \ref{tab:eval:resultados} los resultados de sensibilidad, 
                              & Bayes & 95,6 & 99,9 & 90,1 & 97,7 & 8,87 \\
                              & RT\tnote{5} & 92,2 & 98,5 & 80,32 & 95,3  & 1,21 \\ \midrule[0.1]
 
-    \multirow{2}{*}{\sisfall/} & NormAcc\tnote{6} & \~99,9 & 32,97 & 66,4 & 66,4 & \\
+    \multirow{2}{*}{SisFall} & NormAcc\tnote{6} & \~99,9 & 32,97 & 66,4 & 66,4 & \\
                                & STDEV\tnote{7} & \~99,9 & 67,97 & 83,96 & 83,96 & \\
 }{
 \item [1] SVM Linear 
@@ -379,7 +389,8 @@ La apliación \ifell/ se ha estado probando durante dos meses sin darse ninguna 
 
 En cuanto al aspecto funcional, ninguno de los tres sujetos de prueba ha manifestado problemas con el sistema debidos a la implementación realizada. Los datos de actividad detectada recibidos en el servidor demuestran que el sistema es capaz de funcionar y relanzarse sin interacción humana, estando siempre disponible en segundo plano para la detección de caídas. Hecho que se ve reforzado por la autonomía demostrada por el sistema superior a 24 horas y en casos extremos capaz de llegar a los dos días. Mientras que gracias a las técnicas de optimización de modelos hemos conseguido latencias de 1,2 segundos en el dispositivo llevable usando un modelo de tamaño intermedio con 6 capas GRU de 175 unidades y una de 50 entre codificador y decodificador, totalizando 4 MBytes cuando no se optimiza. Este resultado es especialmente prometedor a la vista de los resultados de otros modelos que multiplican por 7 estos tiempos en potentes ordenadores de sobremesa, tal y como se recoge en la tabla \ref{tab:eval:resultados}. 
 \begin{figure}
-  \pincludegraphics{appBatt}
+  \centering
+  \includegraphics[width=0.95\columnwidth]{img/appBatt.png}
   \caption{\label{fig:ifell:bat} Estimación de autonomía del sistema llevable ejecutando \ifell/}
 \end{figure}
 
