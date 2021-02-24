@@ -24,9 +24,12 @@
     \draw[thin,dashed] (axis cs: 50,0) -- (axis cs: 50,60);
     \node[anchor=west] at (axis cs:50,35) {$t_0$};
 
-    \draw[<-,thin,dotted] (100,40) -> (50,40);
-    \draw[<-,thin,dotted] (0,40) -- (50,40);
-    \node[anchor=south west] at (0,40) {{\footnotesize $t_0-50$}};
-    \node[anchor=south east] at (100,40) {{\footnotesize $t_0+50$}};
+    \draw[<-,thin,dotted] (100,50) -> (50,50);
+    \draw[<-,thin,dotted] (0,50) -- (50,50);
+    \node[anchor=south west] at (0,50) {{\footnotesize $t_0-50$}};
+    \node[anchor=south east] at (100,50) {{\footnotesize $t_0+50$}};
+
+    \draw[arrows=<-|,thin] (50,40) -- (100, 40);
+    \node[anchor=south] at (75,40) {$\Delta t$};
   \end{axis}
 \end{tikzpicture}

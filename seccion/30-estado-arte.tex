@@ -30,7 +30,7 @@ A pesar de sus inconvenientes, su simplicidad y suficiente capacidad de detecci�
 Como veremos más adelante en el trabajo, cabe recalcar el acercamiento propuesto por \citeA{Bourke2006}, basado únicamente en el uso del módulo del vector aceleración capturado por un acelerómetro triaxial. En esta obra, \citeauthorNP{Bourke2006} determinan que la curva descrita por la evolución del módulo del vector aceleración (consistente en un valle al inicio de la caída sucedido de un pico en el momento del impacto) permite la segregación de diferentes actividades y de caídas estableciendo unos valores límite para estos valores valle y pico) este método tiene por definición una sensibilidad del 100\% aunque una muy baja especificidad \cite{Aziz2017,Bagala2012}. Posteriormente en \citeA{Bourke2008, Bourke2010} ajusta el algoritmo para añadir una etapa posterior de medición de actividad y postura consiguiendo métricas de precisión, sensibilidad y especificidad entre las mejores en esta categoría, añadiendo por contra cierta latencia en la alarma.
 % ####################################################################
 
-\begin{comment}
+\iffalse
 
 Sobre cálculos basados en cotas, tenemos \cite{fallindex00}, Kangas\cite{Kangas2008} lo compara con el uso ya sea de aceleración vertical o modulo de la aceleración y de nuevo obtiene resultados dispares según el tipo de caída simulada.
 
@@ -40,7 +40,7 @@ Sobre cálculos basados en cotas, tenemos \cite{fallindex00}, Kangas\cite{Kangas
 3- PerFallD (Dai, J.; Bai, X.; Yang, Z.; Shen, Z.; Xuan, D. PerFallD: A Pervasive Fall Detection System using Mobile   Phones.   In   Proceedings   of   the   8th   IEEE   International   Conference   on   Pervasive   Computing  and  Communications  Workshops  (PERCOM  Workshops),  Mannheim,  Germany,    29 March–2 April 2010; pp. 292–297) (usa también un giroscopio)
 4- iFall (Sposaro,  F.;  Tyson,  G.  IFall:  An  Android  Application  for  Fall  Monitoring  and  Response.    In Proceedings of the Annual International Conference of the IEEE Engineering in Medicine and Biology Society (EMBC 2009), Minneapolis, MN, USA, 2–6 September 2009; pp. 6119–6122. )}
 
-\end{comment}
+\fi
 
 
 \subsection{Modelos de Aprendizaje Automático}\label{sec:arte:modelos_ml}
@@ -74,7 +74,7 @@ Enseguida aparecen nuevas topologías de redes para mejorar o solventar algunos 
 
 
 
-\begin{comment}
+\iffalse
 
 
 \section{GRU vs LSTM para predicción de series}\label{sa_rnn}
@@ -83,5 +83,5 @@ Enseguida aparecen nuevas topologías de redes para mejorar o solventar algunos 
 Respecto al uso de LSTM para detectar anomalías en series temporales, Wang \cite{Wang2020} \todo{sólo un artículo usando LSTM's?} usa LSTM para identificar anomalías en la señal de un motor (aunque el usa el error de recostrucción de la descomposición y recomposición wavelet de la señal como entrada a una triple red LSTM, nuestro enfoque es el contrario: usar LSTM a modo de transformada wavelet y luego comparar el error de recomposición).
 
 En\cite{Qin2019} estudia el comportamiento de varias redes recurrentes para la predicción de la saturación de oxígeno en el agua y obtiene que las GRU son las que mejores predicciones (menos error) obtienen (Sobre LSTM e incluso RNN bidireccional). Kofi \cite{Koffi2020} compara LSTM y GRU para predecir mercado de valores con topologías muy variadas (número de celdas, de capas, stateless o no) y encuentra que GRU tiene mejor tasa de aciertos teniendo en cuenta el coste computacional (y muchas veces sin tenerlo) y que no siempre tener dos capas de RNN da mejores resultados.
-\end{comment}
+\fi
 

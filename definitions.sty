@@ -17,7 +17,7 @@
 \usepackage{ifthen}
 %Fancy maths
 %\usepackage{mathpazo}
-%%% Subfiguras
+%% Subfiguras
 %\usepackage{subfigure} % deprecated y rompe algo
 %\usepackage{caption}
 \usepackage{subcaption} % conflicto con subfig
@@ -26,13 +26,33 @@
 \renewcommand{\lstlistingname}{Listado}
 \renewcommand{\lstlistlistingname}{Listados}
 
-% Como es un book no hay \paragraph, lo creamos
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Vocabulario y palabrejos especiales
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\accelcapture/{\textsl{\textsf{Accel}}\textsf{Capture}}
+\newcommand*{\accelcap}{\textsl{\textsf{Accel}}\textsf{Capture}}
+%% \newcommand{\accelcapture}{\textsl{\textsf{Accel}}\textsf{Capture}}
+
+\def\ifell/{\textsl{\textsf{i}}\textsf{Fell}}
+\def\sisfall/{\textsc{SisFALL}}
+
+\def\tflow/{\textsf{TensorFlow}}
+\def\tensorflow/{\textsf{TensorFlow}}
+% \newcommand{tflow}{\textsf{TensorFlow}}
+\def\tflite/{\textsf{TensorFlow~{\footnotesize Lite}}}
+%% \newcommand{\tflite}{\textsf{TensorFlow~{\footnotesize Lite}}
+\def\g/{~\textsl{g}}
+\def\hz/{~\textsl{Hz}}
+
+
+
+%%%%%%% FIGURAS Y GRÁFICOS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Como es un book no hay \paragraph, lo creamos
 \renewcommand{\paragraph}[1]{\noindent{\small\textsl{\textbf{#1}}}\quad}
-% Fix unicode character - U+2212 not setup with latex
-% \usepackage[utf8]{inputenc}
+%% Fix unicode character - U+2212 not setup with latex
+%% \usepackage[utf8]{inputenc}
 \DeclareUnicodeCharacter{2212}{-}
-% \newunicodechar{−}{\ensuremath{⎯}}
-%\digura{scale}{image}{fig:id}{Titulo}
+%% \newunicodechar{−}{\ensuremath{⎯}}
 \newcommand\pincludegraphics[2][0.9]{
   \def\scale{#1}
   \def\graphname{#2}
@@ -42,14 +62,14 @@
     \resizebox{\scale\linewidth}{!}{
       \includestandalone{\graphname}
     }
-  }{
+    }{
     \IfFileExists{\pgffigure}{
       \resizebox{\scale\linewidth}{!}{
         \input{\pgffigure}
         %\includestandalone{\pgffigure}
         %\includegraphics[width=\scale\linewidth]{\pgffigure}
       }
-    }{
+      }{
       % \includegraphics[scale=\scale]{\graphname}
       \includegraphics[width=\scale\linewidth]{\graphname}
     }
@@ -63,29 +83,30 @@
   \def\pgffigure{img/#2.pgf}
   \def\figid{#3}
   \def\captiontext{#4}
-    \begin{figure}[h!t]
-        \centering
-        \IfFileExists{\texfigure}{
-          \resizebox{\scale\linewidth}{!}{
-            \includestandalone{\graphname}
-          }
-        }{
-            \IfFileExists{\pgffigure}{
-              \resizebox{\scale\linewidth}{!}{
-                \input{\pgffigure}
-                %\includestandalone{\pgffigure}
-                %\includegraphics[width=\scale\linewidth]{\pgffigure}
-              }
-           }{
-               % \includegraphics[scale=\scale]{\graphname}
-               \includegraphics[width=\scale\linewidth]{\graphname}
-           }
+  \begin{figure}[h!t]
+    \centering
+    \IfFileExists{\texfigure}{
+      \resizebox{\scale\linewidth}{!}{
+        \includestandalone{\graphname}
+      }
+      }{
+      \IfFileExists{\pgffigure}{
+        \resizebox{\scale\linewidth}{!}{
+          \input{\pgffigure}
+          %\includestandalone{\pgffigure}
+          %\includegraphics[width=\scale\linewidth]{\pgffigure}
         }
-        \caption{\label{\figid} \captiontext}
-    \end{figure}
+        }{
+        % \includegraphics[scale=\scale]{\graphname}
+        \includegraphics[width=\scale\linewidth]{\graphname}
+      }
+    }
+    \caption{\label{\figid} \captiontext}
+  \end{figure}
 }
 
-% SOME HELPERS
+%%%%%%% TABLAS Y LISTAS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \usepackage{multirow}
 \usepackage{makecell}
 \newcolumntype{G}{>{\columncolor{Gray!30}}l}
@@ -131,10 +152,10 @@
         \end{tablenotes}
       \end{threeparttable}
     }
-  \caption{\label{\mytableid} \mycaptiontext}
+    \caption{\label{\mytableid} \mycaptiontext}
   \end{table*}
 }
-\hspace{\fill}
+
 \newcommand\tabCap[4]{
   \centering
   \begin{tabular}{@{}#3@{}}
@@ -144,6 +165,7 @@
   \end{tabular}
   \caption{\label{#1} #2}
 }
+
 \newcommand\subtablal[6][0.45]{
   \begin{subtable}{#1\textwidth}
     \rowcolors{#6}{white}{Gray!20}
@@ -158,6 +180,7 @@
     \tabCap{#2}{#3}{#4}{#5}
   \end{subtable}
 }
+
 \newcommand\subtablac[6][0.45]{
   \begin{subtable}{#1\textwidth}
     \rowcolors{#6}{white}{Gray!20}
@@ -169,23 +192,19 @@
 \newcommand\subtabla[7][0.45]{
   \begin{subtable}{#1\textwidth}
     \rowcolors{#7}{white}{Gray!20}
-    % \centering
     \ifthenelse{
       \equal{#6}{}
       }{
-        %\resizebox{#1\textwidth}{!}{
-          \tabCap{#2}{#3}{#4}{#5}
-        %}
+      \tabCap{#2}{#3}{#4}{#5}
       }{
-        %\resizebox{#1\textwidth}{!}{
-          \tabCap{#2}{#3}{#4}{#5}
-        %}
-      }
-\end{subtable}
+      \tabCap{#2}{#3}{#4}{#5}
+    }
+  \end{subtable}
 }
-% \tabla{tab:id}{Título tabla}{lcccl}{ la tala propiamente dicha}
+
+%% \tabla{tab:id}{Título tabla}{lcccl}{ la tala propiamente dicha}
 \newcommand\tabla[6][\linewidth]{
-  \begin{table*}[h]
+  \begin{table*}[h!tb]
     \rowcolors{#6}{white}{Gray!20}
     \centering
     \resizebox{#1}{!}{
@@ -199,35 +218,36 @@
   \end{table*}
 }
 
-% \tablas{tab:id}{Título tabla}{lcccl}{ la tabla propiamente dicha }
+%% \tablas{tab:id}{Título tabla}{lcccl}{ la tabla propiamente dicha }
 \newcommand\tablas[6][1]{
-  \begin{table*}[h]
+  \begin{table*}[h!tb]
     \rowcolors{#6}{white}{Gray!20}
     \centering
     \scalebox{#1}{
-        \begin{tabular}{@{}#4@{}}
-          \toprule[3pt]
+      \begin{tabular}{@{}#4@{}}
+        \toprule[3pt]
         #5
         \bottomrule[2pt]
-        \end{tabular}
+      \end{tabular}
     }
     \caption{\label{#2} #3}
-\end{table*}
+  \end{table*}
 }
 
 \newcommand\tablav[4]{
-\begin{sidewaystable*}
+  \begin{sidewaystable*}
     \centering
     \resizebox{\linewidth}{!}{
-        \begin{tabular}{@{}#3@{}}
-            \toprule
+      \begin{tabular}{@{}#3@{}}
+        \toprule
         #4
-            \bottomrule
-        \end{tabular}
+        \bottomrule
+      \end{tabular}
     }
     \caption{\label{#1} #2}
-\end{sidewaystable*}
+  \end{sidewaystable*}
 }
+
 \newcommand{\tabitem}{~~\llap{\textbullet}~~}
 
 \newcommand\vtablan[7][\linewidth]{
@@ -255,50 +275,56 @@
         \end{tablenotes}
       \end{threeparttable}
     }
-  \caption{\label{\mytableid} \mycaptiontext}
+    \caption{\label{\mytableid} \mycaptiontext}
   \end{sidewaystable*}
 }
 
 
-% Texto citado
+%% Texto citado
 \usepackage[autostyle=true,spanish=spanish]{csquotes}
-\newcommand{\cita}[2][]{\textquote[{#1}]{#2}}
-\newcommand{\citaa}[3][]{\textquote[{\citeNP[#1]{#2}}]{#3}}
+\newcommand*{\cita}[2]{\textquote[{#1}]{#2}}
+\newcommand*{\citaa}[3]{\textquote[{\citeNP[{#1}]{#2}}]{#3}}
+\newcommand*{\fcap}[1]{\footnotesize #1}
 
-%%% ToDo notes
-\usepackage{xargs}                      % Use more than one optional parameter in a new commands
-%\usepackage[pdftex,dvipsnames]{xcolor}  % Coloured text etc.
-\usepackage[spanish,obeyFinal,colorinlistoftodos,textsize=tiny]{todonotes} % para desactivar usar diable
+%% Necesita hyperref
+\newcommand*{\fullref}[1]{\hyperref[{#1}]{\autoref*{#1}: \textit{\nameref*{#1}}}}
 
-%\newcommandx{\info}[2][1=]{\todo[linecolor=OliveGreen,backgroundcolor=OliveGreen!25,bordercolor=OliveGreen,#1]{#2}}
+%%%% ToDo notes
+% \usepackage{xargs}                      % Use more than one optional parameter in a new commands
+%%\usepackage[pdftex,dvipsnames]{xcolor}  % Coloured text etc.
+\usepackage[disable,spanish,obeyFinal,colorinlistoftodos,textsize=tiny]{todonotes} % para desactivar usar diable
+
+%%\newcommandx{\info}[2][1=]{\todo[linecolor=OliveGreen,backgroundcolor=OliveGreen!25,bordercolor=OliveGreen,#1]{#2}}
 \newcommand{\info}[1]{\todo[inline,linecolor=OliveGreen,backgroundcolor=OliveGreen!25,bordercolor=OliveGreen]{#1}}
-\newcommandx{\warn}[2][1=]{\todo[inline, size=large, linecolor=Plum,backgroundcolor=Plum!25,bordercolor=Plum,#1]{#2}}
+\newcommand{\warn}[1]{\todo[inline,size=large, linecolor=Plum,backgroundcolor=Plum!25,bordercolor=Plum]{#1}}
+% \newcommandx{\warn}[2][1=]{\todo[inline, size=large, linecolor=Plum,backgroundcolor=Plum!25,bordercolor=Plum,#1]{#2}}
 \newcommand{\todofig}[5][1]{
   \def\scale{#1}
   \def\graphname{#2}
   \def\figid{#3}
   \def\captiontext{#4}
-    \begin{figure}[!ht]
-        \centering
-        \missingfigure{TODO}
-        \caption{\label{\figid} \captiontext}
-    \end{figure}
+  \begin{figure}[!ht]
+    \centering
+    \missingfigure{TODO}
+    \caption{\label{\figid} \captiontext}
+  \end{figure}
 }
-\newcommandx{\todohide}[2][1=]{\todo[disable,#1]{#2}}
+
+% \newcommandx{\todohide}[2][1=]{\todo[disable,#1]{#2}}
 
 
 
-%****************************
-% FORMATO JAVASCRIPT
+%%****************************
+%% FORMATO JAVASCRIPT
 
-%
-% ECMAScript 2015 (ES6) definition by Gary Hammock
-%
+%%
+%% ECMAScript 2015 (ES6) definition by Gary Hammock
+%%
 
 \lstdefinelanguage[ECMAScript2015]{JavaScript}[]{JavaScript}{
   morekeywords=[1]{await, async, case, catch, class, const, default, do,
     enum, export, extends, finally, from, implements, import, instanceof,
-    let, static, super, switch, throw, try},
+  let, static, super, switch, throw, try},
   morestring=[b]` % Interpolation strings.
 }
 
@@ -312,15 +338,15 @@
 %     http://hepunx.rl.ac.uk/~adye/jsspec11/titlepg2.htm
 %
 \ifxetex
-\usepackage{fontspec}
-\newfontfamily\listingsfont[Scale=.7]{Menlo}
+  \usepackage{fontspec}
+  \newfontfamily\listingsfont[Scale=.7]{Menlo}
 \fi
 \lstdefinelanguage{JavaScript}{
   morekeywords=[1]{break, continue, delete, else, for, function, if, in,
-    new, return, this, typeof, var, void, while, with},
+  new, return, this, typeof, var, void, while, with},
   % Literals, primitive types, and reference types.
   morekeywords=[2]{false, null, true, boolean, number, undefined,
-    Array, Boolean, Date, Math, Number, String, Object},
+  Array, Boolean, Date, Math, Number, String, Object},
   % Built-ins.
   morekeywords=[3]{eval, parseInt, parseFloat, escape, unescape},
   sensitive,
@@ -332,9 +358,9 @@
 }[keywords, comments, strings]
 
 
-\lstalias[]{ES6}[ECMAScript2015]{JavaScript}
+\lstalias{ES6}{JavaScript}
 
-% Requires package: color.
+%% Requires package: color.
 \definecolor{mediumgray}{rgb}{0.3, 0.4, 0.4}
 \definecolor{mediumblue}{rgb}{0.0, 0.0, 0.8}
 \definecolor{forestgreen}{rgb}{0.13, 0.55, 0.13}
@@ -386,20 +412,4 @@
   style=JSES6Base
 }
 
-% Necesita hyperref
-\newcommand*{\fullref}[1]{\hyperref[{#1}]{\autoref*{#1}: \textit{\nameref*{#1}}}} % Sección 3.2 Titulo de la sección
-
-
-%% Vocabulario y palabrejos especiales
-
-\def\accelcapture/{\textsl{\textsf{Accel}}\textsf{Capture}}
-\newcommand{\accelcapture}{\textsl{\textsf{Accel}}\textsf{Capture}}
-
 \def\ifell/{\textsl{\textsf{i}}\textsf{Fell}}
-\def\sisfall/{\textsc{SisFALL}}
-
-\def\tflow/{\textsf{TensorFlow}}
-\def\tensorflow/{\textsf{TensorFlow}}
-\newcommand{tflow}{\textsf{TensorFlow}}
-\def\tflite/{\textsf{TensorFlow~{\footnotesize Lite}}}
-\newcommand{\tflite}{\textsf{TensorFlow~{\footnotesize Lite}}

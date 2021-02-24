@@ -607,7 +607,7 @@ Calcula mnima frecuencia necesaria para obtener varios modelos. 5Hz es efectivam
   year          = {2014},
   archiveprefix = {arXiv},
   eprint        = {1406.1078},
-  file          = {:1406.1078.pdf:PDF},
+  file          = {:Cho2014 - Learning Phrase Representations Using RNN Encoder Decoder for Statistical Machine Translation.pdf:PDF},
   primaryclass  = {cs.CL},
 }
 
@@ -892,6 +892,7 @@ Calcula mnima frecuencia necesaria para obtener varios modelos. 5Hz es efectivam
 @Article{Guo2018,
   author      = {Yunhui Guo},
   title       = {A Survey on Methods and Theories of Quantized Neural Networks},
+  year        = {2018},
   abstract    = {Deep neural networks are the state-of-the-art methods for many real-world tasks, such as computer vision, natural language processing and speech recognition. For all its popularity, deep neural networks are also criticized for consuming a lot of memory and draining battery life of devices during training and inference. This makes it hard to deploy these models on mobile or embedded devices which have tight resource constraints. Quantization is recognized as one of the most effective approaches to satisfy the extreme memory requirements that deep neural network models demand. Instead of adopting 32-bit floating point format to represent weights, quantized representations store weights using more compact formats such as integers or even binary numbers. Despite a possible degradation in predictive performance, quantization provides a potential solution to greatly reduce the model size and the energy consumption. In this survey, we give a thorough review of different aspects of quantized neural networks. Current challenges and trends of quantized neural networks are also discussed.},
   date        = {2018-08-13},
   eprint      = {1808.04752},
@@ -949,6 +950,7 @@ Calcula mnima frecuencia necesaria para obtener varios modelos. 5Hz es efectivam
 @Article{Han2015,
   author      = {Song Han and Huizi Mao and William J. Dally},
   title       = {Deep Compression: Compressing Deep Neural Networks with Pruning, Trained Quantization and Huffman Coding},
+  year        = {2015},
   abstract    = {Neural networks are both computationally intensive and memory intensive, making them difficult to deploy on embedded systems with limited hardware resources. To address this limitation, we introduce "deep compression", a three stage pipeline: pruning, trained quantization and Huffman coding, that work together to reduce the storage requirement of neural networks by 35x to 49x without affecting their accuracy. Our method first prunes the network by learning only the important connections. Next, we quantize the weights to enforce weight sharing, finally, we apply Huffman coding. After the first two steps we retrain the network to fine tune the remaining connections and the quantized centroids. Pruning, reduces the number of connections by 9x to 13x; Quantization then reduces the number of bits that represent each connection from 32 to 5. On the ImageNet dataset, our method reduced the storage required by AlexNet by 35x, from 240MB to 6.9MB, without loss of accuracy. Our method reduced the size of VGG-16 by 49x from 552MB to 11.3MB, again with no loss of accuracy. This allows fitting the model into on-chip SRAM cache rather than off-chip DRAM memory. Our compression method also facilitates the use of complex neural networks in mobile applications where application size and download bandwidth are constrained. Benchmarked on CPU, GPU and mobile GPU, compressed network has 3x to 4x layerwise speedup and 3x to 7x better energy efficiency.},
   date        = {2015-10-01},
   eprint      = {1510.00149},
@@ -992,6 +994,7 @@ Calcula mnima frecuencia necesaria para obtener varios modelos. 5Hz es efectivam
 @Article{Jin2019,
   author      = {Qing Jin and Linjie Yang and Zhenyu Liao},
   title       = {Towards Efficient Training for Neural Network Quantization},
+  year        = {2019},
   abstract    = {Quantization reduces computation costs of neural networks but suffers from performance degeneration. Is this accuracy drop due to the reduced capacity, or inefficient training during the quantization procedure? After looking into the gradient propagation process of neural networks by viewing the weights and intermediate activations as random variables, we discover two critical rules for efficient training. Recent quantization approaches violates the two rules and results in degenerated convergence. To deal with this problem, we propose a simple yet effective technique, named scale-adjusted training (SAT), to comply with the discovered rules and facilitates efficient training. We also analyze the quantization error introduced in calculating the gradient in the popular parameterized clipping activation (PACT) technique. Through SAT together with gradient-calibrated PACT, quantized models obtain comparable or even better performance than their full-precision counterparts, achieving state-of-the-art accuracy with consistent improvement over previous quantization methods on a wide spectrum of models including MobileNet-V1/V2 and PreResNet-50.},
   date        = {2019-12-21},
   eprint      = {1912.10207},

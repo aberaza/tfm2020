@@ -1,12 +1,12 @@
 % !TeX root = ../tfm.tex
 %! TEX root = ../tfm.tex
 
-\begin{comment}
+\iffalse
 info{Indicar el trabajo previo realizado para guiar el desarrollo del software.
 Debe identificar adecuadamente el problema a tratar, contexto adecuado de uso y funcionamiento de la aplicación. Idealmente se debería realizar con expertos en la materia a tratar.}
 
 todo{referenciar los requisitos de un sistema de detección de caídas, en detalle si es posible}
-\end{comment}
+\fi
 
 En este capítulo presentaremos al lector una serie de desarrollos previos sobres que serán utilizados o sobre los que se asentará el sistema de detección de caídas. Esta selección es fruto de las decisiones tomadas tras una etapa de estudio del estado de la tecnología en el área de detección de actividad humana y análisis de diferentes opciones de materiales, servicios, técnicas, modelos y datos disponibles. Todos los desarrollos aquí presentes fueron seleccionados a priori, antes de iniciar cualquier otra etapa de desarrollo, basándonos únicamente en los requisitos y necesidades del sistema. En los capítulos sucesivos se hará mención y justificación del uso o ausencia en la implementación final de todas estas herramientas.
 
@@ -41,15 +41,16 @@ Analizamos en primera instancia los
 
 A la hora de definir las familias en las que subdividir este tipo de dispositivos encontramos que por norma general cada fabricante ha decidido crear su plataforma única. Tan solo el sistema operativo WearOS parece ser utilizado por varios fabricantes diferentes. No descartamos la opción de implementar una solución propietaria, por lo que también analizamos algunas de los sistemas de microcontroladores más extendidos.
 
+% \tablan{tab:familias_smartband}{Familias de Relojes Inteligentes y Pulseras de Actividad}{llll}{
 \tablan{tab:familias_smartband}{Familias de Relojes Inteligentes y Pulseras de Actividad}{p{0.20\textwidth}p{0.1\textwidth}p{0.20\textwidth}p{0.35\textwidth}}{
   \emph{Plataforma} & \emph{Progr.} & \emph{Soporte AA} & \emph{Notas} \\ \midrule
   Garmin     & No & No &  \\
   FitBit     & Si & No & \\
   Huawei     & No & No & \\
-  TizenOS(Samsung) & Si & \makecell[l]{\tabitem TensorfFlow-lite} & Puede soportar otros entornos como Caffe2, PyTorch pero han de ser portados por el desarrollador \\
-  WatchOS(Apple) & Si & \makecell[l]{\tabitem CoreML\tnote{1}} & PyTorch, Tensorflow, Caffe, LibSVM y otros modelos pueden ser importados a CoreML. \\
-  Arduino/ESP32 & Si & \makecell[l]{\tabitem TensorFlow-lite} & Muy baja potencia de cálculo y memoria impiden la ejecución de modelos complejos. \\
-  WearOS(Google)  & Si & \makecell[l]{\tabitem TensorfFlow-lite\\\tabitem Caffe2\\\tabitem NNAPI\tnote{1}} & Mediante NNAPI permite realizar cómputos intensivos. \\
+  TizenOS(Samsung) & Si & \makecell[l]{uTensorfFlow-lite} & Puede soportar otros entornos como Caffe2, PyTorch pero han de ser portados por el desarrollador \\
+  WatchOS(Apple) & Si & \makecell[l]{CoreML\tnote{1}} & PyTorch, Tensorflow, Caffe, LibSVM y otros modelos pueden ser importados a CoreML. \\
+  Arduino/ESP32 & Si & \makecell[l]{TensorFlow-lite} & Muy baja potencia de cálculo y memoria impiden la ejecución de modelos complejos. \\
+  WearOS(Google)  & Si & \makecell[l]{TensorfFlow-lite\\Caffe2\\NNAPI\tnote{1}} & Mediante NNAPI permite realizar cómputos intensivos. \\
 }{
   \item [1] API para cálculo intensivo que permite portar bibliotecas de Aprendizaje Automático
 }{2}
@@ -64,7 +65,7 @@ Nos referimos por entorno de desarrollo al conjunto de herramientas usadas para 
 
 
 
-\subsection{Soporte en la Nube}
+\subsection{Soporte en la Nube}\label{sec:req:nube}
 
 Si bien el sistema a desarrollar es autocontenido, preveemos la necesidad de implementar una infraestructura de servidor en la nuve para ampliar la funcionalidad y permitir la recopilación de datos, especialmente durante la etapa de recopilación de muestras para crear la base de datos. En concreto buscamos una plataforma de servicios que permita:
 
@@ -76,7 +77,7 @@ Si bien el sistema a desarrollar es autocontenido, preveemos la necesidad de imp
 
 Con estas necesidades en mente seleccionamos la plataforma de servicios en la nube de \textit{Amazon AWS}(\url{https://aws.amazon.com}) dado que además de cumplir con los requisitos mínimos, su amplia popularidad ha permitido crear una comunidad que ofrece un amplio soporte. De toda la oferta de servicios disponibles nos centraremos en el servicio de almacenamiento \textit{S3}, \textit{AWS lambda} para implementar servicios \textit{sin servidor} (sin infraestructura dedicada) y \textit{Amazon API Gateway} para exponer los servicios en Internet. Como extra a valorar cabe destacar la gran cantidad de lenguajes de programación soportados por AWS lambda, lo cual facilitará la implementación al no requerir aprender nuevos lenguajes de programación.
 
-\section{Bases de datos de actividad}\label{sec:req:bases_datos}
+\section{Bases de datos de actividad}\label{sec:req:bases:datos}
 
 Tras la elección tanto de la plataforma física, entorno de desarrollo así como del algoritmo usado, iniciamos la búsqueda de una base de datos que cumpla con los criterios siguientes:
 
@@ -90,11 +91,11 @@ Tras la elección tanto de la plataforma física, entorno de desarrollo así com
 Tras analizar como se ve en la \autoref{tab:bases_datos} varias bases de datos relacionadas con la detección de actividades cotidianas y caídas. Por la localización de los sensores de medida, la única que cumple los requisitos es UMAFall, sin embargo tiene dos problemas:
 \tablan{tab:bases_datos}{Bases de datos de actividad humana}{p{0.2\textwidth}ccccm{0.2\textwidth}m{0.2\textwidth}}{
   \emph{BBDD}    & \emph{Sujetos} & \emph{AHC} & \emph{Caídas} & \emph{Muestras} & \emph{Sensores}      & \emph{Posición} \\ \midrule
-  MobiFall\tnote{1}& 24      & 9   & 4      & 630      & \tabitem Acelerómetro \newline\tabitem Giroscopio & Pantalón \\
+  MobiFall\tnote{1}& 24      & 9   & 4      & 630      & Acelerómetro\newline Giroscopio & Pantalón \\
   MobiAct\tnote{2}& 57      & 9   & 4      & 2526     & Acelerómetro  & Pantalón \\
-  tFall\tnote{3}  & 10      & *   & 8      & 10909     & Acelerómetro  & \tabitem Bolsillo\newline\tabitem Bolso \\
-  SisFall\tnote{4}& 38      & 19  & 15     & 4505      & \tabitem Acelerómetro\newline\tabitem Giroscopio & Cintura \\
-  UMAFall\tnote{5}& 17      & 8   & 3      & 531       & \tabitem Acelerómetro\newline\tabitem Giroscopio\newline\tabitem Magnetómetro & \tabitem Pecho\newline\tabitem Cintura\newline\tabitem Pantalón\newline\tabitem Tobillo\newline\tabitem Muñeca \\
+  tFall\tnote{3}  & 10      & *   & 8      & 10909     & Acelerómetro  & Bolsillo\newline Bolso \\
+  SisFall\tnote{4}& 38      & 19  & 15     & 4505      & Acelerómetro\newline Giroscopio & Cintura \\
+  UMAFall\tnote{5}& 17      & 8   & 3      & 531       & Acelerómetro\newline Giroscopio\newline Magnetómetro & Pecho\newline Cintura\newline Pantalón\newline Tobillo\newline Muñeca \\
 }{
   \item [1]\citeA{MobiFall}
   \item [2]\citeA{MobiAct}
@@ -123,7 +124,7 @@ Al querer únicamente estudiar cómo se comporta el modelo diseñado, no es exig
 
 \subsection{Base de Datos para la implementación final}
 
-Tras validar el funcionamiento y compararlo con otros modelos en igualdad de condiciones, esta etapa puede realizarse con conjuntos de datos que no dispongan de caídas. Dado que por la naturaleza del modelo propuesto el entrenamiento se realiza únicamente con muestras de actividades cotidianas. A pesar de la existencia de Bases de Datos que cumplen los criterios, se decide finalmente optar por generar un conjunto propio. Al formar parte del desarrollo realizado, trataremos este punto más adelante, en la sección \todo{poner referencia a la sección}.
+Tras validar el funcionamiento y compararlo con otros modelos en igualdad de condiciones, esta etapa puede realizarse con conjuntos de datos que no dispongan de caídas. Dado que por la naturaleza del modelo propuesto el entrenamiento se realiza únicamente con muestras de actividades cotidianas. A pesar de la existencia de Bases de Datos que cumplen los criterios, se decide finalmente optar por generar un conjunto propio. Al formar parte del desarrollo realizado, trataremos este punto más adelante, en \fullref{sec:imp:accelcapture}.
 
 
 
@@ -134,8 +135,9 @@ Para poder generar un modelo con el mismo tipo de datos y capturado de la misma 
 Este base de datos se realiza usando únicamente información del sensor de aceleración triaxial del reloj Fossil Sport Gen3 \ref{app:sec:fossil} a una frecuencia de muestreo de 50Hz. Los valores de aceleración medidos están expresados en $m/s^2$ dentro de los límites de la plataforma. Este es un base de datos no etiquetado dado que el objetivo es entrenar un modelo de predicción de series temporales y no un clasificador como suele ser habitual.
 
 Para generar las capturas de los acelerómetros se implementa la aplicación \accelcapture/ (\autoref{sec:imp:accelcapture}). En el  \autoref{chap:generar:dataset} se encuentra una descripción del proceso de generación y especificaciones detalladas del base de datos generado.
+\iffalse
 \todo{no ponerlo como apéndice, es parte importante, ponerlo aquí (referenciar ciertas cosas al apéndice que sean de menor interés)}
-
+\fi
 A la hora de parametrizar el sistema de captura de datos, optamos por mantener los 50Hz de frecuencia de muestreo. \cite{Liu2018} demuestra que se pueden conseguir buenos modelos basados en aprendizaje automático con tan solo 5,8Hz, aunque generaliza en 21,3Hz la frecuencia de muestreo mínima necesaria. Nos mantenemos por encima de este límite para eliminar una posible fuente de errores en el modelo.
 
 
@@ -143,10 +145,10 @@ A la hora de parametrizar el sistema de captura de datos, optamos por mantener l
 
 
 \section{Modelos y Algoritmo}\label{sec:req:modelos}
-
+\iffalse
 \todo{nada de vaguedades, qué modelos, cuales voy a usar, qué valores he calculado yo y cuales vienen de fuera}
 Estudios similares han mostrado la mayor capacidad de los sistemas basados en aprendizaje automático. Sin embargo estos algoritmos no han conseguido desplazar en los sistemas comerciales a los métodos analíticos por la gran capacidad de cálculo que requieren. Algunos trabajos han demostrado la eficacia de hibridar los modelos usando un modelo computacionalmente simple para realizar una tarea de detección de candidatos a caídas de fondo y un modelo complejo que actúe únicamente sobre este subconjunto de episodios. Este es el acercamiento que toma este trabajo.
-
+\fi
 \subsection{Modelos Analíticos}
 
 En el apartado \ref{sec:arte:modelos_analiticos} hemos introducido el contexto de este conjunto de algoritmos. Para implementar el sistema necesitamos un modelo simple y de bajo coste computacional y que se base principalmente en los datos captados por un acelerómetro de tres ejes. Dada la situación del sensor, toda medida de la postura queda descartada por no ser aplicable. Finalmente, dado que su función es principalmente la de mecanismo de atención o generador de eventos de posibles caídas es primordial que su sensibilidad sea alta para no perder caídas. La tasa de especificidad modulará la eficiencia del sistema en los planos del tiempo de cálculo y consumo de energía, siendo preferible usar algoritmos con alta especificidad, siempre y cuando no se comprometa la sensibilidad. Tras analizar varios modelos y recopilar los resultados en la tabla \ref{tab:resumen_mod_anal} decidimos optar por la familia de algoritmos propuestos por \cite{Bourke2006} por ser el único que de forma consistente ofrece una sensibilidad del 100\%. Si se observan los resultados de los diferentes algoritmos analizados, se observa la gran varianza de resultados según el estudio que realizase el análisis. Por ejemplo, el algoritmo \textit{Bourke 1} pasa de ser un algoritmo perfecto con una precisión del 100\% a ser inservible por su bajísima especificidad según el conjunto de datos usado.
@@ -262,12 +264,12 @@ Esta técnica, junto con la cuantificación de los valores, se presenta como una
 
 Este proceso se va realizando durante un número determinado de iteraciones de entrenamiento durante el cual se van anulando progresivamente una cantidad determinada (ya sea un número fijo o una evolución polinomial) de nodos en cada etapa de entrenamiento. \cite{Yann1989} Los modelos son cada vez más comlejos y con el aumento en complejidad de problemas seguirán crecienco. Un método que elimina nodos permite no solo mejorar la capacidad de generalizar
 
-\begin{comment}
+\iffalse
 
   https://www.machinecurve.com/index.php/2020/09/23/tensorflow-model-optimization-an-introduction-to-pruning/
   ligeramente más técnico.
 https://www.machinecurve.com/index.php/2020/09/29/tensorflow-pruning-schedules-constantsparsity-and-polynomialdecay/
-\end{comment}
+\fi
 
 
 \subsubsection{Cuantificación}

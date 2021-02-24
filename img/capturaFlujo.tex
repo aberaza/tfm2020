@@ -20,18 +20,20 @@
   \node (guardar) [startstop, below of=mayorCota, yshift=-1.5cm] {Grabando};
   \node[decision, below of=promedioBuffer, yshift=-1.5cm,align=center] (mayorPromedio) {¿Movimiento\\prolongado?};
   \node[right of=stopRec](margen){};
-  % Flechas
+  % % Flechas
   \draw [arrow] (start) -- (readAccel);
   \draw [arrow] (accel) -- (readAccel);
   \draw [arrow] (readAccel) -- (isRec);
   \draw [arrow] (isRec) |- node[anchor=west] {no} (estaLleno);
   \draw [arrow] (isRec) -| node[near start, anchor=south] {si} (guardarMuestra);
   \draw [arrow] (guardarMuestra) -- (hayActividad);
-  \draw[->] (hayActividad) -- ++(0,-8cm) node [near start, anchor=west] {si} -| (accel);
+  \draw [arrow] (hayActividad) -- +(0, -8cm) node[near start, anchor=west] {si} -| (accel);
+  % \draw [->] (hayActividad) -- +(0,-8cm) node [near start, anchor=west] {si} -| (accel);
   \draw [arrow] (hayActividad) -- node[anchor=south]{no} (sendSession);
+  % \draw [arrow] (hayActividad) -- node[anchor=south]{no} (sendSession);
   \draw [arrow] (sendSession) -- (stopRec);
-  % \draw[->] (stopRec) -- +(0,-4cm) -| (accel);
-  \draw[->] (stopRec) -- ++(0,-4cm) -| (accel);
+  % %% % \draw[->] (stopRec) -- +(0,-4cm) -| (accel);
+  \draw [arrow] (stopRec) -- +(0,-4cm) -| (accel);
   \draw [arrow] (estaLleno) -| node[near start,anchor=south] {no} (accel);
   \draw [arrow] (estaLleno) -- node[anchor=east] {si}(comparar);
   \draw [arrow] (comparar) -- (mayorCota);
@@ -41,7 +43,7 @@
   \draw [arrow] (promedioBuffer) -- (mayorPromedio);
   \draw [arrow] (mayorPromedio) --node[anchor=south] {si}(guardar);
   % \draw [arrow] (mayorPromedio) -- +(0, -2.5cm) node[near start, anchor=west]{no} -| (accel)
-  \draw [arrow] (mayorPromedio) -- ++(0, -2.5cm)node[near start, anchor=west]{no} -| (accel);
-  % \draw [arrow] (mayorPromedio) -- ++(0,-2.5cm) node[near start,anchor=west]{no} +(-10,-2.5cm) -- (accel);
+  \draw [arrow] (mayorPromedio) -- +(0, -2.5cm)node[near start, anchor=west]{no} -| (accel);
+  % \draw [arrow] (mayorPromedio) -- +(0,-2.5cm) node[near start,anchor=west]{no} +(-10,-2.5cm) -- (accel);
 \end{tikzpicture}
 \end{document}

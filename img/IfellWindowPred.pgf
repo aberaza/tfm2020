@@ -35,5 +35,8 @@
     \draw[<-,thin,dotted] (100,50) -- (125,50);
     \node[anchor=north west] at (95,50) {{\footnotesize $t_0-25$}};
     \node[anchor=north east] at (155,50) {{\footnotesize $t_0+25$}};
+
+    \draw[arrows=|->,thin] (100,40) -- (125,40);
+    \node[anchor=north] at (112,40) {$\Delta t$};
   \end{axis}
 \end{tikzpicture}
