@@ -59,7 +59,7 @@
 \begin{document}
 %---------------- 
 % overfull hbox : hide messages
-%\hbadness=10000
+\hbadness=15000
 %\the\tolerance,
 %\the\pretolerance,
 %\the\hbadness,
@@ -83,6 +83,9 @@
 \renewcommand{\contentsname}{Índice de Contenidos}
 \renewcommand{\figurename}{Figura}
 \renewcommand{\tablename}{Tabla}
+%% Necesita hyperref
+\newcommand{\fullref}[1]{\hyperref[#1]{\autoref{#1}: \textit{\nameref*{#1}}}}
+\newcommand{\apartado}[1]{\hyperref[#1]{Apartado~\ref{#1}}}
 
 \maketitle
 \frontmatter

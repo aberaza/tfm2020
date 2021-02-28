@@ -168,7 +168,7 @@ Para generar la base de datos de actividad \accelcapture/ usamos reloj inteligen
 \emph{Sensor Freq. Cardiaca} & Si \\
 \emph{Giroscopio}          & Si \\
 \emph{Acelerómetro}         & 3 ejes \\
-\emph{~~Frecuencia}         & 50Hz \\
+\emph{~~Frecuencia}         & 50\hz/ \\
 \emph{~~Resolución}					& 0,00119 $m/s^2$ \\
 \emph{~~Valor Máximo}				& 384,8867 $m/s^2$\\ \bottomrule
 \end{tabular}
@@ -190,12 +190,12 @@ Finalmente se conforma una base de datos con presencia únicamente de secuencias
   Sesiones      & 274    \\
   Sujetos       & 3      \\
   Sensor        & Acel. 3 ejes \\
-  Frecuencia Muestreo & 50Hz  \\
+  Frecuencia Muestreo & 50\hz/  \\
   Unidades medida & $m/s^2$  \\ \bottomrule
   \end{tabular}
 \end{table}
 
-Finalmente de cara al entrenamiento y validación debemos submuestrear ambos conjuntos. Para reducir el consumo, el reloj muestreará a únicamente 25Hz que es suficiente para permitir realizar la detección de actividades\cite{Liu2018}, por lo que será necesario reducir el número de lecturas de las basos de datos: para Sisfall, capturada a 200Hz mantendremos una de cada 8 muestras mientras que para \accelcapture/ tomaremos muestras alternas. Este proceso lo realizamos tras filtrar con un filtro IIR paso bajo de primer orden ($H(z) = \frac{\alpha}{1-(1-\alpha)z^{-1}}$) con frecuencia de corte a 12,5Hz ya que es el máximo ancho de banda permitido por Nyquist. 
+Finalmente de cara al entrenamiento y validación debemos submuestrear ambos conjuntos. Para reducir el consumo, el reloj muestreará a únicamente 25\hz/ que es suficiente para permitir realizar la detección de actividades\cite{Liu2018}, por lo que será necesario reducir el número de lecturas de las basos de datos: para Sisfall, capturada a 200\hz/ mantendremos una de cada 8 muestras mientras que para \accelcapture/ tomaremos muestras alternas. Este proceso lo realizamos tras filtrar con un filtro IIR paso bajo de primer orden ($H(z) = \frac{\alpha}{1-(1-\alpha)z^{-1}}$) con frecuencia de corte a 12,5\hz/ ya que es el máximo ancho de banda permitido por Nyquist. 
 
 \begin{figure}
   \pincludegraphics{capturaFlujo}

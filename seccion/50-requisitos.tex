@@ -33,11 +33,11 @@ Analizamos en primera instancia los diferentes tipos de dispositivos llevables d
 
 \paragraph{Teléfono} o \textit{Smartphone}. Un aparato que se ha vuelto ubicuo en nuestra sociedad. Con gran capacidad de cálculo y multitud de sensores. Según la firma \textit{Kantar}(\url{https://www.kantarworldpanel.com/global/smartphone-os-market-share/}) el 99,99\% de los teléfonos vendidos en españa en los 9 primeros meses de 2020 fueron smartphones con IOS o Android y por ende fácilmente programables y con soporte para ejecutar múltiples entornos de modelado de sistemas de aprendizaje automático. Sin embargo adolecen de una complejidad extra: no es un dispositivo que se lleve vestido, y es fácil que el usuario final no lo lleve siempre consigo. Además, en los grupos de poblaciones de edad muy avanzada donde su uso no está generalizado, se convierte en un elemento ajeno y que puede generar rechazo o olvido en su uso.
 
-\paragraph{Chalecos, cinturones y bandas} y otras prendas de vestir han sido usadas con anterioridad \cite{Liu2020, MobiFall} para situar los sensores. La falta de soluciones comerciales disponibles obligaría a desarrollar una plataforma personalizada y por tanto adaptada a los requisitos. Sin embargo este acercamiento se considera altamente intrusivo tanto por limitar al usuario en su vestimenta así como por servir únicamente cuando el usuario lleve puesto el complemento de ropa especificado. Además, la manipulación del mismo no es evidente, pues requiere de una manipulación muy diferente a la prenda de vestir original.
+\paragraph{Chalecos, cinturones y bandas} y otras prendas de vestir han sido usadas con anterioridad \cite{Liu2020, MobiFall} para situar los sensores. La falta de soluciones comerciales disponibles obligaría a desarrollar una plataforma personalizada y por tanto adaptada a los requisitos. Sin embargo este acercamiento se considera altamente intrusivo tanto por limitar al usuario en su vestimenta así como por servir únicamente cuando el usuario lleve puesto el complemento de ropa especificado. Además, la manipulación del mismo no es sencilla, pues requiere realizar un mantenimiento muy diferente a la prenda de vestir original para preservar el funcionamiento de los componentes electrónicos.
 
 \paragraph{Pulseras de actividad y Relojes inteligentes}. Hace tiempo que las podómetros evolucionaron gracias a la mejora en la miniaturización de sensores, baterías y microprocesadores en sistemas avanzados de medida no ya de la cantidad de pasos sino de otros muchos parámetros como pulso, oxígeno en sangre, temperatura corporal y orientación. Por su parte, el paso de los relojes computadoras interconectadas y programables se ha realizado más recientemente. Actualmente puede resultar difícil distinguir en la oferta disponible entre un \textit{smartwarch} (reloj inteligente) y una pulsera. Muchas veces es la propia definición del fabricante la que especifica su tipo, por criterios tan dispares como la producción tradicional de la empresa (así pues, Fossil llamará a sus productos relojes inteligentes, mientras otro dispositivo de similares características y formato de la marca FitBit será llamado pulsera por la marca). Al existir tal variedad de oferta es fácil encontrar dispositivos que cumplan con los requisitos de sensores, capacidad de cálculo y de ser programado, así como soporte para entornos de aprendizaje automático. Al tener apariencia de un reloj de pulsera, resultan un soporte ideal: son dispositivos de uso cotidiano, con una manipulación sencilla, y que se llevan siempre puestos. Con el interés de buscar un sistema lo más transparente de cara al usuario posible nos decantamos por esta opción, a pesar de conocer las limitaciones del uso de la muñeca como fuente de información de la aceleración para la detección de actividades \cite{Chen2005} .
 
-\subsubsection{Relojes Inteligentes WatchOS}
+\subsubsection{Relojes Inteligentes}
 
 A la hora de definir las familias en las que subdividir este tipo de dispositivos encontramos que por norma general cada fabricante ha decidido crear su plataforma única. Tan solo el sistema operativo WearOS parece ser utilizado por varios fabricantes diferentes. No descartamos la opción de implementar una solución propietaria, por lo que también analizamos algunas de los sistemas de microcontroladores más extendidos.
 
@@ -67,7 +67,7 @@ Nos referimos por entorno de desarrollo al conjunto de herramientas usadas para 
 
 \subsection{Soporte en la Nube}\label{sec:req:nube}
 
-Si bien el sistema a desarrollar es autocontenido, preveemos la necesidad de implementar una infraestructura de servidor en la nuve para ampliar la funcionalidad y permitir la recopilación de datos, especialmente durante la etapa de recopilación de muestras para crear la base de datos. En concreto buscamos una plataforma de servicios que permita:
+Si bien el sistema a desarrollar es autocontenido, comprendemos la necesidad de implementar una infraestructura de servidor en la nube para ampliar la funcionalidad y permitir la recopilación de datos, especialmente durante la etapa de captura de muestras para crear la base de datos. En concreto buscamos una plataforma de servicios que permita:
 
 \begin{itemize}
   \item Implementar servicios/APIs de forma sencilla.
@@ -93,7 +93,7 @@ Tras analizar como se ve en la \autoref{tab:bases_datos} varias bases de datos r
   \emph{BBDD}    & \emph{Sujetos} & \emph{AHC} & \emph{Caídas} & \emph{Muestras} & \emph{Sensores}      & \emph{Posición} \\ \midrule
   MobiFall\tnote{1}& 24      & 9   & 4      & 630      & Acelerómetro\newline Giroscopio & Pantalón \\
   MobiAct\tnote{2}& 57      & 9   & 4      & 2526     & Acelerómetro  & Pantalón \\
-  tFall\tnote{3}  & 10      & *   & 8      & 10909     & Acelerómetro  & Bolsillo\newline Bolso \\
+  tFall\tnote{3}  & 10      & \tnote{*}   & 8      & 10909     & Acelerómetro  & Bolsillo\newline Bolso \\
   SisFall\tnote{4}& 38      & 19  & 15     & 4505      & Acelerómetro\newline Giroscopio & Cintura \\
   UMAFall\tnote{5}& 17      & 8   & 3      & 531       & Acelerómetro\newline Giroscopio\newline Magnetómetro & Pecho\newline Cintura\newline Pantalón\newline Tobillo\newline Muñeca \\
 }{
@@ -102,6 +102,7 @@ Tras analizar como se ve en la \autoref{tab:bases_datos} varias bases de datos r
   \item [3]\citeA{tfall}
   \item [4]\citeA{Sucerquia2017}
   \item [5]\citeA{Edu/UMA/2017}
+  \item [*] Capturas de actividad en la vida real
   }{2}
 \begin{itemize}
   \item Escasez de eventos: tan solo 531 eventos, de 25 categorías reducen el número de instancias por categorías a un promedio de 21. Claramente insuficiente para obtener una cifra significativa.
@@ -132,13 +133,13 @@ Tras validar el funcionamiento y compararlo con otros modelos en igualdad de con
 \warn{revisar esto}
 Para poder generar un modelo con el mismo tipo de datos y capturado de la misma forma a los que deberá procesar posteriormente, optamos por realizar un base de datos de datos propio usando el mismo dispositivo sobre el que se ejecutará el prototipo como plataforma de captura.
 
-Este base de datos se realiza usando únicamente información del sensor de aceleración triaxial del reloj Fossil Sport Gen3 \ref{app:sec:fossil} a una frecuencia de muestreo de 50Hz. Los valores de aceleración medidos están expresados en $m/s^2$ dentro de los límites de la plataforma. Este es un base de datos no etiquetado dado que el objetivo es entrenar un modelo de predicción de series temporales y no un clasificador como suele ser habitual.
+Este base de datos se realiza usando únicamente información del sensor de aceleración triaxial del reloj Fossil Sport Gen3 \ref{app:sec:fossil} a una frecuencia de muestreo de 50\hz/. Los valores de aceleración medidos están expresados en \ms2/ dentro de los límites de la plataforma. Este es un base de datos no etiquetado dado que el objetivo es entrenar un modelo de predicción de series temporales y no un clasificador como suele ser habitual.
 
 Para generar las capturas de los acelerómetros se implementa la aplicación \accelcapture/ (\autoref{sec:imp:accelcapture}). En el  \autoref{chap:generar:dataset} se encuentra una descripción del proceso de generación y especificaciones detalladas del base de datos generado.
 \iffalse
 \todo{no ponerlo como apéndice, es parte importante, ponerlo aquí (referenciar ciertas cosas al apéndice que sean de menor interés)}
 \fi
-A la hora de parametrizar el sistema de captura de datos, optamos por mantener los 50Hz de frecuencia de muestreo. \cite{Liu2018} demuestra que se pueden conseguir buenos modelos basados en aprendizaje automático con tan solo 5,8Hz, aunque generaliza en 21,3Hz la frecuencia de muestreo mínima necesaria. Nos mantenemos por encima de este límite para eliminar una posible fuente de errores en el modelo.
+A la hora de parametrizar el sistema de captura de datos, optamos por mantener los 50\hz/ de frecuencia de muestreo. \cite{Liu2018} demuestra que se pueden conseguir buenos modelos basados en aprendizaje automático con tan solo 5,8\hz/, aunque generaliza en 21,3\hz/ la frecuencia de muestreo mínima necesaria. Nos mantenemos por encima de este límite para eliminar una posible fuente de errores en el modelo.
 
 
 
@@ -151,7 +152,7 @@ Estudios similares han mostrado la mayor capacidad de los sistemas basados en ap
 \fi
 \subsection{Modelos Analíticos}
 
-En el apartado \ref{sec:arte:modelos_analiticos} hemos introducido el contexto de este conjunto de algoritmos. Para implementar el sistema necesitamos un modelo simple y de bajo coste computacional y que se base principalmente en los datos captados por un acelerómetro de tres ejes. Dada la situación del sensor, toda medida de la postura queda descartada por no ser aplicable. Finalmente, dado que su función es principalmente la de mecanismo de atención o generador de eventos de posibles caídas es primordial que su sensibilidad sea alta para no perder caídas. La tasa de especificidad modulará la eficiencia del sistema en los planos del tiempo de cálculo y consumo de energía, siendo preferible usar algoritmos con alta especificidad, siempre y cuando no se comprometa la sensibilidad. Tras analizar varios modelos y recopilar los resultados en la tabla \ref{tab:resumen_mod_anal} decidimos optar por la familia de algoritmos propuestos por \cite{Bourke2006} por ser el único que de forma consistente ofrece una sensibilidad del 100\%. Si se observan los resultados de los diferentes algoritmos analizados, se observa la gran varianza de resultados según el estudio que realizase el análisis. Por ejemplo, el algoritmo \textit{Bourke 1} pasa de ser un algoritmo perfecto con una precisión del 100\% a ser inservible por su bajísima especificidad según el conjunto de datos usado.
+En el \apartado{sec:arte:modelos_analiticos} hemos introducido el contexto de este conjunto de algoritmos. Para implementar el sistema necesitamos un modelo simple y de bajo coste computacional y que se base principalmente en los datos captados por un acelerómetro de tres ejes. Dada la situación del sensor, toda medida de la postura queda descartada por no ser aplicable. Finalmente, dado que su función es principalmente la de mecanismo de atención o generador de eventos de posibles caídas es primordial que su sensibilidad sea alta para no perder caídas. La tasa de especificidad modulará la eficiencia del sistema en los planos del tiempo de cálculo y consumo de energía, siendo preferible usar algoritmos con alta especificidad, siempre y cuando no se comprometa la sensibilidad. Tras analizar varios modelos y recopilar los resultados en la tabla \ref{tab:resumen_mod_anal} decidimos optar por la familia de algoritmos propuestos por \cite{Bourke2006} por ser el único que de forma consistente ofrece una sensibilidad del 100\%. Si se observan los resultados de los diferentes algoritmos analizados, se observa la gran varianza de resultados según el estudio que realizase el análisis. Por ejemplo, el algoritmo \textit{Bourke 1} pasa de ser un algoritmo perfecto con una precisión del 100\% a ser inservible por su bajísima especificidad según el conjunto de datos usado.
 
 \tablan[0.95\linewidth]{tab:resumen_mod_anal}{Características de los modelos analíticos estudiados}{lccccccccll}{
           &       &     & \multicolumn{2}{c}{\emph{Estudio 1\tnote{1}}} &\multicolumn{2}{c}{\emph{Estudio 2\tnote{2}}} & \multicolumn{2}{c}{\emph{Estudio 3\tnote{3}}} & \\
@@ -178,7 +179,7 @@ En el apartado \ref{sec:arte:modelos_analiticos} hemos introducido el contexto d
 
 
 
-\paragraph{Algoritmo Bourke 1} El modelo de Bourke 1\cite{Bourke2006} se basa en el estudio de la evolución del módulo de la aceleración. Partimos del principio de que todo cuerpo sufre una aceleración constante de $9,8m/s$ o 1G correspondiente a la gravedad terrestre. Como podemos apreciar en la figura \ref{fig:bourke_thresholds}, al principio de una caída, típicamente se produce un descenso en el módulo de la aceleración ya que al caer, la componente vertical contrarresta el efecto de la gravedad. Al impactar posteriormente contra el suelo se produce un pico en la aceleración. El algoritmo de Bourke utiliza esta característica forma para establecer dos niveles para determinar la detección de caídas. Estas cotas se denominan \textit{LFT} (Nivel de caída inferior) para el nivel mínimo de aceleración medido y \textit{UFT} (Nivel de caída superior) para el nivel superior. El algoritmo de Bourke considera que se ha producido una caída cuando en un intervalo determinado de tiempo se rebasan ambos límites.
+\paragraph{Algoritmo Bourke 1} El modelo de Bourke 1\cite{Bourke2006} se basa en el estudio de la evolución del módulo de la aceleración. Partimos del principio de que todo cuerpo sufre una aceleración constante de 9,8\ms2/ o 1\g/ correspondiente a la gravedad terrestre. Como podemos apreciar en la \autoref{fig:bourke_thresholds}, al inicio de una caída típicamente se produce un descenso en el módulo de la aceleración ya que al caer, la componente vertical de la aceleración del cuerpo contrarresta el efecto de la gravedad. Al impactar posteriormente contra el suelo se produce un pico en la aceleración. El algoritmo de Bourke utiliza esta característica forma para establecer dos niveles para determinar la detección de caídas. Estas cotas se denominan \textit{LFT} (Nivel de caída inferior) para el nivel mínimo de aceleración medido y \textit{UFT} (Nivel de caída superior) para el nivel superior. El algoritmo de Bourke considera que se ha producido una caída cuando en un intervalo determinado de tiempo se rebasan ambos límites.
 
 El proceso para elegir estos límites garantiza que por construcción la sensibilidad del algoritmo sea del 100\% sobre la base de datos elegida. Para ambos límites, se recorre todo el conjunto de datos y se busca entre todas las caídas:
 \begin{itemize}
@@ -194,10 +195,10 @@ Recogemos en la tabla \ref{tab:bourke_threshold_values} una lista con los difere
 
 \tabla[0.43\linewidth]{tab:bourke_threshold_values}{Valores UFT y LFT de Bourke por estudio}{llcc}{
   \emph{Estudio} & \emph{Posición} & \emph{UFT} & \emph{LFT} \\ \midrule
-  \citeA{Bourke2006} & Pecho & 3,52g & 0,41g \\
-                     & Cintura & 2,74g & 0,60g \\
-  \citeA{Bourke2010} & Cintura & 2,80g & 0,65g \\
-  \citeA{Bagala2012} & -- & 1,79g & 0.73g \\
+  \citeA{Bourke2006} & Pecho & 3,52\g/& 0,41\g/\\
+                     & Cintura & 2,74\g/& 0,60\g/\\
+  \citeA{Bourke2010} & Cintura & 2,80\g/& 0,65\g/\\
+  \citeA{Bagala2012} & -- & 1,79\g/& 0.73\g/\\
 }{2}
 
 

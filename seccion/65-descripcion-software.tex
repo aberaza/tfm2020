@@ -96,7 +96,7 @@ El interés de realizar un filtrado previo al subsampleado puede observarse al c
   \begin{subfigure}[b]{0.48\textwidth}
       \centering
       \pincludegraphics[1.0]{SignalvsIIRFilter}
-      \caption{\footnotesize Señal original (200Hz) y filtrada}
+      \caption{\footnotesize Señal original (200\hz/) y filtrada}
       \label{fig:signalIIRFilter}
   \end{subfigure}
   \hfill
@@ -230,7 +230,7 @@ Los modelos RNN codificador/decodificador, también referidos a veces como \text
 
 En nuestro caso optamos por dos estructuras en que el espacio de entrada y salida de la red es el mismo. En el modelo \textit{RNN-reconstrucción} entenderemos el proceso como una compresión y descompresión con pérdida de la señal mientras en el modelo \textit{RNN-predicción} es similar a un generador de señal secuencia-a-secuencia. En ambos casos, a partir de la serie de muestras $X$de longitud $l$, obtenemos un vector de características $C=codificador(X)=\{c_1,\cdots,c_m\}$ de longitud $m$. Posteriormente inyectamos este vector de características como entrada a una segunda red recurrente, el decodificador, que reconstruye una aproximación de la secuencia original $Y_{1\cdots l}=decodificador_{rec}(C)=\hat{X_{1\cdots l}}$ en el caso del \textit{RNN-reconstrucción} o generar una señal de longitud $n$ aproximación de la evolución futura de la señal de entrada $Y_{1\cdots n}=decodificador_{pred}(C)=\hat{X}_{l\cdots l+n}$. Como veremos en el apartado de arquitectura y entrenamiento de los modelos, ambos modelos son prácticamente idénticos y la mayor diferencia es la generación de los pares $X:Y$ usados durante el entrenamiento.
 
-Los principales parámetros a determinar para ambos modelos son las longitudes de las secuencias de entrada y salida, así como la de la secuencia codificada o vector de características. Este ratio entre la longitud de la señal a reconstruir y la dimensión del espacio de características junto con el número de unidades de cada capa GRU serán determinante para definir la capacidad del sistema de generalizar o sobreajustarse a los datos de entrenamiento. Por esa razón estudiaremos varios modelos con diferentes espacios de dimensiones intermedios y número de unidades tanto para la modelos de reconstrucción como de predicción. En lo referente a al espacio de dimensiones intermedio analizamos variantes con $m=30$ y $m=50$ atributos. Tomar espacios de menor dimensionalidad ocasiona que los modelos de predicción sean totalmente ineficaces mientras que aumentar más allá de 50 en el caso de los modelos de reconstrucción hace que sean capaces de reconstruir las caídas con casi la misma fiabilidad que las acciones cotidianas. En cuanto al tamaño de cada capa optaremos por analizar variantes con 175 y 350 unidades, siempre en arquitecturas de 3 capas. Todos los modelos comparten la misma longitud de la secuencia de entrada $l=100$ o el equivalente a 4 segundos a 25\hz/. Esta ventana de eventos se elige ya que la mayoría de las caídas tienen una duración de $\plusminus1s$ \cite{Sucerquia2017,Liu2018,Hassan2019} alrededor del instante del impacto principal. Duplicamos el tamaño de la ventana para favorecer al modelo \textit{RNN-predicción} para incluir más contexto de la señal que ayude a generar una buena estimación.
+Los principales parámetros a determinar para ambos modelos son las longitudes de las secuencias de entrada y salida, así como la de la secuencia codificada o vector de características. Este ratio entre la longitud de la señal a reconstruir y la dimensión del espacio de características junto con el número de unidades de cada capa GRU serán determinante para definir la capacidad del sistema de generalizar o sobreajustarse a los datos de entrenamiento. Por esa razón estudiaremos varios modelos con diferentes espacios de dimensiones intermedios y número de unidades tanto para la modelos de reconstrucción como de predicción. En lo referente a al espacio de dimensiones intermedio analizamos variantes con $m=30$ y $m=50$ atributos. Tomar espacios de menor dimensionalidad ocasiona que los modelos de predicción sean totalmente ineficaces mientras que aumentar más allá de 50 en el caso de los modelos de reconstrucción hace que sean capaces de reconstruir las caídas con casi la misma fiabilidad que las acciones cotidianas. En cuanto al tamaño de cada capa optaremos por analizar variantes con 175 y 350 unidades, siempre en arquitecturas de 3 capas. Todos los modelos comparten la misma longitud de la secuencia de entrada $l=100$ o el equivalente a 4 segundos a 25\hz/. Esta ventana de eventos se elige ya que la mayoría de las caídas tienen una duración de $\pm 1s$ \cite{Sucerquia2017,Liu2018,Hassan2019} alrededor del instante del impacto principal. Duplicamos el tamaño de la ventana para favorecer al modelo \textit{RNN-predicción} para incluir más contexto de la señal que ayude a generar una buena estimación.
 
 \paragraph{Estructuras de red RNN}\\
 En una primera instancia optamos por el uso de capas bidireccionales\cite{Schuster1997}. Estas capas son en realidad una composición de dos capas recurrentes de igual tamaño. Una procesa la entrada en un sentido y la otra en el inverso y se pondera el resultado de ambas para obtener la salida. Estas capas han demostrado en varios estudios \cite{Zhao2017, Su2018} su mayor eficiencia procesando series temporales, llegando a mejorar en un 30\% a las capas recurrentes que procesan en un único sentido. Su uso fue finalmente descartado por el soporte inestable de \tensorflow/ Lite de este tipo de capas, como trataremos en el punto \ref{par:desc:modelo:rnn:limitaciones}.
@@ -437,11 +437,11 @@ Al usar como modelo analítico \textit{BourkeU} únicamente necesitamos analizar
 \paragraph{Enventanado para modelos de reconstrucción}\\
 La principal característica de los modelos de reconstrucción es que la salida del modelo es una estimación de la señal a la entrada:
 \[
-\begin{align*}
-  & \vec{X} = \vec{Y}\\
-  & \hat{Y} = f(\vec{X})\\
-  & RMSE(\vec{Y},\hat{Y}) = \frac{1}{n}\sqrt{\sum_{i=\frac{-n}{2}}^\frac{n}{2}(y_i-\hat{y}_i)^2 }
-\end{align*}
+    \begin{array}{rll}
+      \vec{X} & = \vec{Y} & \\
+      \hat{Y} & = f(\vec{X}) & \\
+      RMSE(\vec{Y},\hat{Y}) & = \frac{1}{n}\sqrt{\sum_{i =\frac{-n}{2}}^\frac{n}{2}(y_i-\hat{y}_i)^2 } &
+    \end{array}
 \]\\
 Donde:\\
 $n$ es el número de muestras de la ventana, 100 en nuestro caso.
@@ -451,12 +451,12 @@ Esta ventana de 100 muestras la centramos en el instante en que el comparador de
 \paragraph{Enventanado para modelos de predicción}\\
 Este caso es más complejo pues usamos dos ventanas ya que en este caso la señal de salida del modelo no es una estimación de la entrada:
 \[
-  \begin{align*}
-    &\vec{X} = X[1:n] \\
-    &\vec{Y} = X[n+1:n+m] \\
-    &\hat{Y} = f(\vec{X})\\
-    &RMSE(\vec{Y},\hat{Y})=\frac{1}{m}\sqrt{\sum_{i=1}^m(\hat{y}_i+X_{n+i})^2 }
-  \end{align*}
+    \begin{array}{rl}
+    \vec{X} & = X[1:n] \\
+    \vec{Y} & = X[n+1:n+m] \\
+    \hat{Y} & = f(\vec{X})\\
+    RMSE(\vec{Y},\hat{Y}) & =\frac{1}{m}\sqrt{\sum_{i=1}^m(\hat{y}_i+X_{n+i})^2 }
+  \end{array}
 \]\\
 Donde:\\
 $n$ Es la longitud de la ventana de entrada, 100 muestras.\\
@@ -488,7 +488,7 @@ El proceso que contiene la lógica principal, descrita en la figura\ref{fig:ifel
 
 
 Es un servicio asíncrono que consume los eventos del sensor de aceleración, los procesa, analiza mediante el comparador de bourke y en caso de detectar un candidato a caída, generar un evento con la información necesaria para el modelo de inteligencia artificial. Finalmente, recuperar el resultado de este modelo y actuar en consecuencia generando una petición hacia la API REST del servidor y un evento interno para que la interfaz de usuario pueda alertar de la caída.
-El proceso de detección o filtrado usando el modelo implementado basado en redes recurrentes es el único que se exporta a una clase propia: \textit{CrashDetectService}. Toma de nuevo la forma de un servicio asíncrono que es invocado únicamente cuando el modelo analítico ha detectado un positivo. De esta forma se pretende reducir drásticamente las necesidades de cómputo. Este servicio a su vez se subdivide en módulos que son los modelos de detección propiamente dichos, con el objetivo de poder intercambiar entre varios modelos sin tener que modificar la aplicación. Como se aprecia en el diagrama UML de la arquitectura\ref{fig:clasesUml}, es la clase \textit{TFLiteModelDetector} la que provee la comunicación con los modelos de \tflite/ que hemos generado e previamente en el apartado \refname{sub:imp:model:rnn}. 
+El proceso de detección o filtrado usando el modelo implementado basado en redes recurrentes es el único que se exporta a una clase propia: \textit{CrashDetectService}. Toma de nuevo la forma de un servicio asíncrono que es invocado únicamente cuando el modelo analítico ha detectado un positivo. De esta forma se pretende reducir drásticamente las necesidades de cómputo. Este servicio a su vez se subdivide en módulos que son los modelos de detección propiamente dichos, con el objetivo de poder intercambiar entre varios modelos sin tener que modificar la aplicación. Como se aprecia en el diagrama UML de la arquitectura\ref{fig:clasesUml}, es la clase \textit{TFLiteModelDetector} la que provee la comunicación con los modelos de \tflite/ que hemos generado e previamente en el \apartado{sub:imp:model:rnn}. 
 
 
 \subsection{Interfaz de Usuario}
@@ -556,7 +556,7 @@ Una vez confirmado el funcionamiento del algoritmo sobre la base de datos \ifell
     \item \textit{RNN-predicción} De nuevo dos ventanas $W_i$ y $W_o$ de entrada y salida pero esta vez no solapadas. La ventana de entrada con el fragmento de señal $W_i=X[t_0-125,t_0-25]$ y la ventana de salida, con el fragmento a predecir de únicamente dos segundos (50 muestras) que incluye las muestras $W_o=X[t_0-25, t_0+25]$.
   \end{itemize}
 
-  Estas ventanas y el centrarlas en el momento del impacto ya lo avanzamos en el apartado \ref{subsub:ifell:windowing} sin embargo en la realización probamos varias configuraciones con retrasos del punto de impacto (ditancia desde el inicio de la ventana de salida $W_o$ hasta el instante $t_0$) diferentes. 
+  Estas ventanas y el centrarlas en el momento del impacto ya lo avanzamos en el \apartado{subsub:ifell:windowing} sin embargo en la realización probamos varias configuraciones con retrasos del punto de impacto (ditancia desde el inicio de la ventana de salida $W_o$ hasta el instante $t_0$) diferentes. 
 
   El siguiente parámetro a determinar es el tamaño del espacio intermedio, o el número de atributos que genera el codificador e interpreta el decodificador. Veremos el impacto que tiene en la calidad del estimador y tiempo de respuesta de este factor antes de fijar un valor.
 
@@ -598,9 +598,9 @@ En estas tablas usamos la distancia en muestras \textit{desde el final de la ven
 
 Para mejor ilustrar y favorecer la toma de decisiones decidimos valorar cada posible modelo con una nota basada en la media ponderada entre sensibilidad y especificidad tal que $Nota=\frac{2Sensibilidad+Especificidad}{3}$ dándole efectivamente el doble de peso a la métrica de sensibilidad sobre especificidad en el cómputo. Los resultados para las matrices de la figura \ref{fig:ifell:confmats} quedarían como se observa en la \autoref{tab:nota:estimadores}.
 
-\tablas{tab:nota:estimadores}{Nota de los estimadores}{lrrrrrr}{ 
-                         & \multicolumn{3}{c}{\textit{RNN-Reconstrucción}}   & \multicolumn{3}{c}{\textit{RNN-Predicción}}   \\ \cmidrule{2-4}\cmidrule{5-7}   
-Sensibilidad Objetivo    & $\Delta t=-50$ & $\Delta t=-25$ & $\Delta t=-13$ & $\Delta t=0$ & $\Delta t=15$ & $\Delta t=25$ \\ \midline
+\tablas{tab:nota:estimadores}{Nota de los estimadores}{lrrrrrr}{
+                         & \multicolumn{3}{c}{\textit{RNN-Reconstrucción}}   & \multicolumn{3}{c}{\textit{RNN-Predicción}}   \\ \cmidrule{2-4}\cmidrule{5-7}
+Sensibilidad Objetivo    & $\Delta t=-50$ & $\Delta t=-25$ & $\Delta t=-13$ & $\Delta t=0$ & $\Delta t=15$ & $\Delta t=25$ \\ \midrule
 100\%                   & 751 & 751 & 751 & 754 & 754 & 752 \\
 99\%                    & 801 & 803 & 805 & 803 & 791 & 789 \\
 97\%                    & 864 & 860 & 834 & 818 & 809 & 785 \\

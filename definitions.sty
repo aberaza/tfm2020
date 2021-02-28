@@ -1,3 +1,6 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{definitions}
+
 % diagramas simples
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, arrows}
@@ -43,6 +46,7 @@
 %% \newcommand{\tflite}{\textsf{TensorFlow~{\footnotesize Lite}}
 \def\g/{~\textsl{g}}
 \def\hz/{~\textsl{Hz}}
+\def\ms2/{~$m/s^2$}
 
 
 
@@ -83,7 +87,7 @@
   \def\pgffigure{img/#2.pgf}
   \def\figid{#3}
   \def\captiontext{#4}
-  \begin{figure}[h!t]
+  \begin{figure}[!ht]
     \centering
     \IfFileExists{\texfigure}{
       \resizebox{\scale\linewidth}{!}{
@@ -134,21 +138,22 @@
   \def\mycolumnstyles{#4}
   \def\mytablecontent{#5}
   \def\tablenote{#6}
+  \def\startrow{#7}
 
-  \begin{table*}
-    \rowcolors{#7}{white}{Gray!20}
+  \begin{table*}[!htbp]
+    \rowcolors{\startrow}{white}{Gray!20}
     \centering
-    \resizebox{\myscale}{!}{
+    \resizebox{\myscale}{!}{%
       \begin{threeparttable}
         \begin{tabular}{@{}#4@{}}
           \toprule[1.5pt]
-          #5
+          \mytablecontent
           \bottomrule[1.5pt]
         \end{tabular}
 
         \begin{tablenotes}
           \small
-          #6
+          \tablenote
         \end{tablenotes}
       \end{threeparttable}
     }
@@ -286,8 +291,6 @@
 \newcommand*{\citaa}[3]{\textquote[{\citeNP[{#1}]{#2}}]{#3}}
 \newcommand*{\fcap}[1]{\footnotesize #1}
 
-%% Necesita hyperref
-\newcommand*{\fullref}[1]{\hyperref[{#1}]{\autoref*{#1}: \textit{\nameref*{#1}}}}
 
 %%%% ToDo notes
 % \usepackage{xargs}                      % Use more than one optional parameter in a new commands
@@ -370,7 +373,7 @@
 
 \lstdefinestyle{JSES6Base}{
   backgroundcolor=\color{white},
-  basicstyle=\linespread{0.8}\listingsfont,
+  %basicstyle=\linespread{0.8}\listingsfont,
   %basicstyle=\ttfamily,
   lineskip=-2pt,
   breakatwhitespace=false,

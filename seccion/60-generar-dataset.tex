@@ -50,7 +50,7 @@ El índice de actividad usado es la variación de aceleración entre dos muestra
 \]\\
 
 Donde:\\
-$g$ corresponde a la aceleración de la gravedad terrestre o $9,8m/s^2$\\
+$g$ corresponde a la aceleración de la gravedad terrestre o 9,8\ms2/\\
 $\|\vec{A}_n\|$ es la norma o módulo del vector aceleración en el instante $n$ .
 
 Este índice se usa para los dos mecanismos de detección de actividad de la aplicación:
@@ -60,7 +60,7 @@ Este índice se usa para los dos mecanismos de detección de actividad de la apl
   \item \textbf{Movimiento prolongado} Es un comparador con histéresis. Activado cuando la aceleración promedio del contenido del buffer es superior a $\frac{1}{250}\sum_{t-250}^t\|\vec{A}_i\|\geq0,3m/s^2$. Se desactiva cuando la misma medida baja del umbral $\frac{1}{250}\sum_{t-250}^t\|\vec{A}_i\|<0,25m/s^2$.
 \end{enumerate}
 
-La cota de detección de movimiento repentino se calcula a partir de los resultados obtenidos por \citeA{Bourke2006} para la medición de la cintura por ser la que menor aceleración registra. La diferencia entre la aceleración de pico y de valle usada por bourke es de $\Delta A = (2,74 - 0,60)g = 2,14g$ redondeando a la baja a $2g$ para garantizar la detección de todos los eventos de este tipo. Finalmente, la cota del detector de actividad prolongada, fijada en $0,3m/s^2$, se mide de forma experimental resultado de promediar el vector para realizar el movimiento de leer la hora en el reloj (\autoref{fig:accelMirarReloj}) y volver a la posición de reposo durante la ventana de 5 segundos que usa la aplicación. En caso de activarse alguno de estos mecanismos, el servicio considera que ha detectado una actividad y cambia al estado \textit{Grabando}. En este estado, se recuperan los 5 segundos ya almacenados en el buffer de detección de actividad (se recuperan las tres componentes de la aceleración, no el índice de actividad) y se añaden nuevas muestras sin límite de duración hasta que se vuelva al estado \textit{Reposo} por ausencia de actividad. En esta última transición se enviarán las muestas capturadas con información adicional al servidor tal y como se define en la \autoref{sub:accelcapture:red}.
+La cota de detección de movimiento repentino se calcula a partir de los resultados obtenidos por \citeA{Bourke2006} para la medición de la cintura por ser la que menor aceleración registra. La diferencia entre la aceleración de pico y de valle usada por bourke es de $\Delta A = (2,74 - 0,60)g = 2,14g$ redondeando a la baja a 2\g/ para garantizar la detección de todos los eventos de este tipo. Finalmente, la cota del detector de actividad prolongada, fijada en 0,3\ms2/, se mide de forma experimental resultado de promediar el vector para realizar el movimiento de leer la hora en el reloj (\autoref{fig:accelMirarReloj}) y volver a la posición de reposo durante la ventana de 5 segundos que usa la aplicación. En caso de activarse alguno de estos mecanismos, el servicio considera que ha detectado una actividad y cambia al estado \textit{Grabando}. En este estado, se recuperan los 5 segundos ya almacenados en el buffer de detección de actividad (se recuperan las tres componentes de la aceleración, no el índice de actividad) y se añaden nuevas muestras sin límite de duración hasta que se vuelva al estado \textit{Reposo} por ausencia de actividad. En esta última transición se enviarán las muestas capturadas con información adicional al servidor tal y como se define en la \autoref{sub:accelcapture:red}.
 
 Finalmente, para volver al estado de \textit{Reposo} el único mecanismo que lo permite es el comparador de movimiento prolongado si durante 5 segundos el promedio del índice de actividad es inferior a 0,25. Esta cifra se elige para evitar la proliferación de capturas de sesiones de muy corta duración convirtiendo el sistema en un comparador con histéresis.
 
@@ -101,7 +101,7 @@ Es el punto de entrada de la aplicación. Genera la interfaz gráfica y permite 
 
 \paragraph{SensorsReader}
 El nucleo principal de la plicación. Un servicio que al ser creado se registra para recibir eventos y lecturas del sensor de aceleración triaxial del reloj. Posee una cola circular donde almacena los últimos 5 segundos de muestras (si por ejemplo la velocidad de lectura del sensor es de $1/50$, el buffer posseerá $50 * 5 = 250$ muestras).
-Es este servicio el que implementa la lógica descrita en el apartado \ref{sub:accelcapture:flujo} tal y como se observa en la \autoref{fig:capturaFlow}, leyendo procesando y almacenadno los datos del sensor de aceleración  Tras cada muestra el algoritmo evalúa la variación de la aceleración usando para ello el tercer bloque funcional \textit{ActivityRecognition}. Este bloque es a su vez el encargado de enviar la información de las sesiones capturadas al servidor vía Internet.
+Es este servicio el que implementa la lógica descrita en el Apartado~\ref{sub:accelcapture:flujo} tal y como se observa en la \autoref{fig:capturaFlow}, leyendo procesando y almacenadno los datos del sensor de aceleración  Tras cada muestra el algoritmo evalúa la variación de la aceleración usando para ello el tercer bloque funcional \textit{ActivityRecognition}. Este bloque es a su vez el encargado de enviar la información de las sesiones capturadas al servidor vía Internet.
 
 \paragraph{ActivityRecognition}
 Este bloque lo componen los algoritmos de detección de actividad explicados anteriormente. Este módulo propone una interfaz común para poder registrarse y recibir información del módulo \textit{SensorReader} y enviar a su vez eventos que pueda interpretar como son la detección o no de actividad.
@@ -111,7 +111,7 @@ Este bloque lo componen los algoritmos de detección de actividad explicados ant
 
 El objetivo último de \accelcapture/ es el de obtener y almacenar estas tramas o sesiones de actividad para su posterior tratamiento. Este paso se realiza enviando las información a un servidor. Mediante las múltiples capacidades de conexión que tiene el dispositivo (Wifi y Bluetooth + Móvil) que le permiten conectarse desde prácticamente cualquier ubicación y enviar y recibir información. Esta autonomía de funcionamiento permite validar en primera instancia el requisito de no necesitar de infraestructura para el funcionamiento de la aplicación final. Al haber logrado una plataforma autónoma con \accelcapture/, que requiere de una conexión con un servidor, lograrlo con \textit{iFell}, que no tiene necesidad de conexión alguna, debería ser trivial. Esta capacidad de conexión permite poder obtener datos de usuarios de forma remota sin necesidad de ninguna manipulación para obtenerlos una vez usen la aplicación.
 
-Tal y como se menciona en el apartado \ref{sec:req:nube}, la plataforma en la nube se implementa usando los servicios de AWS. Para esta función crea un microservicio que expone públicamente una \textit{API}(lista de funciones de acceso público que ofrece una biblioteca de programación) del tipo \textit{REST}(Arquitectura que implementa una interfaz sobre el protocolo \textit{HTTP}). Este servicio, definido en la \autoref{tab:accelcapture:api} se encargará de recibir la llamadas de la aplicación y guardar el contenido en un archivo \textit{JSON} (lenguaje de definición de estructuras de datos que usa la notación de JavaScript).
+Tal y como se menciona en el \apartado{sec:req:nube}, la plataforma en la nube se implementa usando los servicios de AWS. Para esta función crea un microservicio que expone públicamente una \textit{API}(lista de funciones de acceso público que ofrece una biblioteca de programación) del tipo \textit{REST}(Arquitectura que implementa una interfaz sobre el protocolo \textit{HTTP}). Este servicio, definido en la \autoref{tab:accelcapture:api} se encargará de recibir la llamadas de la aplicación y guardar el contenido en un archivo \textit{JSON} (lenguaje de definición de estructuras de datos que usa la notación de JavaScript).
 
 \tablas{tab:accelcapture:api}{API del servidor \accelcapture/}{llll}{
   Método  & URL         & Carga         & Función lambda    \\ \midrule
@@ -122,14 +122,14 @@ La estructura almacenada se muestra en la \autoref{tab:accelcapture:accel_sessio
 
 
 
-\begin{table}[h]
+\begin{table}[!htbp]
   \centering
   \subtabla[1.0]{tab:accelcapture:accel_session}{Descripción del Objeto AccelSession}{lll}{
 Campo           & Tipo Dato     & Descripción \\ \hline
 \textit{uid}    & Alfanumérico  & Identificador único de usuario \\
 \textit{sid}    & Alfanumérico  & Identificador único de sesión \\
-\textit{sensorResolution} & Real & Resolución del sensor (en $m/s^2$) \\
-\textit{sensorMaxRange} & Real  & Valor máximo de la medida (en $m/s^2$) \\
+\textit{sensorResolution} & Real & Resolución del sensor (en \ms2/) \\
+\textit{sensorMaxRange} & Real  & Valor máximo de la medida (en \ms2/) \\
 \textit{startTime} & Entero     & Tiempo EPOCH del inicio de la sesión (en segundos) \\
 \textit{samples}  & Entero      & Número de muestras de la sesión \\
 \textit{triggerMethod} & Texto  & Nombre del evento que inició la sesión de captura \\
@@ -142,9 +142,9 @@ Campo           & Tipo Dato     & Descripción \\ \hline
 \textit{duration} & Entero      & Duración, en $\mu s$, de la sesión \\
 \textit{activity} & Texto       & Nombre de la actividad realizada durante la captura \\
 \textit{rate}   & Entero        & Ratio de muestreo (en $Hz$) \\
-\textit{accelerationX} & Lista<Reales> & Lista de valores de la aceleración capturados en el eje X (en $m/s^2$) \\
-\textit{accelerationY} & Lista<Reales> & Lista de valores de la aceleración capturados en el eje Y (en $m/s^2$) \\
-\textit{accelerationZ} & Lista<Reales> & Lista de valores de la aceleración capturados en el eje Z (en $m/s^2$) \\
+\textit{accelerationX} & Lista<Reales> & Lista de valores de la aceleración capturados en el eje X (en \ms2/) \\
+\textit{accelerationY} & Lista<Reales> & Lista de valores de la aceleración capturados en el eje Y (en \ms2/) \\
+\textit{accelerationZ} & Lista<Reales> & Lista de valores de la aceleración capturados en el eje Z (en \ms2/) \\
 }{right}{2}
 
 \caption{\label{tab:accelcapture:data_types} Estructuras de datos de \accelcapture/}
@@ -168,23 +168,23 @@ La base de datos final consta de 37563 segundos de actividad capturada en 274 se
   Sesiones      & 274     &   \\
   Sujetos       & 3       & Edades: 34, 40, 77 \\
   Sensor        & Acel. 3 ejes & Las componentes X, Y, Z\newline se presentan por separado \\
-  Frecuencia Muestreo & 50Hz & \\
-  Unidades medida & $m/s^2$ & \\
-  Resolución del Sensor & 0,0011 $m/s^2$ &  \\
-  Valor Máximo & 60$m/s^2$ & \\
+  Frecuencia Muestreo & 50\hz/ & \\
+  Unidades medida & \ms2/ & \\
+  Resolución del Sensor & 0,0011 \ms2/ &  \\
+  Valor Máximo & 60\ms2/ & \\
 }{2}
 
-\tablan[0.95\linewidth]{tab:dataset:datos}{Referencia de columnas de la base de datos}{lrrl}{
-  \textit{Columna}&  Tipo & Unidades  & Descripción \\ \midrule 
-  uid             & texto &           & Identificador único de la sesión \\
-  activity        & texto &           & Nombre de la actividad detectada por la API Google DetectedActivity\tnote{1} \\
-  samplerate      & número& Hz        & Frecuencia de lectura del sensor \\
-  trigger         & texto &           & Nombre del mecanismo de activación que inició la captura \\
-  resolution      & número & $m/s^2$  & Resolución del sensor tal y como informa el SO\\
-  max             & número & $m/s^2$  & Máximo valor para cada muestra tal y como informa el SO\\
-  data            & Matriz & $m/s^2$  & arreglos con las lecturas del sensor para las componentes de la aceleración \\
+\tablan[0.95\linewidth]{tab:dataset:datos}{Referencia de columnas de la base de datos}{llcl}{
+  \textit{Columna} & \textit{Tipo} & \textit{Unidades}  & \textit{Descripción} \\ \midrule
+  uid             & texto  &        & Identificador único de la sesión \\
+  activity        & texto  &        & Nombre de la actividad detectada por la API Google DetectedActivity\tnote{1} \\
+  samplerate      & número & \hz/   & Frecuencia de lectura del sensor \\
+  trigger         & texto  &        & Nombre del mecanismo de activación que inició la captura \\
+  resolution      & número & \ms2/  & Resolución del sensor tal y como informa el SO\\
+  max             & número & \ms2/  & Máximo valor para cada muestra tal y como informa el SO\\
+  data            & matriz & \ms2/  & arreglos con las lecturas del sensor para las componentes de la aceleración \\
 }{
-\item [1] \url{https://developers.google.com/android/reference/com/google/android/gms/location/DetectedActivity#constants}
+\item [1] \url{https://developers.google.com/android/reference/com/google/android/gms/location/DetectedActivity\#constants}
 }{2}
 
 
@@ -254,7 +254,7 @@ El objetivo de este análisis es encontrar comportamientos cíclicos en la seña
 
 \end{figure}
 
-Los resultados se repiten en su mayoría, la señal no presenta periodicidades a destacar salvo cuando se analizan muestras en reposo. En estas suele apreciarse un tono de baja frecuencia (entre 4 y 12Hz) que atribuimos a un harmónico del pulso en reposo del sujeto que se introduce por efecto del filtrado digital a 50Hz que realiza el dispositivo de captura. Al no haber encontrado ninguna componente espectral predominante o ninguna tendencia temporal, tomaremos como tamaño de ventana el doble del periodo que contiene una caída. La estimación de la duración de una caída varía según el estudio, pero tomaremos el acercamiento de que la caída ocurre en la ventana de dos segundos centrada en el instante de máxima aceleración \cite{Sucerquia2017}. 
+Los resultados se repiten en su mayoría, la señal no presenta periodicidades a destacar salvo cuando se analizan muestras en reposo. En estas suele apreciarse un tono de baja frecuencia (entre 4 y 12\hz/) que atribuimos a un harmónico del pulso en reposo del sujeto que se introduce por efecto del filtrado digital a 50\hz/ que realiza el dispositivo de captura. Al no haber encontrado ninguna componente espectral predominante o ninguna tendencia temporal, tomaremos como tamaño de ventana el doble del periodo que contiene una caída. La estimación de la duración de una caída varía según el estudio, pero tomaremos el acercamiento de que la caída ocurre en la ventana de dos segundos centrada en el instante de máxima aceleración \cite{Sucerquia2017}. 
 
 \subsubsection{Equiparación con \sisfall/}
 

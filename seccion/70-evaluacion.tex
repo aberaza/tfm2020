@@ -27,7 +27,7 @@ Estas métricas son usadas habitualmente en otros trabajos similares\cite{Noury2
 
 \subsubsection{Metodología}
 
-Partiendo del algoritmo de \ifell/ descrito en en \fullref{sec:imp:model}, usaremos un detector \textit{BourkeU} con cota de decisión fijada a 5g como modelo analítico y los modelos \textit{RNN-R(175)[50]}, \textit{RNN-P(175)[50]} y \textit{RNN-R(350)[50]} para el bloque de decisión final. Analizaremos los resultados para varios valores de la cota de decisión sobre el RMSE así como de la posición del punto de impacto $t_0$.
+Partiendo del algoritmo de \ifell/ descrito en en \fullref{sec:imp:model}, usaremos un detector \textit{BourkeU} con cota de decisión fijada a 5\g/como modelo analítico y los modelos \textit{RNN-R(175)[50]}, \textit{RNN-P(175)[50]} y \textit{RNN-R(350)[50]} para el bloque de decisión final. Analizaremos los resultados para varios valores de la cota de decisión sobre el RMSE así como de la posición del punto de impacto $t_0$.
 
 Recuperamos las mismas particiones de \sisfall/ hechas para el entrenamiento de los modelos que recordemos estaban conformadas con un 80\% para entrenamiento y el 20\% de muestras para validación. De la misma forma que analizamos el comportamiento del algoritmo de Bourke en la sección \ref{sub:imp:model:analitico} observaremos el comportamiento del algoritmo de modelo híbrido de \ifell/. Usando el subconjunto de entrenamiento para definir la cota de decisión sobre el error RMSE se la salida del modelo codificador/decodificador con la señal esperada y posteriormente evaluaremos los resultados obtenidos tras aplicar el algoritmo al conjunto de validación en relación a la literatura existente.
 
@@ -113,19 +113,19 @@ Observamos la mejora del modelo de predicción, que manteniendo la sensibilidad 
   \centering
   \begin{subfigure}[b]{0.45\textwidth}
       \centering
-      \includegraphics[width=\linewidth]{ADATA_RECON_RMSE_HIST}
+      \pincludegraphics[0.95]{ADATA_RECON_RMSE_HIST}
       \caption{\footnotesize \label{fig:ifell:adata:rmshist:recon}Distribuciones de RMSE para actividades y caídas en el modelo de reconstrucción}
   \end{subfigure}
   \hfill
   \begin{subfigure}[b]{0.45\textwidth}
       \centering
-      \includegraphics[width=\linewidth]{ADATA_PRED_RMS_HIST}
+      \pincludegraphics[0.95]{ADATA_PRED_RMS_HIST}
       \caption{\footnotesize \label{fig:ifell:adata:rmshist:pred}Distribuciones de RMSE para actividades y caídas en el modelo predicción}
   \end{subfigure}
   \caption{\label{fig:ifell:adata:rmshist}Histogramas del RMSE para los modelos IFELL}
 \end{figure}
 
-En la tabla \ref{tab:MLResults} destacan los resultados obtenidos por los modelos que usan técnicas de aprendizaje automático. Si bien en lo referente a la latencia, \cite{Liu2020} obtiene tiempos que superan el segundo en la mayoría de modelos, llegando incluso a los 8,87s obtenidos con un clasificador de Bayes. Tanto en los trabajos de \cite{Liu2018, Liu2020} como \cite{Musci2020} y \cite{Torti2018} se subraya el hecho de la no uniformidad de los resultados. Los mejores resultados se obtienen con población joven mientras que con población adulta las métricas pueden perder hasta 5 puntos, en parte debido a la falta de datos de entrenamiento. En la tabla \ref{tab:eval:resultados} se muestran los resultados de este estudio junto con los arriba mencionados y los propios resultados del estudio de \sisfall/\cite{Sucerquia2017}. Existe también el trabajo de \citeA{Putra2017} pero en su publicación no ofrece datos suficientes para obtener las métricas de especificidad, aunque clama una sensibilidad del 99,9\%. Salvo los estudios de Musci y Torti, el resto de los modelos se ejecutan en grandes equipos. Es obvio que el clasificador obtenido no alcanza la exactitud de los mejores modelos de aprendizaje automático, aunque se muestra superior a Bayes. Muestra sin embargo mejores estadísticas que los modelos analíticos sin información de la posición como Bourke y muy similar a modelos estadísticos que analizan largas secuencias. Destacamos asímismo los rápidos tiempos de ejecución de los modelos (ejecutados en los sistemas descritos en el apéndice \ref{app:colab}), un orden de magnitu mejor que el modelo CNN y dos órdenes mejor que el modelo LSTM presentados Liu. Dadas las limitaciones por los requisitos de recursos y latencia del sistema consideramos los resultados obtenidos por los clasificadores de \ifell/ satisfactorios.
+Si comparamos con los sistemas existentes, destacan los resultados obtenidos por los modelos que usan técnicas de aprendizaje automático. Si bien en lo referente a la latencia, \cite{Liu2020} obtiene tiempos que superan el segundo en la mayoría de modelos, llegando incluso a los 8,87s obtenidos con un clasificador de Bayes. Tanto en los trabajos de \cite{Liu2018, Liu2020} como \cite{Musci2020} y \cite{Torti2018} se subraya el hecho de la no uniformidad de los resultados. Los mejores resultados se obtienen con población joven mientras que con población adulta las métricas pueden perder hasta 5 puntos, en parte debido a la falta de datos de entrenamiento. En la tabla \ref{tab:eval:resultados} se muestran los resultados de este estudio junto con los arriba mencionados y los propios resultados del estudio de \sisfall/\cite{Sucerquia2017}. Existe también el trabajo de \citeA{Putra2017} pero en su publicación no ofrece datos suficientes para obtener las métricas de especificidad, aunque clama una sensibilidad del 99,9\%. Salvo los estudios de Musci y Torti, el resto de los modelos se ejecutan en grandes equipos. Es obvio que el clasificador obtenido no alcanza la exactitud de los mejores modelos de aprendizaje automático, aunque se muestra superior a Bayes. Muestra sin embargo mejores estadísticas que los modelos analíticos sin información de la posición como Bourke y muy similar a modelos estadísticos que analizan largas secuencias. Destacamos asímismo los rápidos tiempos de ejecución de los modelos (ejecutados en los sistemas descritos en el apéndice \ref{app:colab}), un orden de magnitu mejor que el modelo CNN y dos órdenes mejor que el modelo LSTM presentados Liu. Dadas las limitaciones por los requisitos de recursos y latencia del sistema consideramos los resultados obtenidos por los clasificadores de \ifell/ satisfactorios.
 
 % \tablas[0.80]{tab:MLResults}{Resultados de sistemas basados en ML}{lccccccccc}{
 %     & \multicolumn{2}{c}{\textbf{iFell}}  & Musci2020     & Torti2018  & \multicolumn{3}{c}{Liu} &  \multicolumn{2}{\sisfall} & Bourke \\ \cmidrule{lr}{2-3}\cmidrule{lr}{4}\cmidrule{lr}{5-7}\cmidrule{lr}{8-9}
@@ -143,24 +143,24 @@ En la tabla \ref{tab:MLResults} destacan los resultados obtenidos por los modelo
                            & RNN-P(175)[50] & 94,4  & 63,0  &     & 78,7 & 0,031 \\
                            & IFELL-R(175)[50] & 97,8 & 65,6 &     & 82,2 & 0,035 \\
                            & IFELL-P(175)[50] & 90,5 & 68,9 &     & 79,7 & 0,031 \\
-                           & Bourke & 99,4 & 29,7 &  & 64,5 & 0,0\\ \midrule[0.1]
-    Musci2020                 & LSTM            & 96,5  & 96,0  &     & 92,7 & \\ \midrule[0.1]
-    Torti2018                 & LSTM            & 98,7  & 97,9  & 98,3& 98,3 & \\\midrule[0.1]
+                           & Bourke & 99,4 & 29,7 &  & 64,5 & 0,0\\ \midrule[0.1pt]
+    Musci2020                 & LSTM            & 96,5  & 96,0  &     & 92,7 & \\ \midrule[0.1pt]
+    Torti2018                 & LSTM            & 98,7  & 97,9  & 98,3& 98,3 & \\\midrule[0.1pt]
 
     \multirow{5}{*}{Liu2018}  & SVML\tnote{1} & 97,2   & 93,6  & 95,4& 95,4 & \\
                               & SVMRBF\tnote{2} & 98,3 & 96,2 & 97,6 & 97,2 & \\
                               & kNN3   & 96,4 & 96,3 & 96,4 & 96,3 & \\
                               & Bayes  & 54,3 & 92,0 & 73,7 & 73,1 & \\
-                              & DT\tnote{3} & 94,9 & 95,5 & 95,2 & 95,2 & \\\midrule[0.1]
+                              & DT\tnote{3} & 94,9 & 95,5 & 95,2 & 95,2 & \\\midrule[0.1pt]
 
     \multirow{3}{*}{Liu2020} & FD-DNN\tnote{4} & 94,1 & 99,9 & 99,1 & 97,0 & 1,05 \\
                              & LSTM & 81,4 & 99,5 & 96,88 & 90,4 & 3,87 \\
                              & CNN & 87,5 & 99,9 & 98,1 & 93,7 & 0,65 \\
                              & Bayes & 95,6 & 99,9 & 90,1 & 97,7 & 8,87 \\
-                             & RT\tnote{5} & 92,2 & 98,5 & 80,32 & 95,3  & 1,21 \\ \midrule[0.1]
+                             & RT\tnote{5} & 92,2 & 98,5 & 80,32 & 95,3  & 1,21 \\ \midrule[0.1pt]
 
-    \multirow{2}{*}{\sisfall/} & NormAcc\tnote{6} & \~99,9 & 32,97 & 66,4 & 66,4 & \\
-                               & STDEV\tnote{7} & \~99,9 & 67,97 & 83,96 & 83,96 & \\
+    \multirow{2}{*}{\sisfall/} & NormAcc\tnote{6} & 99,9 & 32,97 & 66,4 & 66,4 & \\
+                               & STDEV\tnote{7} & 99,9 & 67,97 & 83,96 & 83,96 & \\
 }{
 \item [1] SVM Linear 
 \item [2] SVM Radial Basis Function
@@ -171,21 +171,21 @@ En la tabla \ref{tab:MLResults} destacan los resultados obtenidos por los modelo
 \item [7] Desviación estándar del módulo
 }{21}
 
-\figura{CompositeFallNormalRMSHistogram_t-25}{fig:GRU_predictionRMS_Histogram}{Histograma de los errores de predicción del modelo GRU}
+% \figura{CompositeFallNormalRMSHistogram_t-25}{fig:GRU_predictionRMS_Histogram}{Histograma de los errores de predicción del modelo GRU}
 
 \paragraph{\ifell/ respecto a Bourke}\\
 El comparador de Bourke es usado por nuestro algoritmo a modo de generador de eventos. Es además un referente en los modelos analíticos que usan el módulo de la aceleración por lo que es adecuado analizar el algoritmo de \ifell/ contra el modelo de Bourke ya que nos indicará el grado de mejora debido al desarrollo realizado. Tomaremos la variante que analiza únicamente los picos de la aceleración pues el que ha mostrado mejor comportamiento. Si forzamos una alta sensibilidad tal que $Sensibilidad \geq 99\%$ los resultados muestran una clara mejoría en la capacidad selectiva del algoritmo híbrido de \ifell/ de reconstrucción respecto al modelo de Bourke del 41\%. 
 
   \tablas{tab:ifell:vs:bourke}{Especificidad por modelos forzando $Sensibilidad \geq 99\%$}{lrr}{
     \emph{Modelo}     & \emph{Sensibilidad} & \emph{Especificidad} \\ \midrule
-    Bourke U          & 99,0\%    & 41,3 \% \\                
-    IFELL-R(175)[50]    & 99,0\%  & 58,5 \% \\
-    IFELL-P(175)[50]    & 99,0\%  & 48,9 \% \\
+    Bourke U          & 99,0\%    & 41,3\% \\                
+    IFELL-R(175)[50]    & 99,0\%  & 58,5\% \\
+    IFELL-P(175)[50]    & 99,0\%  & 48,9\% \\
   }{2}
 
 \section{Evaluación de la aplicación \ifell/}
 
-  Finalmente debemos evaluar la implementación del sistema. Partiendo del algoritmo de \ifell/ descrito en en \fullref{sec:imp:model}, e implementado en la aplicación \ifell/ usaremos un detector \textit{BourkeU} con cota de decisión en 5g como modelo analítico y los modelos \textit{IFELL-R(175)[50]} e \textit{IFELL-P(175)[50]} con cotas de decisión sobre RMSE fijadas a $RMSE_{Pred}=2,2176$ y $RMSE_{Recon}=0,2822$, es decir, buscando conseguir el 95\% de sensibilidad.
+  Finalmente debemos evaluar la implementación del sistema. Partiendo del algoritmo de \ifell/ descrito en en \fullref{sec:imp:model}, e implementado en la aplicación \ifell/ usaremos un detector \textit{BourkeU} con cota de decisión en 5\g/como modelo analítico y los modelos \textit{IFELL-R(175)[50]} e \textit{IFELL-P(175)[50]} con cotas de decisión sobre RMSE fijadas a $RMSE_{Pred}=2,2176$ y $RMSE_{Recon}=0,2822$, es decir, buscando conseguir el 95\% de sensibilidad.
 
 \subsection{Latencia}
     La aplicación con la configuración descrita se ha probado en un sujeto durante un periodo de dos meses de uso continuo sin pausas más allá de los periodos de carga del dispositivo. En todo este periodo no se ha producido ninguna caída real y 12 falsos positivos, la ausencia de casos positivos reales no permite realizar un análisis estadístico. Si que podemos estudiar las latencias o tiempos de ejecución del modelo recogidos en la tabla \ref{tab:ifell:watch:latencia}. Para ello medimos el tiempo desde que se invoca la petición al modelo hasta que obtenemos el resultado del comparador del nivel de decisión RMSE. 
