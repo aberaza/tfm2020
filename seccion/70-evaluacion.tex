@@ -92,21 +92,6 @@ En los requisitos a cumplir por nuestro clasificador hemos indicado que debe ofr
 Observamos la mejora del modelo de predicción, que manteniendo la sensibilidad logra superar por hasta un 8\% la especificidad del clasificador equivalente. Si observamos las matrices de confusión de las figura \ref{fig:ifell:adata:confmats}  se aprecia como ya hemos mencionado que la sensibilidad del algoritmo no alcanza nunca el 100\% pero que esta penalización debida al modelo de Bourke previo no impacta en cuanto decidimos reducir la sensibilidad del algoritmo para mejorar la especificidad.
 
 
-\begin{sidewaysfigure}[!ht]
-  \centering
-  \begin{subfigure}[b]{0.45\textwidth}
-      \centering
-      \includegraphics[width=\linewidth]{ConfMatrixRecon.png}
-      \caption{\footnotesize \label{fig:ifell:adata:confmat:recon}Matrices de confusión para un modelo de reconstrucción}
-  \end{subfigure}
-  \hfill
-  \begin{subfigure}[b]{0.45\textwidth}
-      \centering
-      \includegraphics[width=\linewidth]{ConfMatrixPred.png}
-      \caption{\footnotesize \label{fig:ifell:adata:confmat:pred}Matrices de confusión para un modelo de predicción}
-  \end{subfigure}
-  \caption{\label{fig:ifell:adata:confmats}Ejemplos de matrices de confusión según sensibilidad deseada y posición de la ventana}
-\end{sidewaysfigure}
 
 
 \begin{figure}[!ht]

@@ -122,7 +122,7 @@ Se ha mencionado ya en varios momento que el uso de un dispositivo de medida de 
 
 Buscando encontrar un equilibrio entre capacidad de detección y requisitos del sistema, optamos por un algoritmo híbrido con dos modelos (uno analítico y otro basado en redes recurrentes), tal y como se presenta en la \autoref{fig:ifell:algoritmo}. Al utilizar dos etapas permite mantener el costoso modelo neuronal aletargado a la espera de un evento del modelo analítico. Este modelo, más simple, apenas consiste de un comparador, puede ejecutarse sin problema de forma continua sin tener un impacto notable en la duración de la batería del sistema\todo{referencia a la gráfica de consumos de batería}. 
 
-\figura[0.5]{deteccionFlujo}{fig:ifell:algoritmo}{Algoritmo de detección de caídas de \ifell/}
+\figura[0.35]{deteccionFlujo}{fig:ifell:algoritmo}{Algoritmo de detección de caídas de \ifell/}
 
 Si analizamos el algoritmo, apreciamos su similitud con el de la aplicación de captura de datos. En parte por el hecho de que la primera etapa es idéntica: Un sistema generador de eventos cuando se detecta actividad. En este caso este primer sistema generador de eventos es el modelo analítico. El acelerómetro del sistema genera lecturas de los tres ejes de la aceleración a un ratio determinado (25 muestras por segundo). Estas muestras se convierten en el módulo de la aceleración $\|\vec{A}\|=\sqrt{A_x^2 + A_y^2 + A_z^2}$ y se almacenan en una cola de 4 segundos o 100 muestras. Tras cada lectura de una nueva muestra, el modelo analítico elegido procesa su contenido y genera un evento de caída si así lo detecta. De ser así, se envía el contenido de la cola al modelo neuronal que discriminará si efectivamente es una caída o no.
 
@@ -138,16 +138,16 @@ Como el resto de modelos analíticos aplicados a la detección de caídas tiene 
 
 \begin{figure}[htb!]
   \centering
-  \begin{subfigure}[b]{0.48\textwidth}
+  \begin{subfigure}[b]{0.45\textwidth}
       \centering
-      \pincludegraphics[1.1]{BourkeLowThresholdsHistogram}
+      \pincludegraphics[1.0]{BourkeLowThresholdsHistogram}
       \caption{\footnotesize Histograma valores \textit{valle} modelo Bourke}
       \label{fig:bourke:hist:low}
   \end{subfigure}
   \hfill
-  \begin{subfigure}[b]{0.48\textwidth}
+  \begin{subfigure}[b]{0.45\textwidth}
       \centering
-      \pincludegraphics[1.1]{BourkeUpperThresholdsHistogram}
+      \pincludegraphics[1.0]{BourkeUpperThresholdsHistogram}
       \caption{\footnotesize Histograma valores \textit{pico} modelo Bourke}
       \label{fig:bourke:hist:high}
   \end{subfigure}
@@ -180,7 +180,6 @@ Tomando el conjunto de datos de entrenamiento previamente filtrado y submuestrea
 
   Este modelo tiene la desventaja de tener una especificidad muy baja. Los resultados sobre SisFall nos arrojan un valor para las cotas de 0,971\g/ para el valle y 4,164\g/ para el pico (en la tabla \ref{tab:bourke:valores} se presentan los resultados para otros percentiles). Con estos valores se consigue una especificidad de tan solo el 22,9\% mientras que la sensibilidad se queda en torno al 97\% usando Bourke estándar o \textit{BourkeUL}. Repetimos el experimento sobre las variantes \textit{BourkeU} y \textit{BourkeL} y para varios percentiles de las cotas para observar la variación de la Especificidad al reducir la Sensibilidad. En la \autoref{fig:bourke_cfmatrix} se recogen los resultados de los diversos experimentos en forma de sus matrices de confusión y métricas de Sensibilidad y Especificidad.  
 
-\figura[0.8]{BourkeCONF_Matrix}{fig:bourke_cfmatrix}{Matrices de confusión para modelos Bourke}
 
 Al interpretar los resultados obtenidos interesa entender principalmente la causa por la que \textit{BourkeUL} no alcanza el 100\% de sensibilidad. Lo achacamos al hecho de que para ser detectado por el modelo implementado, la caída ha de cumplir ambas cotas en una ventana deslizante de 200 muestras. El siguiente resultado, y de mayor interés para el trabajo es el buen resultado obtenido por la variante \textit{BourkeU}: Alcanza el 100\% de sensibilidad y la especificidad es la mejor de todos los modelos a igual sensibilidad (por ejemplo, si bajamos la sensibilidad hasta el 99,2\% tiene una especificidad del 43,6\%, mucho mayor que el 28,7\% de \textit{BourkeUL} con una sensibilidad menor). Al aunar simplicidad y resultados, optaremos por el modelo BourkeU con un valor de cota \textit{UFT} de 4,16\g/ para el análisis del algoritmo. Sin embargo, de cara a la implementación final en el dispositivo tomaremos el valor de \textit{UFT} de 5,0\g/ por entender que la mejora obtenida en la especificidad merece el sacrificio de bajar la sensibilidad hasta el 99,4\% a la vez que garantiza que las caídas no detectadas son aquellas con menor energía.
 
@@ -210,13 +209,13 @@ Al contrario que la mayoría de sistemas existentes para la detección de caída
 
 \begin{figure}[!ht]
   \centering
-  \begin{subfigure}[b]{0.48\textwidth}
+  \begin{subfigure}[b]{0.45\textwidth}
       \centering
       \pincludegraphics[1.0]{Prediction_reconstruction}
       \caption{\footnotesize \footnotesize \label{fig:reconstruccionAceleracion}Reconstrucción del módulo de la aceleración por \textit{RNN-reconstrucción}}
   \end{subfigure}
   \hfill
-  \begin{subfigure}[b]{0.48\textwidth}
+  \begin{subfigure}[b]{0.45\textwidth}
       \centering
       \pincludegraphics[1.0]{Prediction_prediction.png}
       \caption{\footnotesize \footnotesize \label{fig:prediccionAceleracion}Predicción del módulo de la aceleración por \textit{RNN-predicción}}
@@ -241,13 +240,13 @@ La elección de cada componente y parámetro se realiza buscando maximizar el re
 
 \begin{figure}[!ht]
   \centering
-  \begin{subfigure}[t]{0.48\textwidth}
+  \begin{subfigure}[t]{0.45\textwidth}
       \centering
       \pincludegraphics[1.0]{modeloRNNFinal}
       \caption{\footnotesize \label{fig:modelo:rnnFinal:recon}Modelo RNN Reconstrucción GRU(350) y 50 atributos}
   \end{subfigure}
   \hfill
-  \begin{subfigure}[t]{0.48\textwidth}
+  \begin{subfigure}[t]{0.45\textwidth}
       \centering
       \pincludegraphics[1.0]{modeloRNNPredict}
       \caption{\footnotesize \label{fig:modelo:rnnFinal:predict}Modelo RNN Predicción GRU(350) y 50 atributos}
@@ -264,43 +263,39 @@ La segunda limitación por contra si tuvo un impacto: \tflite/ no soporta las re
 
 Antes de iniciar el entrenamiento debemos preprocesar la base de datos. Aislamos todas las secuencias de actividades que no sean caídas del conjunto SisFall. De estas, Separamos un 20\% para validación y usaremos el 80\% restante para entrenar el modelo. Entrenamos durante un máximo de 250 iteraciones sobre el conjunto reservado para ello. Usaremos una tasa de aprendizaje variable, que nos permitirá realizar las primeras iteraciones con un valor alto para acelerar el aprendizaje. Tras cada iteración, si el error RMSE entre la entrada y salida del modelo no se ha reducido respecto a la iteración precedente, reduciremos la tasa de aprendizaje. Así mismo usamos un mecanismo de parada anticipada del aprendizaje si durante 5 iteraciones seguidas no se consigue reducir el error RMSE. Usamos Adam como optimizador y normalización por \textit{dropout} (20\%) en cada capa. 
 
-\figura{evolucionLR}{fig:LRvariable}{Evolución del valor LR exponencial}
 
 \begin{figure}[h!t]
   \centering
-  \begin{subfigure}[b]{0.48\textwidth}
+  \begin{subfigure}[t]{0.32\textwidth}
       \centering
       \pincludegraphics[0.95]{trainingModeloRNNReconBIDIR200-40}
       \caption{\footnotesize \footnotesize \label{fig:rnnTrain:recon:bidir:40}Evolución RMSE para RNN-Reconstrucción 2xBIDIR GRU(200), 40 Atributos}
   \end{subfigure}
-\hfill
-  \begin{subfigure}[b]{0.48\textwidth}
+  \hfill
+  \begin{subfigure}[t]{0.32\textwidth}
       \centering
       \pincludegraphics[0.95]{trainingModeloRNNPred350-25}
       \caption{\footnotesize \footnotesize \label{fig:rnnTrain:predict:25}Evolución RMSE para RNN-Predicción 3xGRU(350), 25 Atributos}
   \end{subfigure}
-  
-
-  \begin{subfigure}[b]{0.48\textwidth}
+  \hfill
+  \begin{subfigure}[t]{0.32\textwidth}
       \centering
       \pincludegraphics[0.95]{trainingModeloRNNRecon175-50}
       \caption{\footnotesize \footnotesize \label{fig:rnnTrain:recon:175}Evolución RMSE para RNN-Reconstrucción 3xGRU(175), 50 Atributos}
   \end{subfigure}
-\hfill
-  \begin{subfigure}[b]{0.48\textwidth}
+  \begin{subfigure}[t]{0.32\textwidth}
       \centering
       \pincludegraphics[0.95]{trainingModeloRNNPred175-50}
       \caption{\footnotesize \footnotesize \label{fig:rnnTrain:predict:175}Evolución RMSE para RNN-Predicción 3xGRU(175), 50 Atributos}
   \end{subfigure}
-
-
-  \begin{subfigure}[b]{0.49\textwidth}
+  \hfill
+  \begin{subfigure}[t]{0.32\textwidth}
       \centering
       \pincludegraphics[1.0]{trainingModeloRNN.png}
       \caption{\footnotesize \footnotesize \label{fig:rnnTrain:recon:50}Evolución RMSE para RNN-Reconstrucción 3xGRU(350), 50 Atributos}
   \end{subfigure}
   \hfill
-  \begin{subfigure}[b]{0.49\textwidth}
+  \begin{subfigure}[t]{0.32\textwidth}
       \centering
       \pincludegraphics[1.0]{trainingModeloRNNPred350-50}
       \caption{\footnotesize \footnotesize \label{fig:modelo:rnnTrain:predict:50}Evolución RMSE para RNN-Predicción 3xGRU(350), 50 Atributos}
@@ -424,11 +419,11 @@ Al usar como modelo analítico \textit{BourkeU} únicamente necesitamos analizar
 
 \begin{figure}[hbt!]
   \centering
-  \begin{subfigure}[b]{0.48\textwidth}
-    \pincludegraphics[0.98]{IfellWindow}\caption{\footnotesize \label{fig:ifell:detect:window} Enventanado para modelos de reconstrucción}
+  \begin{subfigure}[t]{0.45\textwidth}
+    \pincludegraphics[0.978]{IfellWindow}\caption{\footnotesize \label{fig:ifell:detect:window} Enventanado para modelos de reconstrucción}
   \end{subfigure}
   \hfill
-  \begin{subfigure}[b]{0.48\textwidth}
+  \begin{subfigure}[t]{0.45\textwidth}
     \pincludegraphics[1.0]{IfellWindowPred}\caption{\footnotesize \label{fig:ifell:predict:window} Enventanado para modelos de predicción}
   \end{subfigure}
   \caption{\footnotesize \label{fig:ifell:windowing} Mecanismo de enventanado según el modelo de detección}
@@ -473,7 +468,7 @@ La aplicación desarrollada es una implementación del algoritmo presentado en e
 
 El sistema está compuesto por dos bloques funcionales tal y como se muestra en \ref{fig:clasesUml} que se corresponderían con una arquitectura de generador de eventos y consumidor. El bloque principal, que incluye los servicios encargados del registro de datos de los sensores, gestión de entradas, implementación del algoritmo de detección y comunicación con el servidor es un generador de eventos tanto vía Internet hacia el servidor, como internamente mediante \textit{intents}. Estos eventos son consumidos por el segundo bloque funcional que conforma la interfaz de usuario y que entre otros roles tiene el de ejecutar las alertas sobre el dispositivo de forma visual, háptica y sonora, la capacidad de cancelarlas y la de lanzar automáticamente los servicios funcionales del primer bloque en todo momento y de forma automática.
 
-\figura{classUML}{fig:clasesUml}{Diagrama de clases de la aplicación}
+\figura[0.5]{classUML}{fig:clasesUml}{Diagrama de clases de la aplicación \ifell/}
 
 El proceso que contiene la lógica principal, descrita en la figura\ref{fig:ifell:algoritmo}, se encuentra en la clase \textit{AccelSensorRead}. Este servicio es lanzado automáticamente al ejecutarse cualquiera de las dos interfaces de usuario provistas, y se mantiene ejecutándose de fondo. Se encarga de:
 
@@ -498,27 +493,28 @@ Facilita la experiencia de usuario al no requerir de ninguna acción por parte d
 
 \begin{figure}[!ht]
   \centering
-  \begin{subfigure}[b]{0.4\textwidth}
+  \begin{subfigure}[t]{0.23\textwidth}
       \centering
       \includegraphics[width=\linewidth]{appActivity.png}
       \caption{\footnotesize Aplicación de gestión}
       \label{fig:uiActivity}
   \end{subfigure}
   \hfill
-  \begin{subfigure}[b]{0.4\textwidth}
+  \begin{subfigure}[t]{0.23\textwidth}
       \centering
       \includegraphics[width=\linewidth]{appWatchface.png}
       \caption{\footnotesize \textit{Watchface}, Interfaz esfera de reloj}
       \label{fig:uiWatchface}
   \end{subfigure}
-  \begin{subfigure}[b]{0.4\textwidth}
+  \hfill
+  \begin{subfigure}[t]{0.23\textwidth}
       \centering
       \includegraphics[width=\linewidth]{appAlerta.png}
       \caption{\footnotesize Pantalla de alerta de caída}
       \label{fig:uiAlerta}
   \end{subfigure}
   \hfill
-  \begin{subfigure}[b]{0.4\textwidth}
+  \begin{subfigure}[t]{0.23\textwidth}
       \centering
       \includegraphics[width=\linewidth]{appAlertaFalsa.png}
       \caption{\footnotesize Pantalla en caso de predetección de caída}
@@ -578,21 +574,6 @@ Si comparamos los histogramas obtenidos (como por ejemplo el de la figura \ref{f
 Finalmente analizamos el impacto del tamaño del modelo, posición de la ventana $W_o$ respecto al instante de detección $t_0$, de los modelos de predicción y reconstrucción y añadimos una nueva variante: la sensibilidad objetivo mediante la variación de la cota de decisión del error RMSE. Si observamos las figura \ref{fig:ifell:confmats}, que contiene dos ejemplos de matriz de matrices.Los modelos usados son las variaciones de los modelos de tres capas GRU de 350 unidades y 50 atributos, tanto para reconstrucción como para predicción. Hemos elegido estas dos muestras por ser representativas del comportamiento observado en cada familia y para poder comparar ambas a su vez en igualdad de tamaño de los modelos.
 
 
-\begin{sidewaysfigure}[!ht]
-  \centering
-  \begin{subfigure}[b]{0.45\textwidth}
-      \centering
-      \includegraphics[width=\linewidth]{ConfMatrixRecon.png}
-      \caption{\footnotesize \label{fig:ifell:confmat:recon}Matrices de confusión para un modelo de reconstrucción}
-  \end{subfigure}
-  \hfill
-  \begin{subfigure}[b]{0.45\textwidth}
-      \centering
-      \includegraphics[width=\linewidth]{ConfMatrixPred.png}
-      \caption{\footnotesize \label{fig:ifell:confmat:pred}Matrices de confusión para un modelo de predicción}
-  \end{subfigure}
-  \caption{\label{fig:ifell:confmats}Ejemplos de matrices de confusión según sensibilidad deseada y posición de la ventana}
-\end{sidewaysfigure}
 
 En estas tablas usamos la distancia en muestras \textit{desde el final de la ventana $W_i$} hasta el instante $t_0$ como índice para definir la posición de las ventanas respecto al instante de pre-detección. Así en los modelos de reconstrucción estos desplazamientos han de ser siempre negativos, mientras que para los modelos de predicción han de ser positivos. Por ejemplo, el valor -50 se correspondería al centro de la ventana $W_i$ en un modelo de reconstrucción (Si $W_i=W_o$ contiene las muestras entre 1 y 100, desplazarnos -50 muestas significa situar $t_0$ en la muestra $t_0=100-50 = 50$ de ambas ventanas) o para un caso de predicción, el valor 13 indicaría que la ventana de salida empieza 13 muestras antes del punto de impacto (en este caso $t_0 = 100 + 13$ con $W_i$ las muestras de 1 a 100 y $W_o$ las muestras a predecir entre 101 y 150).
 

@@ -31,11 +31,11 @@ Analizamos en primera instancia los diferentes tipos de dispositivos llevables d
 
 \subsubsection{Tipos de dispositivos analizados}
 
-\paragraph{Teléfono} o \textit{Smartphone}. Un aparato que se ha vuelto ubicuo en nuestra sociedad. Con gran capacidad de cálculo y multitud de sensores. Según la firma \textit{Kantar}(\url{https://www.kantarworldpanel.com/global/smartphone-os-market-share/}) el 99,99\% de los teléfonos vendidos en españa en los 9 primeros meses de 2020 fueron smartphones con IOS o Android y por ende fácilmente programables y con soporte para ejecutar múltiples entornos de modelado de sistemas de aprendizaje automático. Sin embargo adolecen de una complejidad extra: no es un dispositivo que se lleve vestido, y es fácil que el usuario final no lo lleve siempre consigo. Además, en los grupos de poblaciones de edad muy avanzada donde su uso no está generalizado, se convierte en un elemento ajeno y que puede generar rechazo o olvido en su uso.
+\paragraph{Teléfono} Popularmente conocidos como \textit{Smartphone}. Un aparato que se ha vuelto ubicuo en nuestra sociedad. Con gran capacidad de cálculo y multitud de sensores. Según la firma \textit{Kantar}(\url{https://www.kantarworldpanel.com/global/smartphone-os-market-share/}) el 99,99\% de los teléfonos vendidos en españa en los 9 primeros meses de 2020 fueron smartphones con IOS o Android y por ende fácilmente programables y con soporte para ejecutar múltiples entornos de modelado de sistemas de aprendizaje automático. Sin embargo adolecen de una complejidad extra: no es un dispositivo que se lleve vestido, y es fácil que el usuario final no lo lleve siempre consigo. Además, en los grupos de poblaciones de edad muy avanzada donde su uso no está generalizado, se convierte en un elemento ajeno y que puede generar rechazo o olvido en su uso.
 
-\paragraph{Chalecos, cinturones y bandas} y otras prendas de vestir han sido usadas con anterioridad \cite{Liu2020, MobiFall} para situar los sensores. La falta de soluciones comerciales disponibles obligaría a desarrollar una plataforma personalizada y por tanto adaptada a los requisitos. Sin embargo este acercamiento se considera altamente intrusivo tanto por limitar al usuario en su vestimenta así como por servir únicamente cuando el usuario lleve puesto el complemento de ropa especificado. Además, la manipulación del mismo no es sencilla, pues requiere realizar un mantenimiento muy diferente a la prenda de vestir original para preservar el funcionamiento de los componentes electrónicos.
+\paragraph{Chalecos, cinturones y bandas} Estas y otras prendas de vestir han sido usadas con anterioridad \cite{Liu2020, MobiFall} para situar los sensores. La falta de soluciones comerciales disponibles obligaría a desarrollar una plataforma personalizada y por tanto adaptada a los requisitos. Sin embargo este acercamiento se considera altamente intrusivo tanto por limitar al usuario en su vestimenta así como por servir únicamente cuando el usuario lleve puesto el complemento de ropa especificado. Además, la manipulación del mismo no es sencilla, pues requiere realizar un mantenimiento muy diferente a la prenda de vestir original para preservar el funcionamiento de los componentes electrónicos.
 
-\paragraph{Pulseras de actividad y Relojes inteligentes}. Hace tiempo que las podómetros evolucionaron gracias a la mejora en la miniaturización de sensores, baterías y microprocesadores en sistemas avanzados de medida no ya de la cantidad de pasos sino de otros muchos parámetros como pulso, oxígeno en sangre, temperatura corporal y orientación. Por su parte, el paso de los relojes computadoras interconectadas y programables se ha realizado más recientemente. Actualmente puede resultar difícil distinguir en la oferta disponible entre un \textit{smartwarch} (reloj inteligente) y una pulsera. Muchas veces es la propia definición del fabricante la que especifica su tipo, por criterios tan dispares como la producción tradicional de la empresa (así pues, Fossil llamará a sus productos relojes inteligentes, mientras otro dispositivo de similares características y formato de la marca FitBit será llamado pulsera por la marca). Al existir tal variedad de oferta es fácil encontrar dispositivos que cumplan con los requisitos de sensores, capacidad de cálculo y de ser programado, así como soporte para entornos de aprendizaje automático. Al tener apariencia de un reloj de pulsera, resultan un soporte ideal: son dispositivos de uso cotidiano, con una manipulación sencilla, y que se llevan siempre puestos. Con el interés de buscar un sistema lo más transparente de cara al usuario posible nos decantamos por esta opción, a pesar de conocer las limitaciones del uso de la muñeca como fuente de información de la aceleración para la detección de actividades \cite{Chen2005} .
+\paragraph{Pulseras de actividad y Relojes inteligentes} Hace tiempo que los podómetros evolucionaron gracias a la mejora en la miniaturización de sensores, baterías y microprocesadores en sistemas avanzados de medida no ya de la cantidad de pasos sino de otros muchos parámetros como pulso, oxígeno en sangre, temperatura corporal y orientación. Por su parte, el paso de los relojes computadoras interconectadas y programables se ha realizado más recientemente. Actualmente puede resultar difícil distinguir en la oferta disponible entre un \textit{smartwarch} (reloj inteligente) y una pulsera. Muchas veces es la propia definición del fabricante la que especifica su tipo, por criterios tan dispares como la producción tradicional de la empresa (así pues, Fossil llamará a sus productos relojes inteligentes, mientras otro dispositivo de similares características y formato de la marca FitBit será llamado pulsera por la marca). Al existir tal variedad de oferta es fácil encontrar dispositivos que cumplan con los requisitos de sensores, capacidad de cálculo y de ser programado, así como soporte para entornos de aprendizaje automático. Al tener apariencia de un reloj de pulsera, resultan un soporte ideal: son dispositivos de uso cotidiano, con una manipulación sencilla, y que se llevan siempre puestos. Con el interés de buscar un sistema lo más transparente de cara al usuario posible nos decantamos por esta opción, a pesar de conocer las limitaciones del uso de la muñeca como fuente de información de la aceleración para la detección de actividades \cite{Chen2005} .
 
 \subsubsection{Relojes Inteligentes}
 
@@ -155,26 +155,23 @@ Estudios similares han mostrado la mayor capacidad de los sistemas basados en ap
 En el \apartado{sec:arte:modelos_analiticos} hemos introducido el contexto de este conjunto de algoritmos. Para implementar el sistema necesitamos un modelo simple y de bajo coste computacional y que se base principalmente en los datos captados por un acelerómetro de tres ejes. Dada la situación del sensor, toda medida de la postura queda descartada por no ser aplicable. Finalmente, dado que su función es principalmente la de mecanismo de atención o generador de eventos de posibles caídas es primordial que su sensibilidad sea alta para no perder caídas. La tasa de especificidad modulará la eficiencia del sistema en los planos del tiempo de cálculo y consumo de energía, siendo preferible usar algoritmos con alta especificidad, siempre y cuando no se comprometa la sensibilidad. Tras analizar varios modelos y recopilar los resultados en la tabla \ref{tab:resumen_mod_anal} decidimos optar por la familia de algoritmos propuestos por \cite{Bourke2006} por ser el único que de forma consistente ofrece una sensibilidad del 100\%. Si se observan los resultados de los diferentes algoritmos analizados, se observa la gran varianza de resultados según el estudio que realizase el análisis. Por ejemplo, el algoritmo \textit{Bourke 1} pasa de ser un algoritmo perfecto con una precisión del 100\% a ser inservible por su bajísima especificidad según el conjunto de datos usado.
 
 \tablan[0.95\linewidth]{tab:resumen_mod_anal}{Características de los modelos analíticos estudiados}{lccccccccll}{
-          &       &     & \multicolumn{2}{c}{\emph{Estudio 1\tnote{1}}} &\multicolumn{2}{c}{\emph{Estudio 2\tnote{2}}} & \multicolumn{2}{c}{\emph{Estudio 3\tnote{3}}} & \\
+          & \multicolumn{2}{c}{\emph{Propio Estudio}} & \multicolumn{2}{c}{\emph{\citeA{Bagala2012}}} &\multicolumn{2}{c}{\emph{\citeA{Aziz2017}}} & \multicolumn{2}{c}{\emph{\citeA{Vilarinho2015}}} & \\ \cmidrule(r){2-3}\cmidrule(l){4-5}\cmidrule(l){6-7}\cmidrule(l){8-9}
  {\small Modelo}  & {\small Sens.\%} & {\small Esp.\%} & {\small Sens.\%} & {\small Esp.\%} & {\small Sens.\%} & {\small Esp.\%} & {\small Sens.\%} & {\small Esp.\%} & {\small Sensores } & {\small Postura} \\ \midrule
- Kangas 1\tnote{4}  & 100 & -- & 48 & 94 &   &    &   &  & ACC & Si \\
- Kangas 2           & 100 & -- & 48 & 94 & 86 & 98 &   &  & ACC & Si \\
- Kangas 3           & 71  & -- & 31 & 97 & 94 & 94 &   &  & ACC & Si \\
- Bourke 1\tnote{5}  & 100 & 100& 100& 19 & 100& 79 &   &  & ACC & No \\
- Bourke 2\tnote{6}  & 97  & 99 & 72 & 87 & 70 & 99 &   &  & ACC & Si \\
- Bourke 3\tnote{7}  & 100 & 100& 87 & 97 &    &    &   &  & ACC + GYRO & Si \\
- Chen \tnote{8}     &     &    & 76 & 94 &    &    &   &  & ACC & No \\ % ACC & Si
- FallIndex\tnote{9} &     &    &    &    &    &    & 42&95& ACC & No \\
+ Kangas 1\tnote{1}  & 100 & -- & 48 & 94 &   &    &   &  & ACC        & Si \\
+ Kangas 2           & 100 & -- & 48 & 94 & 86 & 98 &   &  & ACC       & Si \\
+ Kangas 3           & 71  & -- & 31 & 97 & 94 & 94 &   &  & ACC       & Si \\
+ Bourke 1\tnote{2}  & 100 & 100& 100& 19 & 100& 79 &   &  & ACC       & No \\
+ Bourke 2\tnote{3}  & 97  & 99 & 72 & 87 & 70 & 99 &   &  & ACC       & Si \\
+ Bourke 3\tnote{4}  & 100 & 100& 87 & 97 &    &    &   &  & ACC + GYRO & Si \\
+ Chen \tnote{5}     &     &    & 76 & 94 &    &    &   &  & ACC       & No \\ % ACC & Si
+ FallIndex\tnote{6} &     &    &    &    &    &    & 42&95& ACC       & No \\
 }{
-  \item [1] \citeA{Bagala2012}
-  \item [2] \citeA{Aziz2017}
-  \item [3] \citeA{Vilarinho2015}
-  \item [4] \citeA{Kangas2008}
-  \item [5] \citeA{Bourke2006}
-  \item [6] \citeA{Bourke2008}
-  \item [7] \citeA{Bourke2010}
-  \item [8] \citeA{Chen2005}
-  \item [9] \citeA{fallindex00}
+  \item [1] \citeA{Kangas2008}
+  \item [2] \citeA{Bourke2006}
+  \item [3] \citeA{Bourke2008}
+  \item [4] \citeA{Bourke2010}
+  \item [5] \citeA{Chen2005}
+  \item [6] \citeA{fallindex00}
   }{3}
 
 
@@ -189,7 +186,7 @@ El proceso para elegir estos límites garantiza que por construcción la sensibi
 
 Garantizando así que todas las caidas del conjunto de datos serán detectadas, y por tanto la sensibilidad siempre sea máxima. Por contra esto hace que el valor de especificidad del algoritmo sea altamente dependiente del resto de actividades incluidas en la base de datos. Esta característica explicaría la gran disparidad de resultados de la tabla \ref{tab:resumen_mod_anal}.
 
-\figura{BourkeThresholds}{fig:bourke_thresholds}{Detalle del modelo de detección de Bourke}
+\figura[0.5]{BourkeThresholds}{fig:bourke_thresholds}{Detalle del modelo de detección de Bourke}
 
 Recogemos en la tabla \ref{tab:bourke_threshold_values} una lista con los diferentes valores obtenidos para LFT y UFT según diversos estudios. Su valor es claramente orientativo dada la dependencia de la base de datos usada, que nos obligará a obtener estos valores nuevamente durante la implementación para adaptarlos a SisFall.
 
@@ -201,10 +198,6 @@ Recogemos en la tabla \ref{tab:bourke_threshold_values} una lista con los difere
   \citeA{Bagala2012} & -- & 1,79\g/& 0.73\g/\\
 }{2}
 
-
-\subsection{Modelos Basados en Aprendizaje Automático}
-
-\subsection{Modelos Híbridos}
 
 \section{Biblioteca de Modelos Neuronales} \label{sec:req:tflite}
 

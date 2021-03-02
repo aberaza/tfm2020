@@ -35,7 +35,7 @@ La función principal de \accelcapture/ es la de permanecer como un servicio en 
 
 En cuanto al funcionamiento del servicio, se describe en el diagrama \ref{fig:capturaFlow}. La aplicación, una vez en ejecución tiene dos estados posibles: \textit{Reposo} y \textit{Grabando}. Cuando se encuentra en \textit{Reposo} la aplicación lee muestras en busca de actividad y en caso de detectar actividad, pasaría al siguiente estado: \textit{Grabando} en el cual almacena las muestras leidas para enviarlas al servidor cuando deje de medir actividad y vuelva a cambiar de estado.
 
-\figura[0.87]{capturaFlujo}{fig:capturaFlow}{Flujo de trabajo de la aplicación \accelcapture/}
+\figura[0.70]{capturaFlujo}{fig:capturaFlow}{Flujo de trabajo de la aplicación \accelcapture/}
 
 Si entramos en más detalle, el sistema lee muestras de la aceleración capturadas por un sensor triaxial, por lo que obtenemos las componentes en los tres ejes. Aunque almacenamos las componentes de forma individual en cada muestra, para el algoritmo de la aplicación trabajaremos con la norma o módulo del vector aceleración que denotaremos como $\|\vec{A}\|$ para no confundir con el valor absoluto. Dicho esto, el sistema mantiene en todo momento una ventana con los últimos 5 segundos de actividad. Con cada nueva muestra calcula dos índices para detectar actividad o la ausencia de esta, y cambiar en consecuencia de un estado a otro.
 
@@ -64,26 +64,27 @@ La cota de detección de movimiento repentino se calcula a partir de los resulta
 
 Finalmente, para volver al estado de \textit{Reposo} el único mecanismo que lo permite es el comparador de movimiento prolongado si durante 5 segundos el promedio del índice de actividad es inferior a 0,25. Esta cifra se elige para evitar la proliferación de capturas de sesiones de muy corta duración convirtiendo el sistema en un comparador con histéresis.
 
-\figura{MirarRelojAccel}{fig:accelMirarReloj}{$|A|$ y $\Delta A$ resultantes de mirar el reloj}
+\figura[0.5]{MirarRelojAccel}{fig:accelMirarReloj}{$|A|$ y $\Delta A$ resultantes de mirar el reloj}
 
 \subsection{Interfaz de Usuario}\label{sub:accelcapture:interfaz}
 
 La interfaz de usuario de la aplicación permite gestionar y observar el estado del servicio de captura así como definir el identificador de usuario al que pertenece la sesión. Como puede observarse en las capturas de pantalla de la \autoref{fig:accelcapture:UI} se muestra en la parte inferior de la pantalla un boton con información del estado actual del servicio. El botón al ser pulsado alterna entre los estados \textit{activado} y \textit{desactivado}. En la parte superior de la pantalla se muestra la información del identificador de usuario o \textit{nombre} al que se asociarán todas las sesiones registradas. Este identificador puede modificarse desde el mismo reloj. Una vez activado el servicio de captura, puede esconderse interfaz y volver al modo reloj ya que el servicio sigue trabajando de fondo.
 \begin{figure}[htb!]
   \centering
-  \begin{subfigure}[b]{0.4\textwidth}
+  \begin{subfigure}[b]{0.30\textwidth}
       \centering
       \includegraphics[width=\textwidth]{accelCaptureAct.png}
       \caption{\accelcapture/ Activado}
       \label{fig:accelCapture:UI1}
   \end{subfigure}
   \hfill
-  \begin{subfigure}[b]{0.4\textwidth}
+  \begin{subfigure}[b]{0.30\textwidth}
       \centering
       \includegraphics[width=\linewidth]{accelCaptureDes.png}
       \caption{\accelcapture/ Desactivado}
       \label{fig:accelCapture:UI2}
   \end{subfigure}
+  \hfill
   \caption{\label{fig:accelcapture:UI} Interfaz de usuario de \accelcapture/}
 \end{figure}
 
@@ -96,14 +97,14 @@ Desde el punto de vista del sistema consta de dos componentes: una unidad de adq
 \figura[0.47]{accelcaptureClassUML}{fig:accelcaptureClasesUml}{Diagrama de clases de \accelcapture/}
 
 
-\paragraph{MainWearActivity}
+\paragraph{MainWearActivity}\\
 Es el punto de entrada de la aplicación. Genera la interfaz gráfica y permite introducir el nombre el usuario a la vez que verificar el estado del servicio de captura de datos e iniciar o parar su ejecución.
 
-\paragraph{SensorsReader}
+\paragraph{SensorsReader}\\
 El nucleo principal de la plicación. Un servicio que al ser creado se registra para recibir eventos y lecturas del sensor de aceleración triaxial del reloj. Posee una cola circular donde almacena los últimos 5 segundos de muestras (si por ejemplo la velocidad de lectura del sensor es de $1/50$, el buffer posseerá $50 * 5 = 250$ muestras).
-Es este servicio el que implementa la lógica descrita en el Apartado~\ref{sub:accelcapture:flujo} tal y como se observa en la \autoref{fig:capturaFlow}, leyendo procesando y almacenadno los datos del sensor de aceleración  Tras cada muestra el algoritmo evalúa la variación de la aceleración usando para ello el tercer bloque funcional \textit{ActivityRecognition}. Este bloque es a su vez el encargado de enviar la información de las sesiones capturadas al servidor vía Internet.
+Es este servicio el que implementa la lógica descrita en el Apartado~\ref{sub:accelcapture:flujo} tal y como se observa en la \autoref{fig:capturaFlow}, leyendo procesando y almacenando los datos del sensor de aceleración. Tras cada muestra el algoritmo evalúa la variación de la aceleración usando para ello el tercer bloque funcional \textit{ActivityRecognition}. Este bloque es a su vez el encargado de enviar la información de las sesiones capturadas al servidor vía Internet.
 
-\paragraph{ActivityRecognition}
+\paragraph{ActivityRecognition}\\
 Este bloque lo componen los algoritmos de detección de actividad explicados anteriormente. Este módulo propone una interfaz común para poder registrarse y recibir información del módulo \textit{SensorReader} y enviar a su vez eventos que pueda interpretar como son la detección o no de actividad.
 
 
