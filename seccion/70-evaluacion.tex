@@ -89,10 +89,7 @@ En los requisitos a cumplir por nuestro clasificador hemos indicado que debe ofr
 
 
 %%%% Esto lo pondremos en el apartado evaluación.
-Observamos la mejora del modelo de predicción, que manteniendo la sensibilidad logra superar por hasta un 8\% la especificidad del clasificador equivalente. Si observamos las matrices de confusión de las figura \ref{fig:ifell:adata:confmats}  se aprecia como ya hemos mencionado que la sensibilidad del algoritmo no alcanza nunca el 100\% pero que esta penalización debida al modelo de Bourke previo no impacta en cuanto decidimos reducir la sensibilidad del algoritmo para mejorar la especificidad.
-
-
-
+Observamos la mejora del modelo de predicción, que manteniendo la sensibilidad logra superar por hasta un 8\% la especificidad del clasificador equivalente. Sin embargo la sensibilidad del algoritmo no alcanza nunca el 100\% (véanse las matrices de confusión en el \autoref{app:modelos}), penalizado por el umbral elegido para el modelo Bourke, aunque este impacto se vea rápidamente reducido en cuanto decidimos reducir la sensibilidad del algoritmo para mejorar la especificidad.
 
 \begin{figure}[!ht]
   \centering

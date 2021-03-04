@@ -21,6 +21,8 @@
 \usepackage[flushleft]{threeparttable}
 \usepackage{multirow}
 
+\usepackage{float}
+
 \usepackage{ifthen}
 \newcommand\pincludegraphics[2][0.98]{
   \def\scale{#1}
@@ -48,6 +50,8 @@
 \def\accelcapture/{\textsl{\textsf{Accel}}\textsf{Capture}}
 \def\ifell/{\textsl{\textsf{i}}\textsf{Fell}}
 \def\g/{~\textsl{g}}
+\def\hz/{~\textsl{Hz}}
+\def\ms2/{~$m/s^2$}
 
 
 \newcommand\tablan[7][\columnwidth]{
@@ -176,15 +180,12 @@ Para generar la base de datos de actividad \accelcapture/ usamos reloj inteligen
 
 La aplicación creada para leer las sesiones de actividad (apodada \emph{AccelCapture}) usa un comparador para detectar actividad cuando el índice $\Delta \vec{A}_n = |\|\vec{A}_n\| -\|\vec{A }_{n-1}\||$ supera ya sea un índice de actividad instantánea de 2\g/ o durante una ventana de 5 segundo el promedio es superior a 0,3\g/.
 
-\begin{figure}
-  \pincludegraphics{capturaFlujo}
-  \caption{\label{fig:accelcapture:flow} Diagrama de flujo de la aplicación \accelcapture/}
-\end{figure}
 
 Finalmente se conforma una base de datos con presencia únicamente de secuencias de los tres ejes de la aceleración sin presencia de caída alguna, únicamente actividades cotidianas o situaciones que a pesar de encontrarse el sujeto estacionario se ejerza sobre el una aceleración, como pueda ser viajar en un medio de transporte como un coche o un avión. La base de datos dispone de 37563 segundos de capturas de actividad en 274 sesiones diferentes realizadas por 3 sujetos de edades que oscilan entre los 34 y 77 años llevando el dispositivo en la muñeca izquierda, siendo esta su mano no predominante. 
 
 \begin{table}
   \caption{\label{tab:accelcapture:description} Resumen de características de la base de datos}
+  \centering
   \begin{tabular}{lc}\toprule
   \textit{Atributo}      & \textit{Valor}  \\\midrule
   Sesiones      & 274    \\
@@ -197,10 +198,6 @@ Finalmente se conforma una base de datos con presencia únicamente de secuencias
 
 Finalmente de cara al entrenamiento y validación debemos submuestrear ambos conjuntos. Para reducir el consumo, el reloj muestreará a únicamente 25\hz/ que es suficiente para permitir realizar la detección de actividades\cite{Liu2018}, por lo que será necesario reducir el número de lecturas de las basos de datos: para Sisfall, capturada a 200\hz/ mantendremos una de cada 8 muestras mientras que para \accelcapture/ tomaremos muestras alternas. Este proceso lo realizamos tras filtrar con un filtro IIR paso bajo de primer orden ($H(z) = \frac{\alpha}{1-(1-\alpha)z^{-1}}$) con frecuencia de corte a 12,5\hz/ ya que es el máximo ancho de banda permitido por Nyquist. 
 
-\begin{figure}
-  \pincludegraphics{capturaFlujo}
-  \caption{\label{fig:accelcapture:flow} Diagrama de flujo de la aplicación \accelcapture/}
-\end{figure}
 
 Para comprobar la similitud entre las distribuciones de la aceleración de ambos conjuntos analizamos los histogramas de valores de pico en la figura \ref{fig:accelcapture:hitogram}. Finalmente separamos de SisFall dos conjuntos: el 80\% de las muestras en el conjunto de entrenamiento  y un 20\% para el de validación ($SF_{test}$ y $SF_{val}$ respectivamente). A su vez de ambos grupos extraemos el subconjunto de eventos de actividad ($SFA_{test}$ y  $SFA_{val}$) que serán usados para calcular los umbrales de decisión finales. 
 \begin{figure}
@@ -229,7 +226,8 @@ Nuestro desarrollo hace uso de dos modelos, uno analítico y otro basado en rede
 Para configurar el modelo de Bourke realizamos un análisis de los valor pico y valle de la aceleración en cada instancia del conjunto $SF_{test}$. Tal y como define el algoritmo definiremos una cota superior establecida de manera que todas las muestras de caídas tengan un pico que supere dicho valor y a la inversa con el valor de valle, asegurando que toda caída tiene un valor de valle inferior. Para este ejercicio usaremos un comparador \textit{Bourke U} que únicamente mira que se supere el umbral de pico ya que es el que mejor capacidad de segregar caídas de actividad dispone. Analizando los percentiles de la distribución de valores máximo de la aceleración en una caída obtenemos un valor de cota de 4,16\g/ y una especificidad del 22\% que crece rápidamente si aceptamos reducir ligeramente la sensibilidad tal y como se observa en la tabla \ref{tab:umbrales}.
 
 \begin{figure}
-  \pincludegraphics{BourkeThresholds}
+  \centering
+  \pincludegraphics[0.7]{BourkeThresholds}
   \caption{\label{fig:bourke:thresholds} Cotas pico y valle de Bourke}
 \end{figure}
 
@@ -241,10 +239,6 @@ La señal de entrada y la esperada de salida son las mismas: $X=Y=W^{in}=^{out}$
 \paragraph{Modelos RNN-Predicción}
 La señal de entrada y salida son una la continuación de la otra, y además de diferente tamaño. $W^{in}$ mantiene las 100 muestras mientras que $W^{out}$ se reduce a 50. Lo denominamos de predicción por que la secuencia contenida en $W^{out}$ es la continuación de la señal de entrada: $W^{in} =[x_0, x_1,\cdots,x_{99}]$ y $W^{out}=[x_100, x_101, \cdots,x_149]$.
 
-\begin{figure}
-  \pincludegraphics{Prediction_reconstruction}
-  \caption{\label{fig:ifell:reconstrucion} Predicción de la aceleración por un modelo RNN Codificador/Decodificador}
-\end{figure}
 
 Generamos los modelos usando TensorFlow y los entrenaremos durante un máximo de 250 épocas con un sistema de parada temprana y tasa de aprendizaje decreciente de forma polinómica, con incrementos relativos menores al principio para acelerar el aprendizaje y mayores al final para conseguir un ajuste fino de los mismos. En este punto apreciamos una clara tendencia alsobreajuste de los modelos basados en la predicción como se aprecia en la figura \ref{fig:rnn:predict:train}.
 
@@ -295,10 +289,6 @@ Estas ventanas se entregan al modelo RNN Codificador/Decodificador que es el enc
 \subsubsection{RNN Codificador/Decodificador}
 Proponemos por primera vez un sistema codificador/decodificador RNN para detectar caídas como anomalías en la actividad cotidiana. Esta arquitectura realiza una primera extracción de características mediante una red neuronal recurrente y posteriormente mediante una segunda red recurrente alimentada por este vector de características realizar bien una predicción bien una reconstrucción de la señal original. Comparando el error cometido en la reconstrucción o en la señal predicha podemos establecer un umbral de decisión entre actividad ordinaria o anomalía (entre las que se incluirian las caídas). 
 
-\begin{figure}
-  \pincludegraphics{modeloRNNarticulo}
-  \caption{\label{fig:ifell:archi} Arquitectura de la red RNN Codficador/Decodificador Reconstrucción \ifell/}
-\end{figure}
 
 Entrenamos variaciones de modelos tanto de reconstrucción como de predicción de señal variando el tamaño de las celdas GRU como el número de atributos obtenidos por el codificador para estudiar el tamaño óptimo de la red que maximice la capacidad de detección manteniendo unos tiempos de ejecución por debajo del segundo en el reloj.
 
@@ -417,20 +407,20 @@ Recogemos en la tabla \ref{tab:eval:resultados} los resultados de sensibilidad, 
                            & IFELL-R(175)[50] & 97,8 & 65,6 &     & 82,2 & 0,035 \\
                            & IFELL-P(175)[50] & 90,5 & 68,9 &     & 79,7 & 0,031 \\
                            & Bourke & 99,4 & 29,7 &  & 64,5 & 0,0\\ \midrule[0.1]
-    Musci2020                 & LSTM            & 96,5  & 96,0  &     & 92,7 & \\ \midrule[0.1]
-    Torti2018                 & LSTM            & 98,7  & 97,9  & 98,3& 98,3 & \\\midrule[0.1]
+    Musci2020                 & LSTM            & 96,5  & 96,0  &     & 92,7 & \\ \midrule[0.1pt]
+    Torti2018                 & LSTM            & 98,7  & 97,9  & 98,3& 98,3 & \\\midrule[0.1pt]
 
     \multirow{5}{*}{Liu2018}  & SVML\tnote{1} & 97,2   & 93,6  & 95,4& 95,4 & \\
                               & SVMRBF\tnote{2} & 98,3 & 96,2 & 97,6 & 97,2 & \\
                               & kNN3   & 96,4 & 96,3 & 96,4 & 96,3 & \\
                               & Bayes  & 54,3 & 92,0 & 73,7 & 73,1 & \\
-                              & DT\tnote{3} & 94,9 & 95,5 & 95,2 & 95,2 & \\\midrule[0.1]
+                              & DT\tnote{3} & 94,9 & 95,5 & 95,2 & 95,2 & \\\midrule[0.1pt]
 
     \multirow{3}{*}{Liu2020} & FD-DNN\tnote{4} & 94,1 & 99,9 & 99,1 & 97,0 & 1,05 \\
                              & LSTM & 81,4 & 99,5 & 96,88 & 90,4 & 3,87 \\
                              & CNN & 87,5 & 99,9 & 98,1 & 93,7 & 0,65 \\
                              & Bayes & 95,6 & 99,9 & 90,1 & 97,7 & 8,87 \\
-                             & RT\tnote{5} & 92,2 & 98,5 & 80,32 & 95,3  & 1,21 \\ \midrule[0.1]
+                             & RT\tnote{5} & 92,2 & 98,5 & 80,32 & 95,3  & 1,21 \\ \midrule[0.1pt]
 
     \multirow{2}{*}{SisFall} & NormAcc\tnote{6} & \~99,9 & 32,97 & 66,4 & 66,4 & \\
                                & STDEV\tnote{7} & \~99,9 & 67,97 & 83,96 & 83,96 & \\
@@ -450,11 +440,6 @@ Recogemos en la tabla \ref{tab:eval:resultados} los resultados de sensibilidad, 
 La apliación \ifell/ se ha estado probando durante dos meses sin darse ninguna caída. Al no disponer de datos suficientes no podemos realizar ningún análisis de la capacidad del sistema en uso real. 
 
 En cuanto al aspecto funcional, ninguno de los tres sujetos de prueba ha manifestado problemas con el sistema debidos a la implementación realizada. Los datos de actividad detectada recibidos en el servidor demuestran que el sistema es capaz de funcionar y relanzarse sin interacción humana, estando siempre disponible en segundo plano para la detección de caídas. Hecho que se ve reforzado por la autonomía demostrada por el sistema superior a 24 horas y en casos extremos capaz de llegar a los dos días. Mientras que gracias a las técnicas de optimización de modelos hemos conseguido latencias de 1,2 segundos en el dispositivo llevable usando un modelo de tamaño intermedio con 6 capas GRU de 175 unidades y una de 50 entre codificador y decodificador, totalizando 4 MBytes cuando no se optimiza. Este resultado es especialmente prometedor a la vista de los resultados de otros modelos que multiplican por 7 estos tiempos en potentes ordenadores de sobremesa, tal y como se recoge en la tabla \ref{tab:eval:resultados}. 
-\begin{figure}
-  \centering
-  \includegraphics[width=0.95\columnwidth]{img/appBatt.png}
-  \caption{\label{fig:ifell:bat} Estimación de autonomía del sistema llevable ejecutando \ifell/}
-\end{figure}
 
 \section{DISCUSIÓN O ANÁLISIS DE RESULTADOS}
 
@@ -484,6 +469,42 @@ Elegir un reloj  como plataforma para la implementación obliga a tomar las medi
 
 \appendix
 \section{APÉNDICES}
+
+\subsection{Flujo de \accelcapture/}
+% \begin{minipage}{\columnwidth}
+\begin{figure}[H]
+  \pincludegraphics{capturaFlujo}
+  \caption{\label{fig:accelcapture:flow} Diagrama de flujo de la aplicación \accelcapture/}
+\end{figure}
+% \end{minipage}
+% \begin{figure}
+%   \pincludegraphics{capturaFlujo}
+%   \caption{\label{fig:accelcapture:flow} Diagrama de flujo de la aplicación \accelcapture/}
+% \end{figure}
+
+\subsection{Predicción y Reconstrucción}
+% \begin{minipage}{\columnwidth}
+\begin{figure}[H]
+  \pincludegraphics{Prediction_reconstruction}
+  \caption{\label{fig:ifell:reconstrucion} Predicción de la aceleración por un modelo RNN Codificador/Decodificador}
+\end{figure}
+% \end{minipage}
+
+\subsection{Arquitectura Modelos IFELL}
+% \begin{minipage}{\columnwidth}
+\begin{figure}[H]
+  \pincludegraphics{modeloRNNarticulo}
+  \caption{\label{fig:ifell:archi} Arquitectura de la red RNN Codificador/Decodificador Reconstrucción \ifell/}
+\end{figure}
+% \end{minipage}
+
+\subsection{Autonomía}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\columnwidth]{img/appBatt.png}
+  \caption{\label{fig:ifell:bat} Estimación de autonomía del sistema llevable ejecutando \ifell/}
+\end{figure}
 
 \bibliographystyle{unsrt}
 \bibliography{tfm}

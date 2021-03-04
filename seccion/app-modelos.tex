@@ -2,45 +2,99 @@
 %! TEX root = ../tfm.tex
 
 
-\section{Bourke}
 
-\figura[0.8]{BourkeCONF_Matrix}{fig:bourke_cfmatrix}{Matrices de confusión para modelos Bourke}
-
-\section{LR Exponencial}
-
+\section{Entrenamiento de Modelos}
 \figura{evolucionLR}{fig:LRvariable}{Evolución del valor LR exponencial}
 
 \section{Modelos \ifell/}
 
-\begin{sidewaysfigure}[!ht]
-  \centering
-  \begin{subfigure}[b]{0.45\textwidth}
-      \centering
-      \includegraphics[width=\linewidth]{ConfMatrixRecon.png}
-      \caption{\footnotesize \label{fig:ifell:confmat:recon}Matrices de confusión para un modelo de reconstrucción}
-  \end{subfigure}
-  \hfill
-  \begin{subfigure}[b]{0.45\textwidth}
-      \centering
-      \includegraphics[width=\linewidth]{ConfMatrixPred.png}
-      \caption{\footnotesize \label{fig:ifell:confmat:pred}Matrices de confusión para un modelo de predicción}
-  \end{subfigure}
-  \caption{\label{fig:ifell:confmats}Ejemplos de matrices de confusión según sensibilidad deseada y posición de la ventana}
-\end{sidewaysfigure}
 
-% Viene de Evaluación
-\begin{sidewaysfigure}[!ht]
+\section{Matrices de confusión}
+
+\subsection{Modelos Bourke}
+Entrenados y validados usando \sisfall/
+\figura[0.7]{BourkeCONF_Matrix}{fig:app:confmatrix:bourke}{Matrices de confusión para BourkeU, BourkeL y BourkeUL}
+
+\subsection{Modelos RNN e IFELL}
+La denominación sigue el esquema \textit{<RNN|IFELL>-<tipo>(<unidades>)[<atributos>]}. Donde:
+\begin{itemize}
+  \item \textit{RNN} Denomina a los modelos entrenados y validados con \sisfall/
+  \item \textit{IFELL} Designa a los modelos entrenados con \accelcapture/ y validados con \sisfall/
+  \item \textit{<tipo>} \textbf{P} para modelos de predicción y \textbf{R} para modelos de reconstrucción
+  \item \textit{<celdas>} Es el número de unidades que componen cada celda GRU
+  \item \textit{<atributos>} El número de atributos o dimensiones del espacio intermedio
+\end{itemize}
+
+\paragraph{Modelos RNN de 175 unidades}
+\begin{figure}[H]
   \centering
-  \begin{subfigure}[b]{0.45\textwidth}
+  \begin{subfigure}[t]{0.48\textwidth}
       \centering
-      \includegraphics[width=\linewidth]{ConfMatrixRecon.png}
-      \caption{\footnotesize \label{fig:ifell:adata:confmat:recon}Matrices de confusión para un modelo de reconstrucción}
+      \pincludegraphics[1.0]{RNNP(175)30CONF.pgf}
+      \caption{\footnotesize \label{fig:app:confmatrix:P17530}Modelo RNN-P(175)[30]}
   \end{subfigure}
   \hfill
-  \begin{subfigure}[b]{0.45\textwidth}
+  \begin{subfigure}[t]{0.48\textwidth}
       \centering
-      \includegraphics[width=\linewidth]{ConfMatrixPred.png}
-      \caption{\footnotesize \label{fig:ifell:adata:confmat:pred}Matrices de confusión para un modelo de predicción}
+      \pincludegraphics[1.0]{RNNR(175)30CONF.pgf}
+      \caption{\footnotesize \label{fig:app:confmatrix:R17530}Modelo RNN-R(175)[30]}
   \end{subfigure}
-  \caption{\label{fig:ifell:adata:confmats}Ejemplos de matrices de confusión según sensibilidad deseada y posición de la ventana}
-\end{sidewaysfigure}
+  \begin{subfigure}[t]{0.48\textwidth}
+      \centering
+      \pincludegraphics{RNNP(175)50CONF.pgf}
+      \caption{\footnotesize \label{fig:app:confmatrix:P17550}Modelo RNN-P(175)[50]}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[t]{0.48\textwidth}
+      \centering
+      \pincludegraphics[1.0]{RNNR(175)50CONF.pgf}
+      \caption{\footnotesize \label{fig:app:confmatrix:R17550}Modelo RNN-R(175)[50]}
+  \end{subfigure}
+  \caption{\label{fig:app:confmatrix:175} Matrices confusión para modelos RNN de 175 unidades por celda}
+\end{figure}
+
+\paragraph{Modelos RNN de 350 unidades}
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[t]{0.48\textwidth}
+      \centering
+      \pincludegraphics[1.0]{RNNP(350)30CONF.pgf}
+      \caption{\footnotesize \label{fig:app:confmatrix:P35030}Modelo RNN-P(350)[30]}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[t]{0.48\textwidth}
+      \centering
+      \pincludegraphics[1.0]{RNNR(350)30CONF}
+      \caption{\footnotesize \label{fig:app:confmatrix:R35030}Modelo RNN-R(350)[30]}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.48\textwidth}
+      \centering
+      \pincludegraphics[1.0]{RNNP(400)50CONF}
+      \caption{\footnotesize \label{fig:app:confmatrix:P35050}Modelo RNN-P(350)[50]}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[t]{0.48\textwidth}
+      \centering
+      \pincludegraphics[1.0]{RNNR(350)50CONF}
+      \caption{\footnotesize \label{fig:app:confmatrix:R35050}Modelo RNN-R(350)[50]}
+  \end{subfigure}
+  \caption{\label{fig:app:confmatrix:350} Matrices confusión para modelos RNN de 350 unidades por celda}
+\end{figure}
+
+\paragraph{Modelos IFELL}
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[t]{0.48\textwidth}
+      \centering
+      \pincludegraphics[1.0]{IFELLP(175)50CONF}
+      \caption{\footnotesize \label{fig:app:confmatrix:ifell:P17550}Modelo IFELL-P(175)[50]}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[t]{0.48\textwidth}
+      \centering
+      \pincludegraphics[1.0]{IFELLR(175)50CONF}
+      \caption{\footnotesize \label{fig:app:confmatrix:ifell:R17550}Modelo IFELL-R(175)[50]}
+  \end{subfigure}
+  \caption{\label{fig:app:confmatrix:ifell:175} Matrices confusión para modelos IFELL de 175 unidades por celda}
+\end{figure}

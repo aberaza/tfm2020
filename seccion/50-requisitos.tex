@@ -184,7 +184,7 @@ El proceso para elegir estos límites garantiza que por construcción la sensibi
   \item El menor de los máximos de aceleración de las caídas (para definir \textbf{UFT})
 \end{itemize}
 
-Garantizando así que todas las caidas del conjunto de datos serán detectadas, y por tanto la sensibilidad siempre sea máxima. Por contra esto hace que el valor de especificidad del algoritmo sea altamente dependiente del resto de actividades incluidas en la base de datos. Esta característica explicaría la gran disparidad de resultados de la tabla \ref{tab:resumen_mod_anal}.
+Garantizando así que todas las caídas del conjunto de datos serán detectadas, y por tanto la sensibilidad siempre sea máxima. Por contra esto hace que el valor de especificidad del algoritmo sea altamente dependiente del resto de actividades incluidas en la base de datos. Esta característica explicaría la gran disparidad de resultados de la tabla \ref{tab:resumen_mod_anal}.
 
 \figura[0.5]{BourkeThresholds}{fig:bourke_thresholds}{Detalle del modelo de detección de Bourke}
 
@@ -195,13 +195,13 @@ Recogemos en la tabla \ref{tab:bourke_threshold_values} una lista con los difere
   \citeA{Bourke2006} & Pecho & 3,52\g/& 0,41\g/\\
                      & Cintura & 2,74\g/& 0,60\g/\\
   \citeA{Bourke2010} & Cintura & 2,80\g/& 0,65\g/\\
-  \citeA{Bagala2012} & -- & 1,79\g/& 0.73\g/\\
+  \citeA{Bagala2012} & Cintura & 1,79\g/& 0.73\g/\\
 }{2}
 
 
 \section{Biblioteca de Modelos Neuronales} \label{sec:req:tflite}
 
-Una de las piezas angulares de todo el desarrollo es la generación y entrenamiento del modelo. Si bien es factible realizar una imlementación directa tanto del modelo como de las funciones de entrenamiento, no es óptimo ni recursos ni en resultados. Existen multitud de de bibliotecas para el desarrollo, entrenamiento y despliegue de modelos de los que citamos brevemente los más extendidos:
+Una de las piezas angulares de todo el desarrollo es la generación y entrenamiento del modelo. Si bien es factible realizar una implementación directa tanto del modelo como de las funciones de entrenamiento, no es óptimo ni recursos ni en resultados. Existen multitud de de bibliotecas para el desarrollo, entrenamiento y despliegue de modelos de los que citamos brevemente los más extendidos:
 
 \paragraph{Caffe2 y PyTorch}
 
@@ -213,9 +213,9 @@ Similar al caso anterior, Keras (\url{https://keras.io/}) es un módulo que ofre
 
 \paragraph{SciKit-Learn}
 
-Scikit-learn (\url{https://scikit-learn.org/}) se presenta como una biblioteca de funciones de tratamiento de datos. Ofrece imlementaciones de funciones y algoritmos de aprendizaje automático muy variados como \textit{random forest}, \textit{SVM}, textit{K-NN} y otros, así como funciones para el pre-procesado de datos. Soporta también modelos de redes neuronales, aunque su API de desarrollo des de muy alto nivel y dificilmente industrializable.
+Scikit-learn (\url{https://scikit-learn.org/}) se presenta como una biblioteca de funciones de tratamiento de datos. Ofrece implementaciones de funciones y algoritmos de aprendizaje automático muy variados como \textit{random forest}, \textit{SVM}, textit{K-NN} y otros, así como funciones para el pre-procesado de datos. Soporta también modelos de redes neuronales, aunque su API de desarrollo des de muy alto nivel y difícilmente industrializable.
 
-La elección del sistema WearOS para imlementar la aplicación, unida a la popularidad tanto en el ámbito académico como profesional así como el soporte y optimización para sistemas embebidos hace que nos decantemos por la opción TensorFlow + Keras.
+La elección del sistema WearOS para implementar la aplicación, unida a la popularidad tanto en el ámbito académico como profesional así como el soporte y optimización para sistemas embebidos hace que nos decantemos por la opción TensorFlow + Keras.
 
 \section{Optimización de modelos}\label{sec:req:optimizacion}
 
@@ -232,7 +232,7 @@ Los modelos basados en redes neuronales adolecen generalmente por su gran tamañ
 
 \subsubsection{Pruning}
 
-Si añadimos que indican la contribción de cada nodo o neurona al resultado final. Es normal que en esa red haya nodos que aporten más información que otros. Este efecto no es necesariamente negativo, la regularización o normalización L1 busca precisamente este efecto para reducir el sobreajuste de la red a los datos de entrenamiento.
+Si añadimos que indican la contribución de cada nodo o neurona al resultado final. Es normal que en esa red haya nodos que aporten más información que otros. Este efecto no es necesariamente negativo, la regularización o normalización L1 busca precisamente este efecto para reducir el sobreajuste de la red a los datos de entrenamiento.
 
 
 Si pensamos en reducir el tamaño de una red neuronal, probablemente una de las soluciones que nos venga a la cabeza sea sea hacer un \textit{tree-shacking}, eliminar aquello que no se necesita. El término, usado en ciencias de la computación se aplica para reducir el tamaño de aplicaciones al eliminar el código que no es utilizado. Podemos pensar en realizar un cribado similar en la red eliminando aquellos pesos menos relevantes para la salida. Propuesto en \citeA{Mozer1989} como una herramienta para simplificar las redes de neuronas y facilitar así la comprensión de su funcionamiento, acelerar el aprendizaje al reducir el tamaño de la red y por la misma razón facilitar la capacidad de la red de generalizar. La técnica propuesta consiste en medir la influencia de los nodos en la señal de salida: comparar el resultado con y sin el nodo activado. Sabiendo la influencia de la aportación de cada nodo podemos determinar un umbral y eliminar los nodos con menor contribución reduciendo la red. \citeA{Yann1989} confirma que además de conseguir reducir el tamaño de la red a la mitad, el aprendizaje de la misma puede llegar a mejorar.
@@ -256,7 +256,7 @@ Esta técnica, junto con la cuantificación de los valores, se presenta como una
     \right.
 \]
 
-Este proceso se va realizando durante un número determinado de iteraciones de entrenamiento durante el cual se van anulando progresivamente una cantidad determinada (ya sea un número fijo o una evolución polinomial) de nodos en cada etapa de entrenamiento. \cite{Yann1989} Los modelos son cada vez más comlejos y con el aumento en complejidad de problemas seguirán crecienco. Un método que elimina nodos permite no solo mejorar la capacidad de generalizar
+Este proceso se va realizando durante un número determinado de iteraciones de entrenamiento durante el cual se van anulando progresivamente una cantidad determinada (ya sea un número fijo o una evolución polinomial) de nodos en cada etapa de entrenamiento. \cite{Yann1989} Los modelos son cada vez más complejos y con el aumento en complejidad de problemas seguirán creciendo. Un método que elimina nodos permite no solo mejorar la capacidad de generalizar
 
 \iffalse
 
@@ -270,9 +270,9 @@ https://www.machinecurve.com/index.php/2020/09/29/tensorflow-pruning-schedules-c
 
 Además de eliminando nodos de la red, hay otra técnica que permite reducir el tamaño y requisitos de esta: reducir el número de bits usados para representar las conexiones y sesgos. Entendemos por cuantificación al proceso de discretizar un grupo de valores. En este caso en concreto hace referencia al mencionado descenso en la precisión numérica usada para representar los pesos de nodos y valores de entrada y salida de una red neuronal.
 
-Una de las primeras aproximaciones a la cuantificación de los parámetros de redes neuronales aparece en \citeA{Courbariaux2015}. \citeauthor{Courbariaux2015} busca una solución al problema de los crecientes requisitos de potencia de cálculo necesarios por los modelos de redes de neuronas. Esta optimización espera reducir la dependencia en la mejora de las unidades GPU(\textit{Graphics Processing Unit}) y CPU, hasta ahora uno de los principales factores que limitan evolución en este área. \textquote[{\citeNP[p.~1]{Courbariaux2015}}]{La mayoría de los cálculos realizados en el entrenamiento y aplicación de una red neuronal consisten en multiplicar un peso determinado por valor real por una activación definida por un valor real}, así pues decide binarizar tanto pesos como activaciones y reducirlos a solo dos valores: $0$ y $1$ o $+1$ y $-1$. Los resultados obtenidos son esperanzadores, una reducciónd el tamaño a 1/16 del original (de 16 bits usados para representar pesos y activaciones pasa a uno único) y una mejora en la velocidad de respuesta de la red tres veces menor.
+Una de las primeras aproximaciones a la cuantificación de los parámetros de redes neuronales aparece en \citeA{Courbariaux2015}. \citeauthor{Courbariaux2015} busca una solución al problema de los crecientes requisitos de potencia de cálculo necesarios por los modelos de redes de neuronas. Esta optimización espera reducir la dependencia en la mejora de las unidades GPU(\textit{Graphics Processing Unit}) y CPU, hasta ahora uno de los principales factores que limitan evolución en este área. \textquote[{\citeNP[p.~1]{Courbariaux2015}}]{La mayoría de los cálculos realizados en el entrenamiento y aplicación de una red neuronal consisten en multiplicar un peso determinado por valor real por una activación definida por un valor real}, así pues decide binarizar tanto pesos como activaciones y reducirlos a solo dos valores: $0$ y $1$ o $+1$ y $-1$. Los resultados obtenidos son esperanzadores, una reducción del tamaño a 1/16 del original (de 16 bits usados para representar pesos y activaciones pasa a uno único) y una mejora en la velocidad de respuesta de la red tres veces menor.
 
-La reducción en el tamaño de la red es evidente. Si tenemos $N$ parámetros en una red representados con $m$ bits cada uno, el tamaño final de la red es $S(red)=Nm$ es por tanto una dependencia lineal. La mejora en los tiempos de cómputo es más complejo. Trabajar con números reales, o de coma flotante, requiere de unidades de cálculo especializadas, ya sean GPUs o unidades de coma flotante en CPUs. Este requisito de unidades especializadas es determinante en el rendimiento, pues será determinante en la velocidad de cálculo del modelo. Esta problemática la estudia en detalle \citeA{Vanhoucke2011} buscando optimizar la velocidad de los modelos. Se fija en la lentitud de las unidades CPU para realizar grandes cantidades de cálculos en coma flotante y propone en este caso usar valores enteros. Predice que el impacto negativo será mínimo pues \textquote[{\citeNP[p.~5]{Vanhoucke2011}}]{las activaciones son probabilidades, limitadas al rango $[0:1]$ así pues no hay riesgos relacionados con el escalado al usar enteros. Y como la entrada de cada nodo es la salida de una activación esto asegura que el rango de valores permanecerá acotado}. Aplicando cuantización para convertir los pesos de reales a enteros, y otras optimizaciones en la implementación, consigue reducir a menos de un tercio el tiempo de respuesta de una red de procesado del habla con un error de precisión añadido inferior al 0,1\%.
+La reducción en el tamaño de la red es evidente. Si tenemos $N$ parámetros en una red representados con $m$ bits cada uno, el tamaño final de la red es $S(red)=Nm$ es por tanto una dependencia lineal. La mejora en los tiempos de cómputo es más complejo. Trabajar con números reales, o de coma flotante, requiere de unidades de cálculo especializadas, ya sean GPUs o unidades de coma flotante en CPUs. Este requisito de unidades especializadas es determinante en el rendimiento, pues será determinante en la velocidad de cálculo del modelo. Esta problemática la estudia en detalle \citeA{Vanhoucke2011} buscando optimizar la velocidad de los modelos. Se fija en la lentitud de las unidades CPU para realizar grandes cantidades de cálculos en coma flotante y propone en este caso usar valores enteros. Predice que el impacto negativo será mínimo pues \textquote[{\citeNP[p.~5]{Vanhoucke2011}}]{las activaciones son probabilidades, limitadas al rango $[0:1]$ así pues no hay riesgos relacionados con el escalado al usar enteros. Y como la entrada de cada nodo es la salida de una activación esto asegura que el rango de valores permanecerá acotado}. Aplicando cuantificación para convertir los pesos de reales a enteros, y otras optimizaciones en la implementación, consigue reducir a menos de un tercio el tiempo de respuesta de una red de procesado del habla con un error de precisión añadido inferior al 0,1\%.
 
 Hasta ahora hemos tratado pesos y activaciones como un todo: aplicamos la misma regularización o reducción de precisión a ambos conjuntos de valores por igual. A esta técnica se la conoce como \textit{Cuantificación de precisión uniforme}, en contraste con la \textit{Cuantificación de precisión mixta}. Este última propone tratar la reducción de tamaño de cada conjunto de valores por separado, consiguiendo una mayor reducción del tamaño con un impacto menor en la precisión del modelo \cite{Jin2019} e incluso a veces mejorando el rendimiento.
 
